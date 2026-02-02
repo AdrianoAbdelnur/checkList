@@ -38,6 +38,10 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
+  function goChecklists() {
+    router.push('/checklists')
+  }
+
   if (loading) return <div className="p-4">Cargando...</div>
 
   return (
@@ -45,6 +49,7 @@ export default function DashboardPage() {
       <nav className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">Dashboard</h1>
+
           <button
             onClick={handleLogout}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -56,16 +61,64 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Bienvenido, {user?.firstName} {user?.lastName}</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Bienvenido, {user?.firstName} {user?.lastName}
+          </h2>
+
           <p className="text-gray-600">Email: {user?.email}</p>
-          <p className="text-gray-600">Rol: <span className="font-semibold capitalize">{user?.role}</span></p>
+          <p className="text-gray-600">
+            Rol: <span className="font-semibold capitalize">{user?.role}</span>
+          </p>
+
+          <div className="mt-5 flex">
+            <button
+              onClick={goChecklists}
+              className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-extrabold shadow hover:bg-slate-800 active:scale-[0.99] transition"
+            >
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/15">
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                  <path
+                    d="M8 6h13M8 12h13M8 18h13"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M3.5 6.5l1.2 1.2 2.1-2.4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3.5 12.5l1.2 1.2 2.1-2.4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3.5 18.5l1.2 1.2 2.1-2.4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span>Ver Checklists</span>
+            </button>
+          </div>
         </div>
 
         {user?.role === 'admin' && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">Panel Administrador</h3>
             <p className="text-blue-700">Acceso a todas las funciones administrativas</p>
-            <a href="/admin" className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <a
+              href="/admin"
+              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
               Ir al Panel Admin
             </a>
           </div>
@@ -75,7 +128,10 @@ export default function DashboardPage() {
           <div className="bg-green-50 border border-green-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-green-900 mb-2">Panel Técnico</h3>
             <p className="text-green-700">Acceso a herramientas técnicas</p>
-            <a href="/technician" className="mt-3 inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            <a
+              href="/technician"
+              className="mt-3 inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
               Ir al Panel Técnico
             </a>
           </div>
@@ -85,7 +141,10 @@ export default function DashboardPage() {
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-purple-900 mb-2">Panel de Operadores</h3>
             <p className="text-purple-700">Acceso a operaciones</p>
-            <a href="/operators" className="mt-3 inline-block px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            <a
+              href="/operators"
+              className="mt-3 inline-block px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
               Ir al Panel de Operadores
             </a>
           </div>
@@ -95,7 +154,10 @@ export default function DashboardPage() {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-orange-900 mb-2">Panel de Gerentes</h3>
             <p className="text-orange-700">Acceso a gestión</p>
-            <a href="/managers" className="mt-3 inline-block px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+            <a
+              href="/managers"
+              className="mt-3 inline-block px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+            >
               Ir al Panel de Gerentes
             </a>
           </div>
