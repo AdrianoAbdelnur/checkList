@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
 
   await connectToDatabase()
   try {
-    // Exclude logically deleted users
     const users = await User.find({ isDelete: { $ne: true } }).select('-password -salt').lean()
     return NextResponse.json({ users })
   } catch (e) {
