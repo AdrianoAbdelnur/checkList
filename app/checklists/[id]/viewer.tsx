@@ -13,8 +13,9 @@ function Badge({ text }: { text: string }) {
         borderRadius: 999,
         fontWeight: 800,
         fontSize: 12,
-        background: "#111827",
-        color: "white",
+        background: "var(--cv-badge-bg)",
+        color: "var(--cv-badge-text)",
+        border: "1px solid var(--cv-border)",
       }}
     >
       {text}
@@ -26,11 +27,12 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   return (
     <div
       style={{
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--cv-border)",
         borderRadius: 16,
         padding: 14,
         marginBottom: 12,
-        background: "white",
+        background: "var(--cv-card)",
+        color: "var(--cv-text)",
       }}
     >
       <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 10 }}>
@@ -44,10 +46,10 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ display: "flex", gap: 10, padding: "8px 0" }}>
-      <div style={{ width: 260, fontWeight: 800, color: "#111827" }}>
+      <div style={{ width: 260, fontWeight: 800, color: "var(--cv-text)" }}>
         {label}
       </div>
-      <div style={{ flex: 1, color: "#111827" }}>{value}</div>
+      <div style={{ flex: 1, color: "var(--cv-text)" }}>{value}</div>
     </div>
   );
 }
@@ -84,8 +86,8 @@ function PhotosStrip({
               height: 120,
               objectFit: "cover",
               borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              background: "#fff",
+              border: "1px solid var(--cv-border)",
+              background: "var(--cv-thumb-bg)",
               display: "block",
             }}
           />
@@ -127,9 +129,9 @@ function PhotoModal({
         style={{
           width: "min(980px, 96vw)",
           maxHeight: "90vh",
-          background: "white",
+          background: "var(--cv-modal-panel)",
           borderRadius: 16,
-          border: "1px solid rgba(255,255,255,0.12)",
+          border: "1px solid var(--cv-border)",
           overflow: "hidden",
           boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
           display: "flex",
@@ -142,14 +144,14 @@ function PhotoModal({
             alignItems: "center",
             justifyContent: "space-between",
             padding: 10,
-            borderBottom: "1px solid #e5e7eb",
+            borderBottom: "1px solid var(--cv-border)",
             gap: 10,
           }}
         >
           <div
             style={{
               fontWeight: 900,
-              color: "#111827",
+              color: "var(--cv-text)",
               fontSize: 13,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -164,11 +166,12 @@ function PhotoModal({
             type="button"
             onClick={onClose}
             style={{
-              border: "1px solid #e5e7eb",
-              background: "white",
+              border: "1px solid var(--cv-border)",
+              background: "var(--cv-modal-header)",
               borderRadius: 10,
               padding: "8px 10px",
               fontWeight: 900,
+              color: "var(--cv-text)",
               cursor: "pointer",
             }}
           >
@@ -179,7 +182,7 @@ function PhotoModal({
         <div
           style={{
             padding: 12,
-            background: "#0b1220",
+            background: "var(--cv-media-bg)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -206,7 +209,7 @@ function PhotoModal({
                 maxHeight: "78vh",
                 objectFit: "contain",
                 borderRadius: 12,
-                background: "#fff",
+                background: "var(--cv-thumb-bg)",
               }}
             />
           )}
@@ -225,7 +228,7 @@ function renderValue(field: AnyObj, v: AnyObj | undefined) {
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <Badge text={String(v.status ?? "—")} />
           {v.obs?.trim() ? (
-            <span style={{ opacity: 0.9 }}>Obs: {v.obs}</span>
+            <span style={{ opacity: 0.9, color: "var(--cv-text-muted)" }}>Obs: {v.obs}</span>
           ) : null}
         </div>
       );
@@ -276,9 +279,9 @@ function renderValue(field: AnyObj, v: AnyObj | undefined) {
           style={{
             width: "100%",
             maxWidth: 520,
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--cv-border)",
             borderRadius: 14,
-            background: "white",
+            background: "var(--cv-thumb-bg)",
           }}
         />
       ) : (
@@ -286,7 +289,7 @@ function renderValue(field: AnyObj, v: AnyObj | undefined) {
       );
 
     default:
-      return <pre style={{ margin: 0 }}>{JSON.stringify(v, null, 2)}</pre>;
+      return <pre style={{ margin: 0, color: "var(--cv-text)" }}>{JSON.stringify(v, null, 2)}</pre>;
   }
 }
 
@@ -341,7 +344,7 @@ export default function ChecklistViewer({
   );
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
+    <div style={{ display: "grid", gap: 14, color: "var(--cv-text)" }}>
       <PhotoModal open={modalOpen} url={modalUrl} onClose={closeModal} />
 
       <Card title="Resumen">
@@ -380,7 +383,7 @@ export default function ChecklistViewer({
                 <div
                   key={fieldId}
                   style={{
-                    borderTop: "1px solid #f3f4f6",
+                    borderTop: "1px solid var(--cv-border)",
                     paddingTop: 6,
                     paddingBottom: 8,
                   }}
@@ -407,7 +410,7 @@ export default function ChecklistViewer({
 
       {sections.length === 0 ? (
         <Card title="Template sin secciones">
-          <pre style={{ margin: 0 }}>{JSON.stringify(template, null, 2)}</pre>
+          <pre style={{ margin: 0, color: "var(--cv-text)" }}>{JSON.stringify(template, null, 2)}</pre>
         </Card>
       ) : null}
     </div>

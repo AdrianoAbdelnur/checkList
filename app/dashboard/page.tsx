@@ -1,6 +1,10 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ThemeShell from '@/components/checklists/ThemeShell'
+import { roleLabelEs } from '@/lib/roles'
+import styles from './page.module.css'
 
 type User = {
   email: string
@@ -8,6 +12,38 @@ type User = {
   lastName: string
   role: string
 }
+
+type RoleCard = {
+  role: string
+  title: string
+  description: string
+  href: string
+  tone: 'blue' | 'green' | 'violet'
+}
+
+const roleCards: RoleCard[] = [
+  {
+    role: 'admin',
+    title: 'Panel Administrador',
+    description: 'Acceso a funciones administrativas y gestión global.',
+    href: '/admin',
+    tone: 'blue',
+  },
+  {
+    role: 'inspector',
+    title: 'Panel de Inspector',
+    description: 'Carga y seguimiento de checklists de inspección.',
+    href: '/checklists',
+    tone: 'green',
+  },
+  {
+    role: 'reviewer',
+    title: 'Panel de Revisor',
+    description: 'Revisión de checklists, validación y decisiones.',
+    href: '/templates/editor',
+    tone: 'violet',
+  },
+]
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -33,136 +69,92 @@ export default function DashboardPage() {
     fetchUser()
   }, [router])
 
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-    router.push('/login')
+  if (loading) {
+    return (
+      <ThemeShell>
+        <div className={styles.loadingWrap}>
+          <div className={styles.loadingCard}>Cargando dashboard...</div>
+        </div>
+      </ThemeShell>
+    )
   }
 
-  function goChecklists() {
-    router.push('/checklists')
-  }
-
-  if (loading) return <div className="p-4">Cargando...</div>
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() || user?.email || 'Usuario'
+  const activeRoleCard = roleCards.find((r) => r.role === user?.role)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">Dashboard</h1>
-
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Bienvenido, {user?.firstName} {user?.lastName}
-          </h2>
-
-          <p className="text-gray-600">Email: {user?.email}</p>
-          <p className="text-gray-600">
-            Rol: <span className="font-semibold capitalize">{user?.role}</span>
-          </p>
-
-          <div className="mt-5 flex">
-            <button
-              onClick={goChecklists}
-              className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-extrabold shadow hover:bg-slate-800 active:scale-[0.99] transition"
-            >
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/15">
-                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-                  <path
-                    d="M8 6h13M8 12h13M8 18h13"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M3.5 6.5l1.2 1.2 2.1-2.4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M3.5 12.5l1.2 1.2 2.1-2.4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M3.5 18.5l1.2 1.2 2.1-2.4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <span>Ver Checklists</span>
-            </button>
+    <ThemeShell user={user}>
+      <main className={styles.page}>
+        <section className={styles.hero}>
+          <div className={styles.heroMain}>
+            <p className={styles.kicker}>Centro de control</p>
+            <h1>Dashboard</h1>
+            <p className={styles.subtitle}>
+              Acceso rápido a checklists y módulos según tu perfil.
+            </p>
           </div>
-        </div>
+        </section>
 
-        {user?.role === 'admin' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Panel Administrador</h3>
-            <p className="text-blue-700">Acceso a todas las funciones administrativas</p>
-            <a
-              href="/admin"
-              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Ir al Panel Admin
+        <section className={styles.grid}>
+          <article className={styles.profileCard}>
+            <div className={styles.profileHeader}>
+              <div className={styles.avatar}>{displayName.slice(0, 1).toUpperCase()}</div>
+              <div>
+                <h2>{displayName}</h2>
+                <p>{user?.email}</p>
+              </div>
+            </div>
+
+            <div className={styles.profileMeta}>
+              <div>
+                <span>Rol</span>
+                <strong>{roleLabelEs(user?.role)}</strong>
+              </div>
+              <div>
+                <span>Sesión</span>
+                <strong>Activa</strong>
+              </div>
+              <div>
+                <span>Módulo principal</span>
+                <strong>Checklists</strong>
+              </div>
+              <div>
+                <span>Acceso</span>
+                <strong>{activeRoleCard ? 'Personalizado' : 'Estándar'}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className={styles.quickCard}>
+            <div className={styles.quickCardHeader}>
+              <h3>Accesos rápidos</h3>
+              <span>Operación diaria</span>
+            </div>
+            <div className={styles.quickActions}>
+              <a href="/checklists" className={styles.quickBtn}>
+                Abrir listados de checklists
+              </a>
+              <a href="/checklists" className={styles.quickBtnGhost}>
+                Ir por enlace directo
+              </a>
+            </div>
+          </article>
+        </section>
+
+        {activeRoleCard ? (
+          <section className={`${styles.rolePanel} ${styles[activeRoleCard.tone]}`}>
+            <div>
+              <p className={styles.roleKicker}>Módulo habilitado</p>
+              <h3>{activeRoleCard.title}</h3>
+              <p>{activeRoleCard.description}</p>
+            </div>
+            <a href={activeRoleCard.href} className={styles.roleLink}>
+              Abrir módulo
             </a>
-          </div>
-        )}
-
-        {user?.role === 'technician' && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-green-900 mb-2">Panel Técnico</h3>
-            <p className="text-green-700">Acceso a herramientas técnicas</p>
-            <a
-              href="/technician"
-              className="mt-3 inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              Ir al Panel Técnico
-            </a>
-          </div>
-        )}
-
-        {user?.role === 'operators' && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-purple-900 mb-2">Panel de Operadores</h3>
-            <p className="text-purple-700">Acceso a operaciones</p>
-            <a
-              href="/operators"
-              className="mt-3 inline-block px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              Ir al Panel de Operadores
-            </a>
-          </div>
-        )}
-
-        {user?.role === 'managers' && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-orange-900 mb-2">Panel de Gerentes</h3>
-            <p className="text-orange-700">Acceso a gestión</p>
-            <a
-              href="/managers"
-              className="mt-3 inline-block px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
-            >
-              Ir al Panel de Gerentes
-            </a>
-          </div>
-        )}
-      </div>
-    </div>
+          </section>
+        ) : null}
+      </main>
+    </ThemeShell>
   )
 }

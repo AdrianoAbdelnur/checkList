@@ -46,7 +46,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      default: 'user',
+      default: 'inspector',
     },
   },
   {

@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteSession } from '../../../../lib/auth'
+import { clearSessionCookie } from '@/lib/server/session-cookie'
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get('session')?.value
-  deleteSession(token)
+  await deleteSession(token)
 
   const res = NextResponse.json({ ok: true })
-  res.cookies.set({
-    name: 'session',
-    value: '',
-    httpOnly: true,
-    path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 0,
-  })
+  clearSessionCookie(res)
   return res
 }

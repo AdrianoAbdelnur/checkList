@@ -1,29 +1,16 @@
-import { connectToDatabase } from "@/lib/db";
-import Checklist from "@/models/Checklist";
-import ChecklistTemplate from "@/models/ChecklistTemplate";
+import { getChecklistWithTemplateById } from "@/lib/checklists";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_: Request, ctx: Ctx) {
-  await connectToDatabase();
   const { id } = await ctx.params;
-
-  const checklist = await Checklist.findById(id)
-    .populate("inspectorId", "name email")
-    .lean();
-
-  if (!checklist) {
+  const result = await getChecklistWithTemplateById(id);
+  if (!result?.checklist) {
     return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   }
-
-  const template = await ChecklistTemplate.findOne({
-    templateId: checklist.templateId,
-    version: checklist.templateVersion,
-  }).lean();
-
-  if (!template) {
+  if (!result.template) {
     return Response.json({ ok: false, message: "Template/version no encontrada" }, { status: 404 });
   }
 
-  return Response.json({ ok: true, checklist, template });
+  return Response.json({ ok: true, checklist: result.checklist, template: result.template });
 }

@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import ChecklistTemplate from "@/models/ChecklistTemplate";
 import { requireUser } from "@/lib/auth/requireUser";
+import { listChecklistsForInspector } from "@/lib/checklists";
 
 export async function GET(req: Request) {
   await connectToDatabase();
@@ -16,12 +17,13 @@ export async function GET(req: Request) {
   const status = url.searchParams.get("status");
   const plate = url.searchParams.get("plate");
 
-  const q: any = { inspectorId: auth.user._id };
-  if (templateId) q.templateId = templateId;
-  if (status) q.status = status;
-  if (plate) q["data.subject.plate"] = plate;
-
-  const items = await Checklist.find(q).sort({ createdAt: -1 }).lean();
+  const items = await listChecklistsForInspector({
+    inspectorId: auth.user._id,
+    includeAll: auth.user.role === "admin",
+    templateId,
+    status,
+    plate,
+  });
   return Response.json({ ok: true, items });
 }
 

@@ -1,76 +1,121 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { connectToDatabase } from '../../../../../lib/mongoose'
-import User from '../../../../../models/User'
-import { getSessionData } from '../../../../../lib/auth'
+import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { connectToDatabase } from "../../../../../lib/mongoose";
+import User from "../../../../../models/User";
+import { requireAdminSession } from "@/lib/server/auth-next";
+import { isAppRole } from "@/lib/roles";
 
-export async function PATCH(req: NextRequest) {
-  const token = req.cookies.get('session')?.value
-  if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+type Ctx = { params: Promise<{ id: string }> };
 
-  const sessionData = await getSessionData(token)
-  if (!sessionData || sessionData.role !== 'admin') {
-    return NextResponse.json({ error: 'Solo administradores pueden editar usuarios' }, { status: 403 })
-  }
+export async function GET(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAdminSession(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const body = await req.json().catch(() => ({}))
-  const { firstName, lastName, telephone, userId, role } = body
+  const { id } = await ctx.params;
+  if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
-  if (!userId) {
-    return NextResponse.json({ error: 'userId es requerido' }, { status: 400 })
-  }
-
-  const validRoles = ['user', 'admin', 'technician', 'operators', 'managers']
-  if (role && !validRoles.includes(role)) {
-    return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
-  }
-
-  const update: any = {}
-  if (firstName !== undefined) update.firstName = firstName
-  if (lastName !== undefined) update.lastName = lastName
-  if (telephone !== undefined) update.telephone = telephone
-  if (role !== undefined) update.role = role
-
-  if (Object.keys(update).length === 0) {
-    return NextResponse.json({ error: 'Nada para actualizar' }, { status: 400 })
-  }
-
-  await connectToDatabase()
-
+  await connectToDatabase();
   try {
-    const updatedUser = await User
-      .findByIdAndUpdate(userId, update, { new: true })
-      .select('-password -salt')
+    const user = await User.findOne({ _id: id, isDelete: { $ne: true } })
+      .select("-password -salt")
+      .lean();
 
-    if (!updatedUser) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
-
-    return NextResponse.json({ user: updatedUser })
+    if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    return NextResponse.json({ user });
   } catch {
-    return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 })
+    return NextResponse.json({ error: "Error al obtener usuario" }, { status: 500 });
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const token = req.cookies.get('session')?.value
-  if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+export async function PATCH(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAdminSession(req);
+  if (!auth.ok) {
+    return NextResponse.json(
+      { error: auth.status === 403 ? "Solo administradores pueden editar usuarios" : auth.error },
+      { status: auth.status }
+    );
+  }
 
-  const session = await getSessionData(token)
-  if (!session || session.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const body = await req.json().catch(() => ({}));
+  const { firstName, lastName, telephone, userId, role, email, password } = body;
+  const { id: routeId } = await ctx.params;
+  const targetId = userId || routeId;
 
-  // ID comes from the route param
-  const { searchParams } = new URL(req.url)
-  // note: Next's dynamic route param is in pathname; extract id from pathname
-  const parts = req.nextUrl.pathname.split('/')
-  const targetId = parts[parts.length - 1]
-  if (!targetId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
+  if (!targetId) {
+    return NextResponse.json({ error: "userId es requerido" }, { status: 400 });
+  }
 
-  await connectToDatabase()
+  if (role && !isAppRole(String(role))) {
+    return NextResponse.json({ error: "Rol inválido" }, { status: 400 });
+  }
+
+  const update: any = {};
+  if (firstName !== undefined) update.firstName = firstName;
+  if (lastName !== undefined) update.lastName = lastName;
+  if (telephone !== undefined) update.telephone = telephone;
+  if (role !== undefined) update.role = role;
+  if (email !== undefined) update.email = String(email).trim().toLowerCase();
+
+  if (email !== undefined && !update.email) {
+    return NextResponse.json({ error: "Email inválido" }, { status: 400 });
+  }
+
+  const hasPasswordUpdate = password !== undefined && String(password).trim().length > 0;
+  if (Object.keys(update).length === 0 && !hasPasswordUpdate) {
+    return NextResponse.json({ error: "Nada para actualizar" }, { status: 400 });
+  }
+
+  await connectToDatabase();
+
   try {
-    const deleted = await User.findByIdAndUpdate(targetId, { isDelete: true }, { new: true }).select('-password -salt')
-    if (!deleted) return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    return NextResponse.json({ ok: true, user: deleted })
-  } catch (e) {
-    return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 })
+    if (update.email) {
+      const existing = await User.findOne({
+        email: update.email,
+        _id: { $ne: targetId },
+        isDelete: { $ne: true },
+      }).lean();
+
+      if (existing) {
+        return NextResponse.json({ error: "Email ya registrado" }, { status: 409 });
+      }
+    }
+
+    if (hasPasswordUpdate) {
+      const salt = crypto.randomBytes(16).toString("hex");
+      const derived = crypto.scryptSync(String(password), salt, 64).toString("hex");
+      update.salt = salt;
+      update.password = derived;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(targetId, update, { new: true }).select(
+      "-password -salt"
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    return NextResponse.json({ user: updatedUser });
+  } catch {
+    return NextResponse.json({ error: "Error al actualizar usuario" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAdminSession(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { id: targetId } = await ctx.params;
+  if (!targetId) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+
+  await connectToDatabase();
+  try {
+    const deleted = await User.findByIdAndUpdate(targetId, { isDelete: true }, { new: true }).select(
+      "-password -salt"
+    );
+    if (!deleted) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    return NextResponse.json({ ok: true, user: deleted });
+  } catch {
+    return NextResponse.json({ error: "Error al eliminar usuario" }, { status: 500 });
   }
 }
