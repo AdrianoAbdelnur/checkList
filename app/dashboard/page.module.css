@@ -1,0 +1,332 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 18px 48px;
+  color: var(--ck-text);
+}
+
+.loadingWrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.loadingCard {
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  color: var(--ck-text-soft);
+  box-shadow: var(--ck-shadow);
+  font-weight: 700;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+}
+
+.heroMain h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 0.95;
+  font-weight: 900;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  max-width: 54ch;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid color-mix(in oklab, var(--ck-accent) 45%, transparent);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--ck-accent) 22%, transparent), color-mix(in oklab, var(--ck-accent) 14%, transparent));
+  color: var(--ck-text);
+  border-radius: 999px;
+  padding: 8px 12px 8px 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.primaryAction:hover {
+  filter: brightness(1.05);
+}
+
+.iconBubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.secondaryAction {
+  border: 1px solid var(--ck-line);
+  background: var(--ck-surface);
+  color: var(--ck-text);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.secondaryAction:hover {
+  background: var(--ck-surface-2);
+}
+
+.grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+}
+
+.profileCard,
+.quickCard {
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  background: var(--ck-surface);
+  box-shadow: var(--ck-shadow);
+  padding: 16px;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--ck-accent) 16%, transparent);
+  border: 1px solid color-mix(in oklab, var(--ck-accent) 25%, transparent);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: var(--ck-text);
+}
+
+.profileHeader h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.profileHeader p {
+  margin: 4px 0 0;
+  color: var(--ck-text-soft);
+}
+
+.profileMeta {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profileMeta > div {
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.profileMeta span {
+  color: var(--ck-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.profileMeta strong {
+  font-size: 0.95rem;
+}
+
+.quickCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 10px;
+}
+
+.quickCardHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.quickCardHeader span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+}
+
+.quickActions {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.quickBtn,
+.quickBtnGhost {
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 800;
+  text-decoration: none;
+  text-align: left;
+}
+
+.quickBtn {
+  border: 1px solid color-mix(in oklab, var(--ck-accent) 35%, transparent);
+  background: color-mix(in oklab, var(--ck-accent) 14%, transparent);
+  color: var(--ck-text);
+  cursor: pointer;
+}
+
+.quickBtnGhost {
+  border: 1px solid var(--ck-line);
+  background: transparent;
+  color: var(--ck-text-soft);
+}
+
+.rolePanel {
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--ck-line);
+  background: var(--ck-surface);
+  box-shadow: var(--ck-shadow);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.roleKicker {
+  margin: 0 0 6px;
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+}
+
+.rolePanel h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.rolePanel p {
+  margin: 8px 0 0;
+  color: var(--ck-text-soft);
+}
+
+.roleLink {
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  text-decoration: none;
+  color: var(--ck-text);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.blue {
+  border-color: color-mix(in oklab, #60a5fa 35%, var(--ck-line));
+}
+
+.blue .roleLink {
+  color: #93c5fd;
+}
+
+.green {
+  border-color: color-mix(in oklab, #4ade80 30%, var(--ck-line));
+}
+
+.green .roleLink {
+  color: #86efac;
+}
+
+.violet {
+  border-color: color-mix(in oklab, #a78bfa 30%, var(--ck-line));
+}
+
+.violet .roleLink {
+  color: #c4b5fd;
+}
+
+.amber {
+  border-color: color-mix(in oklab, #f59e0b 30%, var(--ck-line));
+}
+
+.amber .roleLink {
+  color: #fcd34d;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px 12px 34px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 14px;
+  }
+
+  .actions {
+    justify-content: start;
+  }
+
+  .profileMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .rolePanel {
+    flex-direction: column;
+    align-items: start;
+  }
+}

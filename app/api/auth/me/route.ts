@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionData } from '../../../../lib/auth'
+import { requireAuthSession } from '@/lib/server/auth-next'
 
 export async function GET(req: NextRequest) {
-  const token = req.cookies.get('session')?.value
-  if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-
   try {
-    const sessionData = await getSessionData(token)
-    if (!sessionData) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-    return NextResponse.json({ user: sessionData })
-  } catch (e) {
+    const auth = await requireAuthSession(req)
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+    return NextResponse.json({ user: auth.session })
+  } catch {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

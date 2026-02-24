@@ -231,14 +231,6 @@ export default function LoginForm() {
         <Button type="submit" loading={loading} disabled={!canSubmit}>
           {loading ? "INGRESANDO..." : "INGRESAR"}
         </Button>
-
-        <button
-          type="button"
-          onClick={() => router.replace("/dashboard")}
-          className="w-full mt-2 py-2 text-center text-sm font-black text-slate-300 hover:text-white"
-        >
-          Entrar sin login (dev)
-        </button>
       </div>
     </form>
   );

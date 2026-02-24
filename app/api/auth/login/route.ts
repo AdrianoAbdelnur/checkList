@@ -3,6 +3,7 @@ import { validateLoginPayload } from "../../../../lib/validators";
 import { connectToDatabase } from "../../../../lib/mongoose";
 import User from "../../../../models/User";
 import { createSession } from "../../../../lib/auth";
+import { setSessionCookie } from "@/lib/server/session-cookie";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -51,15 +52,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    res.cookies.set({
-      name: "session",
-      value: token,
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    setSessionCookie(res, token);
 
     return res;
   } catch {

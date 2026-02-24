@@ -4,6 +4,7 @@ import User from '../../../../models/User'
 import crypto from 'crypto'
 import { validateEmail, validatePassword } from '../../../../lib/validators'
 import { createSession } from '../../../../lib/auth'
+import { setSessionCookie } from '@/lib/server/session-cookie'
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
@@ -35,15 +36,7 @@ export async function POST(req: NextRequest) {
   const token = await createSession(user._id.toString())
 
   const res = NextResponse.json({ user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName } }, { status: 201 })
-  res.cookies.set({
-    name: 'session',
-    value: token,
-    httpOnly: true,
-    path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7,
-  })
+  setSessionCookie(res, token)
 
   return res
 }

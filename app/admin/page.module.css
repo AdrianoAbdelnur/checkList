@@ -1,0 +1,482 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 18px 48px;
+  color: var(--ck-text);
+}
+
+.loading {
+  max-width: 1180px;
+  margin: 16px auto;
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--ck-surface);
+  color: var(--ck-text-soft);
+}
+
+.hero {
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 0.95;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  max-width: 62ch;
+}
+
+.heroActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.primaryBtn {
+  background: color-mix(in oklab, var(--ck-accent) 14%, var(--ck-surface));
+  color: var(--ck-text);
+  border-color: color-mix(in oklab, var(--ck-accent) 30%, var(--ck-line));
+}
+
+.secondaryBtn {
+  background: var(--ck-surface);
+  color: var(--ck-text);
+  border-color: var(--ck-line);
+}
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.messages {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.message {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ck-line);
+  font-weight: 700;
+}
+
+.error {
+  background: var(--ck-bad-bg);
+  color: var(--ck-bad-ink);
+}
+
+.success {
+  background: var(--ck-good-bg);
+  color: var(--ck-good-ink);
+}
+
+.grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.listCard,
+.formCard {
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  background: var(--ck-surface);
+  box-shadow: var(--ck-shadow);
+  padding: 14px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.modal {
+  width: min(720px, 96vw);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 14px;
+}
+
+.confirmModal {
+  width: min(480px, 96vw);
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+}
+
+.confirmIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #fca5a5;
+  background: color-mix(in oklab, #ef4444 16%, transparent);
+  border: 1px solid color-mix(in oklab, #ef4444 30%, var(--ck-line));
+  margin-bottom: 10px;
+}
+
+.confirmModal h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.confirmModal p {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  line-height: 1.4;
+}
+
+.confirmActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closeBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: transparent;
+  color: var(--ck-text);
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.deleteBtn {
+  border-color: color-mix(in oklab, #ef4444 30%, var(--ck-line));
+  background: color-mix(in oklab, #ef4444 12%, var(--ck-surface));
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.cardHeader span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+}
+
+.linkBtn {
+  border: 0;
+  background: transparent;
+  color: var(--ck-accent);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--ck-line);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.filterField {
+  display: grid;
+  gap: 6px;
+}
+
+.filterField span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.filterField input,
+.filterField select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.filterField input:focus,
+.filterField select:focus {
+  border-color: color-mix(in oklab, var(--ck-accent) 45%, var(--ck-line));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ck-accent) 16%, transparent);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ck-line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table thead th {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  background: color-mix(in oklab, var(--ck-surface-2) 70%, transparent);
+}
+
+.table tbody tr:hover {
+  background: color-mix(in oklab, var(--ck-accent) 4%, transparent);
+}
+
+.activeRow {
+  background: color-mix(in oklab, var(--ck-accent) 7%, transparent);
+}
+
+.emptyCell {
+  color: var(--ck-text-soft);
+  text-align: center;
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-accent) 10%, transparent);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.userCell strong {
+  display: block;
+}
+
+.userCell small {
+  display: block;
+  color: var(--ck-text-soft);
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--ck-line);
+  background: var(--ck-muted-bg);
+  color: var(--ck-muted-ink);
+}
+
+.role_admin { background: color-mix(in oklab, #2563eb 14%, transparent); color: #93c5fd; }
+.role_inspector { background: color-mix(in oklab, #16a34a 14%, transparent); color: #86efac; }
+.role_reviewer { background: color-mix(in oklab, #7c3aed 14%, transparent); color: #c4b5fd; }
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+}
+
+.rowBtn {
+  border: 1px solid var(--ck-line);
+  background: transparent;
+  color: var(--ck-text);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.danger {
+  border-color: color-mix(in oklab, #ef4444 30%, var(--ck-line));
+  color: #fca5a5;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: color-mix(in oklab, var(--ck-accent) 45%, var(--ck-line));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ck-accent) 16%, transparent);
+}
+
+.formActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px 12px 34px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: start;
+    padding: 14px;
+  }
+
+  .heroActions {
+    width: 100%;
+  }
+
+  .heroActions .primaryBtn,
+  .heroActions .secondaryBtn {
+    flex: 1 1 auto;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .formActions .primaryBtn,
+  .formActions .secondaryBtn {
+    width: 100%;
+  }
+
+  .modal {
+    padding: 12px;
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .confirmModal {
+    width: 100%;
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .modalHeaderActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .confirmActions {
+    flex-direction: column;
+  }
+
+  .confirmActions .primaryBtn,
+  .confirmActions .secondaryBtn {
+    width: 100%;
+  }
+}

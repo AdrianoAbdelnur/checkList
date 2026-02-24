@@ -1,0 +1,292 @@
+.shell {
+  --ck-bg: #0b1220;
+  --ck-bg-soft: #111827;
+  --ck-surface: rgba(17, 24, 39, 0.92);
+  --ck-surface-2: rgba(15, 23, 42, 0.82);
+  --ck-card: #111827;
+  --ck-text: #e5e7eb;
+  --ck-text-soft: #94a3b8;
+  --ck-line: rgba(148, 163, 184, 0.2);
+  --ck-shadow: 0 22px 60px rgba(2, 6, 23, 0.45);
+  --ck-accent: #2563eb;
+  --ck-accent-soft: rgba(37, 99, 235, 0.14);
+  --ck-good-bg: rgba(34, 197, 94, 0.14);
+  --ck-good-ink: #86efac;
+  --ck-bad-bg: rgba(239, 68, 68, 0.14);
+  --ck-bad-ink: #fca5a5;
+  --ck-warn-bg: rgba(245, 158, 11, 0.14);
+  --ck-warn-ink: #fcd34d;
+  --ck-muted-bg: rgba(148, 163, 184, 0.12);
+  --ck-muted-ink: #cbd5e1;
+  --ck-neutral-bg: rgba(59, 130, 246, 0.12);
+  --ck-neutral-ink: #bfdbfe;
+
+  --cv-panel: #0f172a;
+  --cv-card: rgba(15, 23, 42, 0.9);
+  --cv-border: rgba(148, 163, 184, 0.18);
+  --cv-text: #e5e7eb;
+  --cv-text-muted: #94a3b8;
+  --cv-badge-bg: #1e293b;
+  --cv-badge-text: #e2e8f0;
+  --cv-modal-panel: #0f172a;
+  --cv-modal-header: #111827;
+  --cv-media-bg: #020617;
+  --cv-thumb-bg: #111827;
+
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.18), transparent 44%),
+    radial-gradient(circle at 88% 14%, rgba(14, 165, 233, 0.12), transparent 42%),
+    linear-gradient(180deg, #0b1220 0%, #08101b 100%);
+  color: var(--ck-text);
+}
+
+.shell[data-theme="light"] {
+  --ck-bg: #f5f7fb;
+  --ck-bg-soft: #ffffff;
+  --ck-surface: rgba(255, 255, 255, 0.92);
+  --ck-surface-2: rgba(248, 250, 252, 0.9);
+  --ck-card: #ffffff;
+  --ck-text: #0f172a;
+  --ck-text-soft: #64748b;
+  --ck-line: rgba(15, 23, 42, 0.09);
+  --ck-shadow: 0 20px 46px rgba(15, 23, 42, 0.08);
+  --ck-accent: #2563eb;
+  --ck-accent-soft: rgba(37, 99, 235, 0.1);
+  --ck-good-bg: #eafbf1;
+  --ck-good-ink: #166534;
+  --ck-bad-bg: #fff1f1;
+  --ck-bad-ink: #b91c1c;
+  --ck-warn-bg: #fff8e8;
+  --ck-warn-ink: #92400e;
+  --ck-muted-bg: #eef2f7;
+  --ck-muted-ink: #475569;
+  --ck-neutral-bg: #eaf1ff;
+  --ck-neutral-ink: #1d4ed8;
+
+  --cv-panel: #f8fafc;
+  --cv-card: rgba(255, 255, 255, 0.95);
+  --cv-border: rgba(15, 23, 42, 0.1);
+  --cv-text: #0f172a;
+  --cv-text-muted: #64748b;
+  --cv-badge-bg: #e2e8f0;
+  --cv-badge-text: #0f172a;
+  --cv-modal-panel: #ffffff;
+  --cv-modal-header: #f8fafc;
+  --cv-media-bg: #e2e8f0;
+  --cv-thumb-bg: #ffffff;
+
+  background:
+    radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.08), transparent 38%),
+    radial-gradient(circle at 86% 12%, rgba(14, 165, 233, 0.08), transparent 42%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
+  background: color-mix(in oklab, var(--ck-bg) 72%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--ck-line) 75%, transparent);
+}
+
+.toolbar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.leftCluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.centerCluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.rightCluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brandDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--ck-accent);
+  box-shadow: 0 0 0 4px var(--ck-accent-soft);
+}
+
+.backBtn {
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 80%, transparent);
+  color: var(--ck-text-soft);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.backBtn:hover {
+  color: var(--ck-text);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ck-line);
+  background: var(--ck-surface-2);
+  box-shadow: var(--ck-shadow);
+  cursor: pointer;
+  color: var(--ck-text-soft);
+  border-radius: 12px;
+}
+
+.toggle:hover {
+  background: var(--ck-accent-soft);
+  color: var(--ck-text);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--ck-accent) 60%, white);
+  outline-offset: 2px;
+}
+
+.toggleIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.userBox {
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 80%, transparent);
+  display: grid;
+}
+
+.userMain {
+  color: var(--ck-text);
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.userSub {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.iconBtn {
+  border: 1px solid color-mix(in oklab, #ef4444 35%, var(--ck-line));
+  background: color-mix(in oklab, #ef4444 10%, var(--ck-surface));
+  color: var(--ck-text);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  background: color-mix(in oklab, #ef4444 18%, var(--ck-surface));
+}
+
+.iconBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.iconBtn:focus-visible {
+  outline: 2px solid color-mix(in oklab, #ef4444 55%, white);
+  outline-offset: 2px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in oklab, var(--ck-text-soft) 45%, transparent);
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    padding: 10px 12px;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .leftCluster,
+  .centerCluster,
+  .rightCluster {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .brand {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .toggle {
+    flex: 0 0 auto;
+  }
+
+  .userBox {
+    flex: 1 1 100%;
+  }
+
+  .centerCluster {
+    justify-content: center;
+  }
+
+  .iconBtn {
+    flex: 0 0 auto;
+  }
+}

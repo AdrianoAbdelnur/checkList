@@ -55,7 +55,7 @@ export async function getSessionData(token?: string): Promise<SessionData | null
       email: user.email,
       firstName: user.firstName || '',
       lastName: user.lastName || '',
-      role: user.role || 'user',
+      role: user.role || 'inspector',
     }
   } catch (e) {
     console.error('Error getting session data:', e)
