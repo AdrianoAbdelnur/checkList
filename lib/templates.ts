@@ -34,6 +34,7 @@ export async function getTemplateVersion(templateId: string, version: number) {
 }
 
 export async function createTemplateVersion(params: {
+  id?: string;
   templateId: string;
   title: string;
   sections: unknown;
@@ -47,6 +48,7 @@ export async function createTemplateVersion(params: {
   const nextVersion = (last?.version ?? 0) + 1;
 
   return ChecklistTemplate.create({
+    id: params.id || params.templateId,
     templateId: params.templateId,
     version: nextVersion,
     title: params.title,

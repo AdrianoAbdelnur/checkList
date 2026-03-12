@@ -250,6 +250,8 @@ function renderValue(field: AnyObj, v: AnyObj | undefined) {
     case "date":
       return <span>{v.value ?? "—"}</span>;
 
+    case "time":
+      return <span>{v.value ?? "—"}</span>;
     case "select": {
       const opt = field?.options?.find((o: any) => o.value === v.value);
       return <Badge text={opt?.label ?? String(v.value ?? "—")} />;
@@ -416,3 +418,4 @@ export default function ChecklistViewer({
     </div>
   );
 }
+

@@ -1,0 +1,92 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px;
+  color: var(--ck-text);
+}
+
+.loading {
+  max-width: 960px;
+  margin: 16px auto;
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--ck-surface);
+  color: var(--ck-text-soft);
+}
+
+.hero {
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(155deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  line-height: 1;
+}
+
+.hero p {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+}
+
+.grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--ck-surface) 82%, var(--ck-surface-2));
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  box-shadow: var(--ck-shadow);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--ck-text-soft);
+}
+
+.cta {
+  width: fit-content;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--ck-accent) 35%, var(--ck-line));
+  background: color-mix(in oklab, var(--ck-accent) 12%, var(--ck-surface));
+  color: var(--ck-text);
+  font-weight: 800;
+  text-decoration: none;
+  padding: 10px 12px;
+}
+
+.cta:hover {
+  background: color-mix(in oklab, var(--ck-accent) 18%, var(--ck-surface));
+}
+
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -40,7 +40,7 @@ const roleCards: RoleCard[] = [
     role: 'reviewer',
     title: 'Panel de Revisor',
     description: 'Revisión de checklists, validación y decisiones.',
-    href: '/templates/editor',
+    href: '/templates/edition',
     tone: 'violet',
   },
 ]
