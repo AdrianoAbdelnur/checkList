@@ -38,6 +38,8 @@ export async function createTemplateVersion(params: {
   templateId: string;
   title: string;
   sections: unknown;
+  metrics?: unknown;
+  rules?: unknown;
   isActive?: boolean;
 }) {
   await connectToDatabase();
@@ -53,6 +55,8 @@ export async function createTemplateVersion(params: {
     version: nextVersion,
     title: params.title,
     sections: params.sections,
+    metrics: Array.isArray(params.metrics) ? params.metrics : [],
+    rules: Array.isArray(params.rules) ? params.rules : [],
     isActive: params.isActive ?? true,
   });
 }

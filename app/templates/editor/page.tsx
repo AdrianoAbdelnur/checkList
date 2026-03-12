@@ -56,6 +56,8 @@ type TemplateListItem = {
   title: string;
   isActive?: boolean;
   sections?: TemplateSection[];
+  metrics?: AnyObj[];
+  rules?: AnyObj[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -67,6 +69,8 @@ type EditorTemplate = {
   title: string;
   isActive: boolean;
   sections: TemplateSection[];
+  metrics: AnyObj[];
+  rules: AnyObj[];
   [key: string]: unknown;
 };
 
@@ -136,6 +140,8 @@ function createEmptyTemplate(): EditorTemplate {
     title: "",
     isActive: true,
     sections: [createEmptySection()],
+    metrics: [],
+    rules: [],
   };
 }
 
@@ -319,6 +325,8 @@ function normalizeImportedTemplate(raw: unknown): EditorTemplate {
     title,
     isActive: source.isActive !== undefined ? Boolean(source.isActive) : true,
     sections,
+    metrics: Array.isArray(source.metrics) ? deepClone(source.metrics) : [],
+    rules: Array.isArray(source.rules) ? deepClone(source.rules) : [],
   };
 }
 
@@ -384,6 +392,8 @@ export default function TemplateEditorPage() {
         Array.isArray(item.sections) && item.sections.length
           ? deepClone(item.sections)
           : [createEmptySection()],
+      metrics: Array.isArray(item.metrics) ? deepClone(item.metrics) : [],
+      rules: Array.isArray(item.rules) ? deepClone(item.rules) : [],
     });
     setMode("edit");
     setSelectedTemplateId(templateId);
@@ -600,8 +610,10 @@ export default function TemplateEditorPage() {
       templateId: resolvedTemplateId,
       title: imported.title.trim(),
       isActive: imported.isActive,
-        sections: buildGeneratedSections(imported.sections, "create"),
-      };
+      sections: buildGeneratedSections(imported.sections, "create"),
+      metrics: Array.isArray(imported.metrics) ? imported.metrics : [],
+      rules: Array.isArray(imported.rules) ? imported.rules : [],
+    };
 
       const res = await fetch(`/api/templates/${encodeURIComponent(resolvedTemplateId)}/versions`, {
         method: "POST",
@@ -688,6 +700,8 @@ export default function TemplateEditorPage() {
       title: editor.title.trim(),
       isActive: editor.isActive,
       sections: buildGeneratedSections(editor.sections, mode),
+      metrics: Array.isArray(editor.metrics) ? editor.metrics : [],
+      rules: Array.isArray(editor.rules) ? editor.rules : [],
     };
 
     setSaving(true);
