@@ -22,7 +22,7 @@ const VisibilityRuleSchema = new Schema(
 const FieldSchema = new Schema(
   {
     id: { type: String, required: true },
-    kind: { type: String, required: true }, // triStatus|yesNo|text|number|time|date|select|radioGroup|multiSelect|note|signature
+    kind: { type: String, required: true }, 
     label: { type: String, required: true },
     required: { type: Boolean, default: false },
     description: { type: String, required: false },

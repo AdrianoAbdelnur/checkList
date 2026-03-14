@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
+import { hasAnyRole } from "@/lib/roles";
 import styles from "./page.module.css";
 
 type SessionUser = {
@@ -55,7 +56,7 @@ export default function TemplatesEditionPage() {
           router.push("/login");
           return;
         }
-        if (!["admin", "reviewer"].includes(meJson.user.role)) {
+        if (!hasAnyRole(meJson.user as any, ["admin", "reviewer"])) {
           router.push("/dashboard");
           return;
         }
@@ -105,3 +106,5 @@ export default function TemplatesEditionPage() {
     </ThemeShell>
   );
 }
+
+

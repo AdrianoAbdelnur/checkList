@@ -2,6 +2,7 @@ import ChecklistViewer from "./viewer";
 import { cookies } from "next/headers";
 import { getSessionData } from "@/lib/auth";
 import { getChecklistWithTemplateById } from "@/lib/checklists";
+import { hasPermission } from "@/lib/roles";
 import {
   formatChecklistDate,
   getChecklistDecision,
@@ -38,6 +39,7 @@ export default async function ChecklistDetailPage({
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;
   const session = await getSessionData(token);
+  if (!session) throw new Error("No autorizado");
 
   const { id } = await params;
   const result = await getChecklistWithTemplateById(id);
@@ -47,6 +49,9 @@ export default async function ChecklistDetailPage({
 
   const checklist = toPlain(result.checklist) as AnyObj;
   const template = toPlain(result.template) as AnyObj;
+  const canViewAll = hasPermission(session as any, "checklist.view_all");
+  const isOwner = String(checklist?.inspectorId?._id ?? checklist?.inspectorId ?? "") === session.userId;
+  if (!canViewAll && !isOwner) throw new Error("No autorizado");
 
   const inspector = getChecklistInspectorLabel(checklist);
   const inspectorRole = getChecklistInspectorRole(checklist);
@@ -104,3 +109,4 @@ export default async function ChecklistDetailPage({
     </ThemeShellServer>
   );
 }
+

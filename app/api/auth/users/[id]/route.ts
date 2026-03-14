@@ -3,9 +3,14 @@ import crypto from "crypto";
 import { connectToDatabase } from "../../../../../lib/mongoose";
 import User from "../../../../../models/User";
 import { requireAdminSession } from "@/lib/server/auth-next";
-import { isAppRole } from "@/lib/roles";
+import { getPrimaryRole, isAppRole, normalizeRoles } from "@/lib/roles";
 
 type Ctx = { params: Promise<{ id: string }> };
+
+function normalizeInspectorNumber(input: unknown): string | undefined {
+  const value = String(input ?? "").trim();
+  return value ? value : undefined;
+}
 
 export async function GET(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
@@ -32,12 +37,12 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   if (!auth.ok) {
     return NextResponse.json(
       { error: auth.status === 403 ? "Solo administradores pueden editar usuarios" : auth.error },
-      { status: auth.status }
+      { status: auth.status },
     );
   }
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, telephone, userId, role, email, password } = body;
+  const { firstName, lastName, telephone, userId, role, roles, email, password, inspectorNumber } = body;
   const { id: routeId } = await ctx.params;
   const targetId = userId || routeId;
 
@@ -45,25 +50,35 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "userId es requerido" }, { status: 400 });
   }
 
-  if (role && !isAppRole(String(role))) {
-    return NextResponse.json({ error: "Rol inválido" }, { status: 400 });
+  if (role !== undefined && !isAppRole(String(role))) {
+    return NextResponse.json({ error: "Rol invalido" }, { status: 400 });
+  }
+
+  if (roles !== undefined && !Array.isArray(roles)) {
+    return NextResponse.json({ error: "roles debe ser array" }, { status: 400 });
+  }
+
+  if (Array.isArray(roles) && roles.some((r) => !isAppRole(String(r)))) {
+    return NextResponse.json({ error: "roles contiene valores invalidos" }, { status: 400 });
+  }
+
+  const normalizedInspectorNumber = normalizeInspectorNumber(inspectorNumber);
+  if (inspectorNumber !== undefined && normalizedInspectorNumber && !/^\d+$/.test(normalizedInspectorNumber)) {
+    return NextResponse.json({ error: "inspectorNumber debe contener solo números" }, { status: 400 });
   }
 
   const update: any = {};
   if (firstName !== undefined) update.firstName = firstName;
   if (lastName !== undefined) update.lastName = lastName;
   if (telephone !== undefined) update.telephone = telephone;
-  if (role !== undefined) update.role = role;
+  if (inspectorNumber !== undefined) update.inspectorNumber = normalizedInspectorNumber ?? undefined;
   if (email !== undefined) update.email = String(email).trim().toLowerCase();
 
   if (email !== undefined && !update.email) {
-    return NextResponse.json({ error: "Email inválido" }, { status: 400 });
+    return NextResponse.json({ error: "Email invalido" }, { status: 400 });
   }
 
   const hasPasswordUpdate = password !== undefined && String(password).trim().length > 0;
-  if (Object.keys(update).length === 0 && !hasPasswordUpdate) {
-    return NextResponse.json({ error: "Nada para actualizar" }, { status: 400 });
-  }
 
   await connectToDatabase();
 
@@ -80,6 +95,40 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       }
     }
 
+    if (inspectorNumber !== undefined && normalizedInspectorNumber) {
+      const existingInspectorNumber = await User.findOne({
+        inspectorNumber: normalizedInspectorNumber,
+        _id: { $ne: targetId },
+        isDelete: { $ne: true },
+      }).lean();
+      if (existingInspectorNumber) {
+        return NextResponse.json({ error: "Número de inspector ya registrado" }, { status: 409 });
+      }
+    }
+
+    const current = await User.findById(targetId).lean();
+    if (!current) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    const nextRoles =
+      roles !== undefined || role !== undefined
+        ? normalizeRoles({
+            role: role ?? (current as any).role,
+            roles: Array.isArray(roles) ? roles : (current as any).roles,
+          })
+        : normalizeRoles({ role: (current as any).role, roles: (current as any).roles });
+    const primaryRole = getPrimaryRole({
+      role: role ?? (current as any).role,
+      roles: nextRoles,
+    });
+    const persistedRoles = nextRoles.length > 0 ? nextRoles : [primaryRole];
+
+    if (roles !== undefined || role !== undefined) {
+      update.roles = persistedRoles;
+      update.role = primaryRole;
+    }
+
     if (hasPasswordUpdate) {
       const salt = crypto.randomBytes(16).toString("hex");
       const derived = crypto.scryptSync(String(password), salt, 64).toString("hex");
@@ -87,8 +136,12 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       update.password = derived;
     }
 
+    if (Object.keys(update).length === 0) {
+      return NextResponse.json({ error: "Nada para actualizar" }, { status: 400 });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(targetId, update, { new: true }).select(
-      "-password -salt"
+      "-password -salt",
     );
 
     if (!updatedUser) {
@@ -111,7 +164,7 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
   await connectToDatabase();
   try {
     const deleted = await User.findByIdAndUpdate(targetId, { isDelete: true }, { new: true }).select(
-      "-password -salt"
+      "-password -salt",
     );
     if (!deleted) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     return NextResponse.json({ ok: true, user: deleted });

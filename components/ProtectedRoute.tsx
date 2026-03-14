@@ -22,12 +22,14 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
         }
         const data = await res.json()
         const userRole = data.user?.role
-        
-        if (!userRole || !allowedRoles.includes(userRole)) {
+        const userRoles = Array.isArray(data.user?.roles) ? data.user.roles : []
+        const allRoles = [...new Set([...(userRole ? [userRole] : []), ...userRoles])]
+
+        if (!allRoles.length || !allowedRoles.some((r) => allRoles.includes(r))) {
           router.push('/dashboard')
           return
         }
-        
+
         setIsAllowed(true)
       } catch (error) {
         router.push('/login')

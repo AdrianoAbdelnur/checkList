@@ -1,8 +1,9 @@
-import { connectToDatabase } from "@/lib/db";
+﻿import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import ChecklistTemplate from "@/models/ChecklistTemplate";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listChecklistsForInspector } from "@/lib/checklists";
+import { hasPermission } from "@/lib/roles";
 
 export async function GET(req: Request) {
   await connectToDatabase();
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
 
   const items = await listChecklistsForInspector({
     inspectorId: auth.user._id,
-    includeAll: auth.user.role === "admin",
+    includeAll: hasPermission(auth.user as any, "checklist.view_all"),
     templateId,
     status,
     plate,
@@ -37,9 +38,29 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
+  const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
+  const isInspector = hasPermission(auth.user as any, "checklist.create") && !canViewAll;
+  const assignedTemplateIds = Array.isArray((auth.user as any)?.assignedTemplateIds)
+    ? (auth.user as any).assignedTemplateIds.map((x: unknown) => String(x || "").trim()).filter(Boolean)
+    : [];
+
   const templateId = String(body?.templateId ?? "");
   if (!templateId) {
     return Response.json({ ok: false, message: "templateId requerido" }, { status: 400 });
+  }
+
+  if (isInspector && assignedTemplateIds.length === 0) {
+    return Response.json(
+      { ok: false, message: "No tenés checklists asignados" },
+      { status: 403 },
+    );
+  }
+
+  if (isInspector && !assignedTemplateIds.includes(templateId)) {
+    return Response.json(
+      { ok: false, message: "Template no asignado al inspector" },
+      { status: 403 },
+    );
   }
 
   let templateVersion = body?.templateVersion ? Number(body.templateVersion) : null;
@@ -81,3 +102,6 @@ export async function POST(req: Request) {
 
   return Response.json({ ok: true, item: created }, { status: 201 });
 }
+
+
+

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
-import { ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
+import { hasAnyRole, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
 import styles from "./page.module.css";
 
 type SessionUser = {
@@ -357,7 +357,7 @@ export default function TemplateEditorPage() {
   const isFileMode = editionMode === "file";
   const isJsonMode = editionMode === "json";
 
-  const canEditTemplates = me?.role === "admin" || me?.role === "reviewer";
+  const canEditTemplates = hasAnyRole(me as any, ["admin", "reviewer"]);
 
   const loadLatestTemplates = React.useCallback(async () => {
     const res = await fetch("/api/templates", { credentials: "include" });
@@ -413,7 +413,7 @@ export default function TemplateEditorPage() {
           router.push("/login");
           return;
         }
-        if (!["admin", "reviewer"].includes(meJson.user.role)) {
+        if (!hasAnyRole(meJson.user as any, ["admin", "reviewer"])) {
           router.push("/dashboard");
           return;
         }
@@ -1196,3 +1196,4 @@ export default function TemplateEditorPage() {
     </ThemeShell>
   );
 }
+

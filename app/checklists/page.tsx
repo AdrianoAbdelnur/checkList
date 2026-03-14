@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { getSessionData } from "@/lib/auth";
 import { listChecklistsForInspector } from "@/lib/checklists";
+import { hasPermission } from "@/lib/roles";
 import {
   formatChecklistDate,
   getChecklistDecision,
@@ -45,7 +46,7 @@ export default async function ChecklistsPage() {
 
   const items = (await listChecklistsForInspector({
     inspectorId: session.userId,
-    includeAll: session.role === "admin",
+    includeAll: hasPermission(session as any, "checklist.view_all"),
   })) as ChecklistItem[];
 
   const stats = {
@@ -182,3 +183,4 @@ export default async function ChecklistsPage() {
     </ThemeShellServer>
   );
 }
+
