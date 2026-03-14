@@ -2,6 +2,7 @@ import { connectToDatabase } from './mongoose'
 import User, { IUser } from '../models/User'
 import Session from '../models/Session'
 import crypto from 'crypto'
+import { getPrimaryRole, normalizeRoles } from './roles'
 
 export type SessionData = {
   userId: string
@@ -9,6 +10,7 @@ export type SessionData = {
   firstName: string
   lastName: string
   role: string
+  roles: string[]
 }
 
 export async function getUserById(userId: string): Promise<(Omit<IUser, 'password' | 'salt'> & { _id: any }) | null> {
@@ -50,12 +52,18 @@ export async function getSessionData(token?: string): Promise<SessionData | null
     const user = await getUserById(session.userId)
     if (!user) return null
 
+    const roles = normalizeRoles({
+      role: user.role || 'inspector',
+      roles: Array.isArray((user as any).roles) ? (user as any).roles : undefined,
+    })
+
     return {
       userId: session.userId,
       email: user.email,
       firstName: user.firstName || '',
       lastName: user.lastName || '',
-      role: user.role || 'inspector',
+      role: getPrimaryRole({ role: user.role || 'inspector', roles }),
+      roles,
     }
   } catch (e) {
     console.error('Error getting session data:', e)

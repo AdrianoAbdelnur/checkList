@@ -18,14 +18,34 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const { templateId } = await ctx.params;
   const body = await req.json();
 
+  const id = String(body?.id ?? templateId).trim();
   const title = String(body?.title ?? "");
   const sections = body?.sections;
+  const metrics = body?.metrics;
+  const rules = body?.rules;
   const isActive = body?.isActive !== undefined ? Boolean(body.isActive) : true;
 
   if (!title) return Response.json({ ok: false, message: "title requerido" }, { status: 400 });
-  if (!sections) return Response.json({ ok: false, message: "sections requerido" }, { status: 400 });
+  if (!Array.isArray(sections) || sections.length === 0) {
+    return Response.json({ ok: false, message: "sections debe ser array no vacio" }, { status: 400 });
+  }
 
-  const created = await createTemplateVersion({ templateId, title, sections, isActive });
+  if (metrics !== undefined && !Array.isArray(metrics)) {
+    return Response.json({ ok: false, message: "metrics debe ser array" }, { status: 400 });
+  }
+  if (rules !== undefined && !Array.isArray(rules)) {
+    return Response.json({ ok: false, message: "rules debe ser array" }, { status: 400 });
+  }
+
+  const created = await createTemplateVersion({
+    id,
+    templateId,
+    title,
+    sections,
+    metrics,
+    rules,
+    isActive,
+  });
 
   return Response.json({ ok: true, item: created }, { status: 201 });
 }

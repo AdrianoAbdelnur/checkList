@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getSessionData, type SessionData } from "@/lib/auth";
+import { hasAnyRole, hasRole } from "@/lib/roles";
 
 type AuthFail = {
   ok: false;
@@ -30,7 +31,7 @@ export async function requireAdminSession(req: NextRequest): Promise<AuthOk | Au
   const auth = await requireAuthSession(req);
   if (!auth.ok) return auth;
 
-  if (auth.session.role !== "admin") {
+  if (!hasRole(auth.session, "admin")) {
     return { ok: false, status: 403, error: "No autorizado" };
   }
 
@@ -44,7 +45,7 @@ export async function requireRolesSession(
   const auth = await requireAuthSession(req);
   if (!auth.ok) return auth;
 
-  if (!allowedRoles.includes(auth.session.role)) {
+  if (!hasAnyRole(auth.session, allowedRoles)) {
     return { ok: false, status: 403, error: "No autorizado" };
   }
 

@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   max-width: 1280px;
   margin: 0 auto;
   padding: 16px 18px 48px;
@@ -351,6 +351,9 @@
 .role_admin { background: color-mix(in oklab, #2563eb 14%, transparent); color: #93c5fd; }
 .role_inspector { background: color-mix(in oklab, #16a34a 14%, transparent); color: #86efac; }
 .role_reviewer { background: color-mix(in oklab, #7c3aed 14%, transparent); color: #c4b5fd; }
+.role_supervisor { background: color-mix(in oklab, #f59e0b 16%, transparent); color: #fcd34d; }
+.role_client { background: color-mix(in oklab, #0891b2 14%, transparent); color: #67e8f9; }
+.role_auditor { background: color-mix(in oklab, #64748b 18%, transparent); color: #cbd5e1; }
 
 .rowActions {
   display: flex;
@@ -417,6 +420,34 @@
   gap: 10px;
 }
 
+
+.rolesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.roleOption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 30px;
+  white-space: nowrap;
+}
+
+.roleOption input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.field .roleOptionLabel {
+  color: var(--ck-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
 @media (max-width: 720px) {
   .page {
     padding: 12px 12px 34px;
@@ -438,6 +469,10 @@
   }
 
   .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rolesGrid {
     grid-template-columns: 1fr;
   }
 
@@ -480,3 +515,7 @@
     width: 100%;
   }
 }
+
+
+
+

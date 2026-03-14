@@ -1,0 +1,245 @@
+﻿.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 18px 48px;
+  color: var(--ck-text);
+}
+
+.loading {
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--ck-surface);
+  color: var(--ck-text-soft);
+}
+
+.hero {
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  max-width: 62ch;
+}
+
+.heroActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.primaryBtn {
+  background: color-mix(in oklab, var(--ck-accent) 14%, var(--ck-surface));
+  color: var(--ck-text);
+  border-color: color-mix(in oklab, var(--ck-accent) 30%, var(--ck-line));
+}
+
+.secondaryBtn {
+  background: var(--ck-surface);
+  color: var(--ck-text);
+  border-color: var(--ck-line);
+}
+
+.messages {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.message {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ck-line);
+  font-weight: 700;
+}
+
+.error {
+  background: var(--ck-bad-bg);
+  color: var(--ck-bad-ink);
+}
+
+.success {
+  background: var(--ck-good-bg);
+  color: var(--ck-good-ink);
+}
+
+.matrixWrap {
+  margin-top: 12px;
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  overflow: auto;
+  background: var(--ck-surface);
+}
+
+.matrix {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.matrix th,
+.matrix td {
+  border-bottom: 1px solid var(--ck-line);
+  border-right: 1px solid var(--ck-line);
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.matrix th:last-child,
+.matrix td:last-child {
+  border-right: 0;
+}
+
+.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in oklab, var(--ck-surface-2) 70%, transparent);
+  text-align: left;
+}
+
+.inspectorHead {
+  display: grid;
+  gap: 8px;
+  min-width: 240px;
+}
+
+.inspectorHead input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 8px 10px;
+  outline: none;
+}
+
+.inspectorHead input:focus {
+  border-color: color-mix(in oklab, var(--ck-accent) 45%, var(--ck-line));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ck-accent) 16%, transparent);
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: color-mix(in oklab, var(--ck-surface) 86%, var(--ck-surface-2));
+  min-width: 260px;
+}
+
+.colHead {
+  display: grid;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.colHead strong {
+  font-size: 13px;
+}
+
+.colHead small {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+}
+
+.userCell {
+  display: grid;
+  gap: 3px;
+}
+
+.userCell strong {
+  font-size: 14px;
+}
+
+.userCell small {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+}
+
+.centerCell {
+  text-align: center;
+}
+
+.centerCell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--ck-text-soft);
+  padding: 16px;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: start;
+    padding: 14px;
+  }
+
+  .heroActions {
+    width: 100%;
+  }
+
+  .heroActions .primaryBtn,
+  .heroActions .secondaryBtn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .stickyCol {
+    min-width: 220px;
+  }
+}
+
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.changedRow td {
+  background: color-mix(in oklab, var(--ck-accent) 6%, transparent);
+}
+

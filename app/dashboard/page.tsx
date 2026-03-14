@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ThemeShell from '@/components/checklists/ThemeShell'
-import { roleLabelEs } from '@/lib/roles'
+import { hasPermission, roleLabelEs } from '@/lib/roles'
 import styles from './page.module.css'
 
 type User = {
@@ -11,6 +11,7 @@ type User = {
   firstName: string
   lastName: string
   role: string
+  roles?: string[]
 }
 
 type RoleCard = {
@@ -18,7 +19,7 @@ type RoleCard = {
   title: string
   description: string
   href: string
-  tone: 'blue' | 'green' | 'violet'
+  tone: 'blue' | 'green' | 'violet' | 'amber'
 }
 
 const roleCards: RoleCard[] = [
@@ -40,7 +41,28 @@ const roleCards: RoleCard[] = [
     role: 'reviewer',
     title: 'Panel de Revisor',
     description: 'Revisión de checklists, validación y decisiones.',
-    href: '/templates/editor',
+    href: '/templates/edition',
+    tone: 'violet',
+  },
+  {
+    role: 'supervisor',
+    title: 'Supervisor Panel',
+    description: 'Operational oversight, prioritization, and reassignment.',
+    href: '/checklists',
+    tone: 'amber',
+  },
+  {
+    role: 'client',
+    title: 'Client Portal',
+    description: 'Results, observations, and report visibility.',
+    href: '/checklists',
+    tone: 'blue',
+  },
+  {
+    role: 'auditor',
+    title: 'Audit Console',
+    description: 'Traceability, compliance, and historical analysis.',
+    href: '/checklists',
     tone: 'violet',
   },
 ]
@@ -82,6 +104,7 @@ export default function DashboardPage() {
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() || user?.email || 'Usuario'
   const activeRoleCard = roleCards.find((r) => r.role === user?.role)
+  const canManageUsers = hasPermission(user as any, 'user.manage')
 
   return (
     <ThemeShell user={user}>
@@ -89,7 +112,7 @@ export default function DashboardPage() {
         <section className={styles.hero}>
           <div className={styles.heroMain}>
             <p className={styles.kicker}>Centro de control</p>
-            <h1>Dashboard</h1>
+            <h1>Panel principal</h1>
             <p className={styles.subtitle}>
               Acceso rápido a checklists y módulos según tu perfil.
             </p>
@@ -138,6 +161,11 @@ export default function DashboardPage() {
               <a href="/checklists" className={styles.quickBtnGhost}>
                 Ir por enlace directo
               </a>
+              {canManageUsers ? (
+                <a href="/admin/inspectors" className={styles.quickBtnGhost}>
+                  Administración de inspectores
+                </a>
+              ) : null}
             </div>
           </article>
         </section>

@@ -235,6 +235,94 @@
   border-top: 1px solid var(--ck-line);
 }
 
+.importBox {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ck-line);
+  display: grid;
+  gap: 10px;
+}
+
+.importBoxNoDivider {
+  display: grid;
+  gap: 10px;
+}
+
+.importOnlyWrap {
+  margin-top: 12px;
+}
+
+.importOnlyCard {
+  border: 1px solid var(--ck-line);
+  border-radius: 18px;
+  background: var(--te-panel-bg);
+  box-shadow: var(--ck-shadow);
+  padding: 16px;
+  max-width: 860px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, black 35%, transparent);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modalCard {
+  width: min(460px, 100%);
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  background: var(--ck-surface);
+  box-shadow: var(--ck-shadow);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.modalCard h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.modalCard p {
+  margin: 0;
+  color: var(--ck-text-soft);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.importActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.importHint {
+  margin: 0;
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.importHint code {
+  border-radius: 8px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 82%, var(--ck-surface-2));
+  padding: 1px 6px;
+}
+
+.importTextarea {
+  min-height: 180px;
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  line-height: 1.45;
+}
+
 .versionBtn {
   display: flex;
   justify-content: space-between;

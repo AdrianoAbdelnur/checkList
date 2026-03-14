@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
-import { ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
+import { hasAnyRole, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
 import styles from "./page.module.css";
 
 type SessionUser = {
@@ -13,7 +13,13 @@ type SessionUser = {
   role: string;
 };
 
-type FieldOption = { value: string; label: string };
+type FieldOption = {
+  value: string;
+  label: string;
+  tone?: string;
+  comments?: string[];
+  [key: string]: unknown;
+};
 type TemplateField = {
   id: string;
   kind: string;
@@ -21,42 +27,66 @@ type TemplateField = {
   required?: boolean;
   placeholder?: string;
   description?: string;
+  multiline?: boolean;
+  min?: number;
+  max?: number;
+  maxSelected?: number;
+  visibleWhen?: Array<{ fieldId: string; equals?: unknown; notEquals?: unknown }>;
+  showCamera?: boolean;
   requireObsWhenBad?: boolean;
+  requireObsWhenValues?: string[];
+  badValues?: string[];
   options?: FieldOption[];
+  [key: string]: unknown;
 };
 type TemplateSection = {
   id: string;
   title: string;
   description?: string;
+  isMain?: boolean;
   fields: TemplateField[];
+  [key: string]: unknown;
 };
 
 type TemplateListItem = {
   _id?: string;
+  id?: string;
   templateId: string;
   version: number;
   title: string;
   isActive?: boolean;
   sections?: TemplateSection[];
+  metrics?: AnyObj[];
+  rules?: AnyObj[];
   createdAt?: string;
   updatedAt?: string;
 };
 
 type EditorTemplate = {
+  id?: string;
   templateId: string;
+  version?: number;
   title: string;
   isActive: boolean;
   sections: TemplateSection[];
+  metrics: AnyObj[];
+  rules: AnyObj[];
+  [key: string]: unknown;
 };
+
+type AnyObj = Record<string, any>;
+type EditionMode = "visual" | "file" | "json";
 
 const FIELD_KINDS = [
   "text",
   "number",
   "date",
+  "time",
   "yesNo",
   "triStatus",
   "note",
   "select",
+  "radioGroup",
   "multiSelect",
   "signature",
 ] as const;
@@ -66,10 +96,12 @@ const FIELD_KIND_LABELS_ES: Record<(typeof FIELD_KINDS)[number], string> = {
   text: "Texto",
   number: "Numero",
   date: "Fecha",
+  time: "Hora",
   yesNo: "Si / No",
   triStatus: "Estado (3 opciones)",
   note: "Nota",
   select: "Seleccion simple",
+  radioGroup: "Grupo de radio",
   multiSelect: "Seleccion multiple",
   signature: "Firma",
 };
@@ -86,7 +118,7 @@ function createEmptyField(kind = DEFAULT_FIELD_KIND): TemplateField {
     required: false,
     placeholder: "",
     description: "",
-    ...(kind === "select" || kind === "multiSelect"
+    ...(kind === "select" || kind === "multiSelect" || kind === "radioGroup"
       ? { options: [{ value: "opcion_1", label: "Opcion 1" }] }
       : {}),
   };
@@ -103,10 +135,13 @@ function createEmptySection(): TemplateSection {
 
 function createEmptyTemplate(): EditorTemplate {
   return {
+    id: "",
     templateId: "",
     title: "",
     isActive: true,
     sections: [createEmptySection()],
+    metrics: [],
+    rules: [],
   };
 }
 
@@ -155,10 +190,7 @@ function buildGeneratedSections(sections: TemplateSection[], mode: "create" | "e
 
   return sections.map((section, sectionIndex) => {
     const sectionBase = slugifyTemplateId(section.title) || `seccion_${sectionIndex + 1}`;
-    let sectionId =
-      mode === "edit" && String(section.id || "").trim()
-        ? String(section.id)
-        : `section_${sectionBase}`;
+    let sectionId = String(section.id || "").trim() || `section_${sectionBase}`;
 
     let sectionSuffix = 2;
     while (usedSectionIds.has(sectionId)) {
@@ -169,10 +201,7 @@ function buildGeneratedSections(sections: TemplateSection[], mode: "create" | "e
     const usedFieldIds = new Set<string>();
     const fields = section.fields.map((field, fieldIndex) => {
       const fieldBase = slugifyTemplateId(field.label) || `campo_${fieldIndex + 1}`;
-      let fieldId =
-        mode === "edit" && String(field.id || "").trim()
-          ? String(field.id)
-          : fieldBase;
+      let fieldId = String(field.id || "").trim() || fieldBase;
 
       let fieldSuffix = 2;
       while (usedFieldIds.has(fieldId)) {
@@ -187,12 +216,129 @@ function buildGeneratedSections(sections: TemplateSection[], mode: "create" | "e
   });
 }
 
+function asRecord(value: unknown): AnyObj {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as AnyObj;
+  }
+  throw new Error("El JSON debe ser un objeto");
+}
+
+function normalizeImportedField(raw: unknown, sectionIndex: number, fieldIndex: number): TemplateField {
+  const obj = asRecord(raw);
+  const kind = String(obj.kind || DEFAULT_FIELD_KIND);
+  const normalized: TemplateField = {
+    ...obj,
+    id: String(obj.id || makeId(`field_${sectionIndex + 1}_${fieldIndex + 1}`)),
+    kind,
+    label: String(obj.label || `Campo ${fieldIndex + 1}`),
+    required: Boolean(obj.required),
+    placeholder: String(obj.placeholder || ""),
+    description: String(obj.description || ""),
+  };
+
+  if (kind === "triStatus") {
+    normalized.requireObsWhenBad = Boolean(obj.requireObsWhenBad);
+  }
+
+  if (kind === "select" || kind === "multiSelect" || kind === "radioGroup") {
+    const options = Array.isArray(obj.options) ? obj.options : [];
+    normalized.options = options.length
+      ? options.map((option, idx) => {
+        const opt = asRecord(option);
+          const value = String(opt.value || `opcion_${idx + 1}`);
+          return {
+            ...opt,
+            value,
+            label: String(opt.label || value),
+            comments: Array.isArray(opt.comments) ? opt.comments.map((x) => String(x)) : undefined,
+            tone: opt.tone !== undefined ? String(opt.tone) : undefined,
+          };
+        })
+      : [{ value: "opcion_1", label: "Opcion 1" }];
+  }
+
+  if (Array.isArray(obj.requireObsWhenValues)) {
+    normalized.requireObsWhenValues = obj.requireObsWhenValues.map((x: unknown) => String(x));
+  }
+
+  if (Array.isArray(obj.badValues)) {
+    normalized.badValues = obj.badValues.map((x: unknown) => String(x));
+  }
+
+  if (Array.isArray(obj.visibleWhen)) {
+    normalized.visibleWhen = obj.visibleWhen
+      .map((rule: unknown) => {
+        const r = asRecord(rule);
+        if (!r.fieldId) return null;
+        return {
+          fieldId: String(r.fieldId),
+          equals: r.equals,
+          notEquals: r.notEquals,
+        };
+      })
+      .filter(Boolean) as Array<{ fieldId: string; equals?: unknown; notEquals?: unknown }>;
+  }
+
+  if (obj.showCamera !== undefined) {
+    normalized.showCamera = Boolean(obj.showCamera);
+  }
+
+  return normalized;
+}
+
+function normalizeImportedTemplate(raw: unknown): EditorTemplate {
+  const root = asRecord(raw);
+  const source = root.item && typeof root.item === "object" ? asRecord(root.item) : root;
+
+  const title = String(source.title || "").trim();
+  const templateId = String(source.templateId || source.id || slugifyTemplateId(title)).trim();
+  const sectionsRaw = Array.isArray(source.sections) ? source.sections : [];
+
+  if (!title) throw new Error("El JSON debe incluir 'title'");
+  if (!templateId) throw new Error("El JSON debe incluir 'templateId' o 'id'");
+  if (!sectionsRaw.length) throw new Error("El JSON debe incluir al menos una seccion en 'sections'");
+
+  const sections: TemplateSection[] = sectionsRaw.map((sectionRaw, sectionIndex) => {
+    const sectionObj = asRecord(sectionRaw);
+    const fieldsRaw = Array.isArray(sectionObj.fields) ? sectionObj.fields : [];
+    if (!fieldsRaw.length) {
+      throw new Error(`La seccion ${sectionIndex + 1} debe incluir al menos un campo`);
+    }
+
+    return {
+      ...sectionObj,
+      id: String(sectionObj.id || makeId(`section_${sectionIndex + 1}`)),
+      title: String(sectionObj.title || `Seccion ${sectionIndex + 1}`),
+      description: String(sectionObj.description || ""),
+      isMain: sectionObj.isMain !== undefined ? Boolean(sectionObj.isMain) : undefined,
+      fields: fieldsRaw.map((fieldRaw, fieldIndex) =>
+        normalizeImportedField(fieldRaw, sectionIndex, fieldIndex)
+      ),
+    };
+  });
+
+  return {
+    ...source,
+    id: String(source.id || templateId),
+    templateId,
+    version: Number.isFinite(Number(source.version)) ? Number(source.version) : undefined,
+    title,
+    isActive: source.isActive !== undefined ? Boolean(source.isActive) : true,
+    sections,
+    metrics: Array.isArray(source.metrics) ? deepClone(source.metrics) : [],
+    rules: Array.isArray(source.rules) ? deepClone(source.rules) : [],
+  };
+}
+
 export default function TemplateEditorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const jsonFileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [me, setMe] = React.useState<SessionUser | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [importing, setImporting] = React.useState(false);
   const [templates, setTemplates] = React.useState<TemplateListItem[]>([]);
   const [versions, setVersions] = React.useState<TemplateListItem[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState("");
@@ -202,8 +348,16 @@ export default function TemplateEditorPage() {
   const [success, setSuccess] = React.useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = React.useState(false);
   const [editor, setEditor] = React.useState<EditorTemplate>(createEmptyTemplate());
+  const [jsonTextToImport, setJsonTextToImport] = React.useState("");
+  const [importModalOpen, setImportModalOpen] = React.useState(false);
 
-  const canEditTemplates = me?.role === "admin" || me?.role === "reviewer";
+  const requestedMode = String(searchParams.get("mode") || "visual").toLowerCase();
+  const editionMode: EditionMode = requestedMode === "file" || requestedMode === "json" ? requestedMode : "visual";
+  const isVisualMode = editionMode === "visual";
+  const isFileMode = editionMode === "file";
+  const isJsonMode = editionMode === "json";
+
+  const canEditTemplates = hasAnyRole(me as any, ["admin", "reviewer"]);
 
   const loadLatestTemplates = React.useCallback(async () => {
     const res = await fetch("/api/templates", { credentials: "include" });
@@ -229,13 +383,17 @@ export default function TemplateEditorPage() {
     if (!item) throw new Error("Template invalido");
 
     setEditor({
+      id: String(item.id || item.templateId || templateId),
       templateId: item.templateId || templateId,
+      version: item.version,
       title: item.title || "",
       isActive: item.isActive ?? true,
       sections:
         Array.isArray(item.sections) && item.sections.length
           ? deepClone(item.sections)
           : [createEmptySection()],
+      metrics: Array.isArray(item.metrics) ? deepClone(item.metrics) : [],
+      rules: Array.isArray(item.rules) ? deepClone(item.rules) : [],
     });
     setMode("edit");
     setSelectedTemplateId(templateId);
@@ -255,7 +413,7 @@ export default function TemplateEditorPage() {
           router.push("/login");
           return;
         }
-        if (!["admin", "reviewer"].includes(meJson.user.role)) {
+        if (!hasAnyRole(meJson.user as any, ["admin", "reviewer"])) {
           router.push("/dashboard");
           return;
         }
@@ -280,7 +438,12 @@ export default function TemplateEditorPage() {
       const next = { ...prev, [key]: value };
 
       if (key === "title" && mode === "create") {
-        next.templateId = slugifyTemplateId(String(value));
+        if (!String(next.templateId || "").trim()) {
+          next.templateId = slugifyTemplateId(String(value));
+        }
+        if (!String(next.id || "").trim()) {
+          next.id = next.templateId;
+        }
       }
 
       return next;
@@ -301,8 +464,13 @@ export default function TemplateEditorPage() {
       const section = { ...sections[sectionIndex] };
       const fields = [...section.fields];
       const current = { ...fields[fieldIndex], ...patch };
-      if (current.kind !== "select" && current.kind !== "multiSelect") delete current.options;
-      if ((current.kind === "select" || current.kind === "multiSelect") && !current.options) {
+      if (current.kind !== "select" && current.kind !== "multiSelect" && current.kind !== "radioGroup") {
+        delete current.options;
+      }
+      if (
+        (current.kind === "select" || current.kind === "multiSelect" || current.kind === "radioGroup") &&
+        !current.options
+      ) {
         current.options = [{ value: "opcion_1", label: "Opcion 1" }];
       }
       fields[fieldIndex] = current;
@@ -430,6 +598,90 @@ export default function TemplateEditorPage() {
     setSuccess(null);
   }
 
+  async function createTemplateVersionFromImport(imported: EditorTemplate) {
+    setError(null);
+    setSuccess(null);
+    setImporting(true);
+
+    try {
+    const resolvedTemplateId = imported.templateId.trim();
+    const payloadToSend = {
+      id: imported.id || resolvedTemplateId,
+      templateId: resolvedTemplateId,
+      title: imported.title.trim(),
+      isActive: imported.isActive,
+      sections: buildGeneratedSections(imported.sections, "create"),
+      metrics: Array.isArray(imported.metrics) ? imported.metrics : [],
+      rules: Array.isArray(imported.rules) ? imported.rules : [],
+    };
+
+      const res = await fetch(`/api/templates/${encodeURIComponent(resolvedTemplateId)}/versions`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadToSend),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.message || data?.error || "No se pudo importar JSON");
+      }
+
+      setImportModalOpen(true);
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function applyImportedTemplate(imported: EditorTemplate) {
+    if (!isVisualMode) {
+      await createTemplateVersionFromImport(imported);
+      return;
+    }
+
+    setEditor(imported);
+    setSelectedTemplateId(imported.templateId);
+    setSelectedVersion(null);
+    setMode("create");
+    setIsEditorOpen(true);
+    setError(null);
+    setSuccess("JSON cargado en el editor. Revisa y guarda para crear una nueva version.");
+  }
+
+  async function handleJsonFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const rawText = await file.text();
+      const parsed = JSON.parse(rawText);
+      const imported = normalizeImportedTemplate(parsed);
+      await applyImportedTemplate(imported);
+    } catch (e: any) {
+      setError(e?.message || "No se pudo importar el archivo JSON");
+      setSuccess(null);
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  async function handleImportFromTextarea() {
+    setError(null);
+    setSuccess(null);
+
+    if (!jsonTextToImport.trim()) {
+      setError("Pega un JSON antes de importar");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(jsonTextToImport);
+      const imported = normalizeImportedTemplate(parsed);
+      await applyImportedTemplate(imported);
+    } catch (e: any) {
+      setError(e?.message || "JSON invalido");
+    }
+  }
+
   async function saveTemplate() {
     setError(null);
     setSuccess(null);
@@ -443,10 +695,13 @@ export default function TemplateEditorPage() {
     }
 
     const payloadToSend = {
+      id: editor.id || resolvedTemplateId,
       templateId: resolvedTemplateId,
       title: editor.title.trim(),
       isActive: editor.isActive,
       sections: buildGeneratedSections(editor.sections, mode),
+      metrics: Array.isArray(editor.metrics) ? editor.metrics : [],
+      rules: Array.isArray(editor.rules) ? editor.rules : [],
     };
 
     setSaving(true);
@@ -502,10 +757,14 @@ export default function TemplateEditorPage() {
       <main className={styles.page}>
         <section className={styles.hero}>
           <div>
-            <p className={styles.kicker}>Editor visual</p>
+            <p className={styles.kicker}>Templates · Edition</p>
             <h1>Templates de checklists</h1>
             <p className={styles.subtitle}>
-              Editor para crear o modificar formularios sin escribir JSON a mano.
+              {isVisualMode
+                ? "Editor visual para crear o modificar formularios."
+                : isFileMode
+                  ? "Importa un template desde un archivo JSON y luego ajustalo en el editor."
+                  : "Pega un JSON de template y cargalo para seguir editando."}
               Acceso para{" "}
               {ROLE_OPTIONS_ES.filter((r) => ["admin", "reviewer"].includes(r.value))
                 .map((r) => r.label)
@@ -514,12 +773,33 @@ export default function TemplateEditorPage() {
             </p>
           </div>
           <div className={styles.heroActions}>
-            <button type="button" className={styles.secondaryBtn} onClick={loadLatestTemplates} disabled={busy}>
-              {busy ? "Cargando..." : "Actualizar templates"}
-            </button>
-            <button type="button" className={styles.primaryBtn} onClick={startNewTemplate}>
-              Nuevo template
-            </button>
+            {isVisualMode ? (
+              <>
+                <button type="button" className={styles.secondaryBtn} onClick={loadLatestTemplates} disabled={busy}>
+                  {busy ? "Cargando..." : "Actualizar templates"}
+                </button>
+                <button type="button" className={styles.primaryBtn} onClick={startNewTemplate}>
+                  Nuevo template
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={() => router.push("/templates/edition")}
+                >
+                  Volver a metodos
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  onClick={() => router.push("/templates/editor?mode=visual")}
+                >
+                  Abrir editor visual
+                </button>
+              </>
+            )}
           </div>
         </section>
 
@@ -530,64 +810,65 @@ export default function TemplateEditorPage() {
           </section>
         )}
 
-        <section className={styles.layout}>
-          <aside className={styles.sidebar}>
-            <div className={styles.cardHeader}>
-              <h2>Templates</h2>
-              <span>{templates.length}</span>
-            </div>
-
-            <div className={styles.templateList}>
-              {templates.length === 0 ? (
-                <div className={styles.emptySmall}>No hay templates cargados.</div>
-              ) : (
-                templates.map((t) => {
-                  const active = selectedTemplateId === t.templateId;
-                  return (
-                    <button
-                      key={`${t.templateId}-${t.version}`}
-                      type="button"
-                      className={`${styles.templateItem} ${active ? styles.templateItemActive : ""}`}
-                      onClick={() => handleSelectTemplate(t.templateId)}
-                    >
-                      <div className={styles.templateItemTop}>
-                        <strong>{t.title || t.templateId}</strong>
-                        <span className={styles.versionPill}>v{t.version}</span>
-                      </div>
-                      <small>{t.templateId}</small>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-
-            <div className={styles.versionsBox}>
+        {isVisualMode ? (
+          <section className={styles.layout}>
+            <aside className={styles.sidebar}>
               <div className={styles.cardHeader}>
-                <h3>Versiones</h3>
-                <span>{versions.length}</span>
+                <h2>Templates</h2>
+                <span>{templates.length}</span>
               </div>
-              {selectedTemplateId ? (
-                <div className={styles.versionList}>
-                  {versions.map((v) => (
-                    <button
-                      key={`${v.templateId}-${v.version}`}
-                      type="button"
-                      className={`${styles.versionBtn} ${selectedVersion === v.version ? styles.versionBtnActive : ""}`}
-                      onClick={() => handleSelectVersion(v.version)}
-                    >
-                      <span>v{v.version}</span>
-                      <small>{v.isActive ? "Activa" : "Inactiva"}</small>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.emptySmall}>Selecciona un template para ver versiones.</div>
-              )}
-            </div>
-          </aside>
 
-          {isEditorOpen ? (
-            <section className={styles.editorPanel}>
+              <div className={styles.templateList}>
+                {templates.length === 0 ? (
+                  <div className={styles.emptySmall}>No hay templates cargados.</div>
+                ) : (
+                  templates.map((t) => {
+                    const active = selectedTemplateId === t.templateId;
+                    return (
+                      <button
+                        key={`${t.templateId}-${t.version}`}
+                        type="button"
+                        className={`${styles.templateItem} ${active ? styles.templateItemActive : ""}`}
+                        onClick={() => handleSelectTemplate(t.templateId)}
+                      >
+                        <div className={styles.templateItemTop}>
+                          <strong>{t.title || t.templateId}</strong>
+                          <span className={styles.versionPill}>v{t.version}</span>
+                        </div>
+                        <small>{t.templateId}</small>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className={styles.versionsBox}>
+                <div className={styles.cardHeader}>
+                  <h3>Versiones</h3>
+                  <span>{versions.length}</span>
+                </div>
+                {selectedTemplateId ? (
+                  <div className={styles.versionList}>
+                    {versions.map((v) => (
+                      <button
+                        key={`${v.templateId}-${v.version}`}
+                        type="button"
+                        className={`${styles.versionBtn} ${selectedVersion === v.version ? styles.versionBtnActive : ""}`}
+                        onClick={() => handleSelectVersion(v.version)}
+                      >
+                        <span>v{v.version}</span>
+                        <small>{v.isActive ? "Activa" : "Inactiva"}</small>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptySmall}>Selecciona un template para ver versiones.</div>
+                )}
+              </div>
+            </aside>
+
+            {isEditorOpen ? (
+              <section className={styles.editorPanel}>
               <div className={styles.cardHeader}>
                 <h2>{mode === "edit" ? "Editar template" : "Crear template / version"}</h2>
                 <div className={styles.editorActions}>
@@ -664,6 +945,14 @@ export default function TemplateEditorPage() {
                           value={section.description || ""}
                           onChange={(e) => updateSection(sectionIndex, { description: e.target.value })}
                         />
+                      </label>
+                      <label className={`${styles.field} ${styles.inlineCheck}`}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(section.isMain)}
+                          onChange={(e) => updateSection(sectionIndex, { isMain: e.target.checked })}
+                        />
+                        <span>Seccion principal (isMain)</span>
                       </label>
                     </div>
 
@@ -770,7 +1059,7 @@ export default function TemplateEditorPage() {
                               </label>
                             ) : null}
 
-                            {(field.kind === "select" || field.kind === "multiSelect") ? (
+                            {(field.kind === "select" || field.kind === "multiSelect" || field.kind === "radioGroup") ? (
                               <label className={`${styles.field} ${styles.fieldSpan2}`}>
                                 <span>Opciones (una por linea: value|label)</span>
                                 <textarea
@@ -791,9 +1080,9 @@ export default function TemplateEditorPage() {
                   </article>
                 ))}
               </div>
-            </section>
-          ) : (
-            <section className={styles.emptyEditorPanel}>
+              </section>
+            ) : (
+              <section className={styles.emptyEditorPanel}>
               <div className={styles.emptyEditorCard}>
                 <p className={styles.kicker}>Editor visual</p>
                 <h2>Selecciona un template o crea uno nuevo</h2>
@@ -815,10 +1104,96 @@ export default function TemplateEditorPage() {
                   </p>
                 </div>
               </div>
-            </section>
-          )}
-        </section>
+              </section>
+            )}
+          </section>
+        ) : (
+          <section className={styles.importOnlyWrap}>
+            <article className={styles.importOnlyCard}>
+              {isFileMode ? (
+                <div className={styles.importBoxNoDivider}>
+                  <div className={styles.cardHeader}>
+                    <h3>Importar por archivo</h3>
+                  </div>
+                  <p className={styles.importHint}>
+                    Selecciona un archivo <code>.json</code>. Al importar, se abrira el editor visual con el contenido cargado.
+                  </p>
+                  <input
+                    ref={jsonFileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleJsonFileSelected}
+                    hidden
+                  />
+                  <div className={styles.importActions}>
+                    <button
+                      type="button"
+                      className={styles.primaryBtn}
+                      onClick={() => jsonFileInputRef.current?.click()}
+                      disabled={!canEditTemplates || importing}
+                    >
+                      {importing ? "Importando..." : "Subir archivo JSON"}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {isJsonMode ? (
+                <div className={styles.importBoxNoDivider}>
+                  <div className={styles.cardHeader}>
+                    <h3>Importar JSON pegado</h3>
+                  </div>
+                  <p className={styles.importHint}>
+                    Pega un JSON valido. Al importar, se abrira el editor visual con el contenido cargado.
+                  </p>
+                  <label className={styles.field}>
+                    <span>Pegar JSON</span>
+                    <textarea
+                      className={styles.importTextarea}
+                      rows={14}
+                      value={jsonTextToImport}
+                      onChange={(e) => setJsonTextToImport(e.target.value)}
+                      placeholder='{"templateId":"checklist_carga","title":"Checklist de carga","sections":[...]}'
+                    />
+                  </label>
+                  <div className={styles.importActions}>
+                    <button
+                      type="button"
+                      className={styles.primaryBtn}
+                      onClick={handleImportFromTextarea}
+                      disabled={!canEditTemplates || importing}
+                    >
+                      {importing ? "Importando..." : "Importar JSON pegado"}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          </section>
+        )}
+
+        {importModalOpen ? (
+          <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-label="Importacion completada">
+            <div className={styles.modalCard}>
+              <h3>Cargado correctamente</h3>
+              <p>El template se importo y se guardo como nueva version.</p>
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  onClick={() => {
+                    setImportModalOpen(false);
+                    router.push("/templates/edition");
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
     </ThemeShell>
   );
 }
+

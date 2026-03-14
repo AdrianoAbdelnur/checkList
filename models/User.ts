@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from 'mongoose'
+﻿import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IUser extends Document {
   firstName?: string
@@ -10,6 +10,9 @@ export interface IUser extends Document {
   createdAt: Date
   isDelete: boolean
   role: string
+  roles?: string[]
+  assignedTemplateIds?: string[]
+  inspectorNumber?: string
 }
 
 const UserSchema = new Schema<IUser>(
@@ -46,7 +49,24 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
+      enum: ['inspector', 'reviewer', 'supervisor', 'admin', 'client', 'auditor'],
       default: 'inspector',
+    },
+    roles: {
+      type: [String],
+      enum: ['inspector', 'reviewer', 'supervisor', 'admin', 'client', 'auditor'],
+      default: ['inspector'],
+    },
+    assignedTemplateIds: {
+      type: [String],
+      default: [],
+    },
+    inspectorNumber: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true,
     },
   },
   {

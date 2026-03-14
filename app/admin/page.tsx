@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
-import { ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
+import { getPrimaryRole, hasAnyRole, normalizeRoles, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
 import styles from "./page.module.css";
 
 type User = {
@@ -12,7 +12,9 @@ type User = {
   firstName?: string;
   lastName?: string;
   telephone?: string;
+  inspectorNumber?: string;
   role: string;
+  roles?: string[];
   isDelete?: boolean;
   createdAt?: string;
 };
@@ -22,6 +24,7 @@ type SessionUser = {
   firstName?: string;
   lastName?: string;
   role: string;
+  roles?: string[];
 };
 
 type FormState = {
@@ -29,7 +32,8 @@ type FormState = {
   lastName: string;
   email: string;
   telephone: string;
-  role: string;
+  inspectorNumber: string;
+  roles: string[];
   password: string;
 };
 
@@ -38,20 +42,21 @@ const defaultForm: FormState = {
   lastName: "",
   email: "",
   telephone: "",
-  role: "inspector",
+  inspectorNumber: "",
+  roles: ["inspector"],
   password: "",
 };
 
 function fullName(user: Partial<User> | null | undefined) {
-  if (!user) return "—";
+  if (!user) return "-";
   const full = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
   return full || user.email || "Sin nombre";
 }
 
 function formatDate(value?: string) {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
     month: "short",
@@ -116,7 +121,7 @@ export default function AdminPage() {
           router.push("/login");
           return;
         }
-        if (data.user.role !== "admin") {
+        if (!hasAnyRole(data.user as any, ["admin"])) {
           router.push("/dashboard");
           return;
         }
@@ -166,7 +171,8 @@ export default function AdminPage() {
       lastName: user.lastName || "",
       email: user.email || "",
       telephone: user.telephone || "",
-      role: user.role || "inspector",
+      inspectorNumber: user.inspectorNumber || "",
+      roles: normalizeRoles({ role: user.role, roles: user.roles }),
       password: "",
     });
     setIsModalOpen(true);
@@ -183,7 +189,9 @@ export default function AdminPage() {
       lastName: form.lastName,
       email: form.email,
       telephone: form.telephone,
-      role: form.role,
+      inspectorNumber: form.inspectorNumber,
+      roles: form.roles,
+      role: getPrimaryRole({ roles: form.roles }),
     };
 
     if (mode === "create") payload.password = form.password;
@@ -234,10 +242,15 @@ export default function AdminPage() {
   const filteredUsers = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     return [...users]
-      .filter((u) => (roleFilter === "all" ? true : u.role === roleFilter))
+      .filter((u) => {
+        if (roleFilter === "all") return true;
+        const roles = normalizeRoles({ role: u.role, roles: u.roles });
+        return roles.includes(roleFilter as any);
+      })
       .filter((u) => {
         if (!q) return true;
-        const haystack = [fullName(u), u.email, u.telephone || "", u.role || ""]
+        const rolesText = normalizeRoles({ role: u.role, roles: u.roles }).join(" ");
+        const haystack = [fullName(u), u.email, u.telephone || "", u.inspectorNumber || "", u.role || "", rolesText]
           .join(" ")
           .toLowerCase();
         return haystack.includes(q);
@@ -349,14 +362,19 @@ export default function AdminPage() {
                             <div>
                               <strong>{fullName(u)}</strong>
                               <small>{u.telephone || "Sin teléfono"}</small>
+                              {u.inspectorNumber ? <small>N° Inspector: {u.inspectorNumber}</small> : null}
                             </div>
                           </div>
                         </td>
                         <td>{u.email}</td>
                         <td>
-                          <span className={`${styles.roleBadge} ${styles[`role_${u.role}`] || ""}`}>
-                            {roleLabelEs(u.role)}
-                          </span>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            {normalizeRoles({ role: u.role, roles: u.roles }).map((r) => (
+                              <span key={`${u._id}-${r}`} className={`${styles.roleBadge} ${styles[`role_${r}`] || ""}`}>
+                                {roleLabelEs(r)}
+                              </span>
+                            ))}
+                          </div>
                         </td>
                         <td>{formatDate(u.createdAt)}</td>
                         <td>
@@ -409,7 +427,7 @@ export default function AdminPage() {
                     onClick={closeModal}
                     aria-label="Cerrar modal"
                   >
-                    ×
+                    &times;
                   </button>
                 </div>
               </div>
@@ -444,15 +462,42 @@ export default function AdminPage() {
                   </label>
 
                   <label className={styles.field}>
-                    <span>Rol</span>
-                    <select value={form.role} onChange={(e) => patchForm("role", e.target.value)}>
-                      {ROLE_OPTIONS_ES.map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </select>
+                    <span>N° Inspector</span>
+                    <input
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="Ej: 1024"
+                      value={form.inspectorNumber}
+                      onChange={(e) => patchForm("inspectorNumber", e.target.value.replace(/\D+/g, ""))}
+                    />
                   </label>
+
+                </div>
+
+                <div className={styles.fieldGrid}>
+                  <div className={styles.field}>
+                    <span>Roles</span>
+                    <div className={styles.rolesGrid}>
+                      {ROLE_OPTIONS_ES.map((r) => {
+                        const checked = form.roles.includes(r.value);
+                        return (
+                          <label key={r.value} className={styles.roleOption}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...form.roles, r.value]
+                                  : form.roles.filter((x) => x !== r.value);
+                                patchForm("roles", next.length ? next : ["inspector"]);
+                              }}
+                            />
+                            <span className={styles.roleOptionLabel}>{r.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 <label className={styles.field}>
@@ -518,3 +563,16 @@ export default function AdminPage() {
     </ThemeShell>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
