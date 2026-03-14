@@ -294,6 +294,7 @@ function normalizeImportedTemplate(raw: unknown): EditorTemplate {
   const source = root.item && typeof root.item === "object" ? asRecord(root.item) : root;
 
   const title = String(source.title || "").trim();
+  const shortTitle = String((source as any).shortTitle || (source as any).shortTible || "").trim();
   const templateId = String(source.templateId || source.id || slugifyTemplateId(title)).trim();
   const sectionsRaw = Array.isArray(source.sections) ? source.sections : [];
 
@@ -326,6 +327,7 @@ function normalizeImportedTemplate(raw: unknown): EditorTemplate {
     templateId,
     version: Number.isFinite(Number(source.version)) ? Number(source.version) : undefined,
     title,
+    shortTitle,
     isActive: source.isActive !== undefined ? Boolean(source.isActive) : true,
     sections,
     metrics: Array.isArray(source.metrics) ? deepClone(source.metrics) : [],
@@ -617,6 +619,7 @@ export default function TemplateEditorPage() {
       id: imported.id || resolvedTemplateId,
       templateId: resolvedTemplateId,
       title: imported.title.trim(),
+      shortTitle: String(imported.shortTitle || "").trim() || undefined,
       isActive: imported.isActive,
       sections: buildGeneratedSections(imported.sections, "create"),
       metrics: Array.isArray(imported.metrics) ? imported.metrics : [],

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const id = String(body?.id ?? templateId).trim();
   const title = String(body?.title ?? "");
-  const shortTitle = String(body?.shortTitle ?? "").trim();
+  const shortTitle = String(body?.shortTitle ?? body?.shortTible ?? "").trim();
   const sections = body?.sections;
   const metrics = body?.metrics;
   const rules = body?.rules;
