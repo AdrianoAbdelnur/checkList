@@ -158,6 +158,9 @@ export default function DashboardPage() {
               <a href="/checklists" className={styles.quickBtn}>
                 Abrir listados de checklists
               </a>
+              <a href="/dashboard/trips" className={styles.quickBtn}>
+                Viajes
+              </a>
               <a href="/checklists" className={styles.quickBtnGhost}>
                 Ir por enlace directo
               </a>

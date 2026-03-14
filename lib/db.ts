@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import "../models/User";
 import "../models/ChecklistTemplate";
 import "../models/Checklist";
+import "../models/Trip";
 
 const MONGODB_URI = process.env.DATABASE_URL;
 

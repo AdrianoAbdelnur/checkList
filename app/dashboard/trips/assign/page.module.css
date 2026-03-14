@@ -1,0 +1,431 @@
+﻿.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 18px 48px;
+  color: var(--ck-text);
+  overflow-x: clip;
+}
+
+.loading {
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--ck-surface);
+  color: var(--ck-text-soft);
+}
+
+.hero {
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  max-width: 62ch;
+}
+
+.heroActions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.heroMainActions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.heroModeActions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 10px;
+  min-height: 56px;
+}
+
+.dateFilter {
+  display: grid;
+  gap: 6px;
+}
+
+.dateFilter span,
+.modeFilter span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.modeFilter {
+  display: grid;
+  gap: 6px;
+}
+
+.modeFilter select {
+  min-width: 170px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 8px 10px;
+  font-weight: 700;
+}
+
+.searchableSelect {
+  position: relative;
+  min-width: 170px;
+  max-width: 100%;
+}
+
+.searchableTrigger {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 6px 8px;
+  min-height: 34px;
+  font-size: 12px;
+  line-height: 1.15;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.searchablePanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: min(320px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  max-height: 340px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: #ffffff;
+  box-shadow: var(--ck-shadow);
+  padding: 8px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.inspectorTopSelect .searchablePanel {
+  left: auto;
+  right: 0;
+}
+
+.searchableInput {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--ck-line);
+  background: #ffffff;
+  color: var(--ck-text);
+  padding: 7px 9px;
+  font-size: 12px;
+}
+
+.searchableList {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.searchableOption {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: #ffffff;
+  color: var(--ck-text);
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.searchableOptionActive {
+  border-color: color-mix(in oklab, var(--ck-accent) 35%, var(--ck-line));
+  background: color-mix(in oklab, var(--ck-accent) 12%, var(--ck-surface));
+}
+
+.searchableEmpty {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.dateSelector {
+  display: grid;
+  grid-template-columns: 140px auto;
+  gap: 8px;
+}
+
+.dateDisplay {
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 8px 10px;
+  font-weight: 800;
+}
+
+.datePickerBtn {
+  width: 44px;
+  min-width: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  display: grid;
+  place-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.dateIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.datePickerNative {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+}
+
+.datePickerNative::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.primaryBtn {
+  background: color-mix(in oklab, var(--ck-accent) 14%, var(--ck-surface));
+  color: var(--ck-text);
+  border-color: color-mix(in oklab, var(--ck-accent) 30%, var(--ck-line));
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: var(--ck-surface);
+  color: var(--ck-text);
+  border-color: var(--ck-line);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.messages {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.message {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ck-line);
+  font-weight: 700;
+}
+
+.error {
+  background: var(--ck-bad-bg);
+  color: var(--ck-bad-ink);
+}
+
+.success {
+  background: var(--ck-good-bg);
+  color: var(--ck-good-ink);
+}
+
+.matrixWrap {
+  margin-top: 12px;
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  overflow: auto;
+  background: var(--ck-surface);
+}
+
+.matrix {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.matrix th,
+.matrix td {
+  border-bottom: 1px solid var(--ck-line);
+  border-right: 1px solid var(--ck-line);
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.matrix th:last-child,
+.matrix td:last-child {
+  border-right: 0;
+}
+
+.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in oklab, var(--ck-surface-2) 70%, transparent);
+  text-align: left;
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: color-mix(in oklab, var(--ck-surface) 86%, var(--ck-surface-2));
+  min-width: 220px;
+}
+
+.colHead {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.colHead strong {
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.colHead small {
+  color: var(--ck-text-soft);
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+.tripCell {
+  display: grid;
+  gap: 3px;
+}
+
+.tripCell strong {
+  font-size: 14px;
+}
+
+.tripCell small {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+}
+
+.centerCell {
+  text-align: center;
+}
+
+.inspectorSelect {
+  width: 150px;
+  max-width: 100%;
+}
+
+.noInspectors {
+  display: block;
+  margin-top: 4px;
+  color: var(--ck-text-soft);
+  font-size: 10px;
+}
+
+.cellCheckbox {
+  width: 16px;
+  height: 16px;
+}
+
+.inspectorCellWrap {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.assignedToOther {
+  max-width: 130px;
+  font-size: 10px;
+  line-height: 1.15;
+  color: var(--ck-text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--ck-text-soft);
+  padding: 16px;
+}
+
+.changedRow td {
+  background: color-mix(in oklab, var(--ck-accent) 6%, transparent);
+}
+
+@media (max-width: 920px) {
+  .page {
+    padding: 12px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .heroActions {
+    width: 100%;
+    justify-items: start;
+  }
+
+  .heroMainActions,
+  .heroModeActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

@@ -273,7 +273,10 @@ export default function InspectorAssignmentsPage() {
                 </th>
                 <th className={styles.allHeadCol}>Todos</th>
                 {templates.map((t) => (
-                  <th key={t.templateId} title={`${t.templateId} v${t.version}`}>
+                  <th
+                    key={t.templateId}
+                    title={`${t.title || t.shortTitle || t.templateId} (${t.templateId}) v${t.version}`}
+                  >
                     <div className={styles.colHead}>
                       <strong>{t.shortTitle || t.title || t.templateId}</strong>
                       <small>{t.templateId}</small>
