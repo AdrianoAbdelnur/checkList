@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
 import { hasAnyRole, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
 import styles from "./page.module.css";
@@ -332,7 +332,6 @@ function normalizeImportedTemplate(raw: unknown): EditorTemplate {
 
 export default function TemplateEditorPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const jsonFileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [me, setMe] = React.useState<SessionUser | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -350,14 +349,19 @@ export default function TemplateEditorPage() {
   const [editor, setEditor] = React.useState<EditorTemplate>(createEmptyTemplate());
   const [jsonTextToImport, setJsonTextToImport] = React.useState("");
   const [importModalOpen, setImportModalOpen] = React.useState(false);
+  const [editionMode, setEditionMode] = React.useState<EditionMode>("visual");
 
-  const requestedMode = String(searchParams.get("mode") || "visual").toLowerCase();
-  const editionMode: EditionMode = requestedMode === "file" || requestedMode === "json" ? requestedMode : "visual";
   const isVisualMode = editionMode === "visual";
   const isFileMode = editionMode === "file";
   const isJsonMode = editionMode === "json";
 
   const canEditTemplates = hasAnyRole(me as any, ["admin", "reviewer"]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const requestedMode = String(new URLSearchParams(window.location.search).get("mode") || "visual").toLowerCase();
+    setEditionMode(requestedMode === "file" || requestedMode === "json" ? requestedMode : "visual");
+  }, []);
 
   const loadLatestTemplates = React.useCallback(async () => {
     const res = await fetch("/api/templates", { credentials: "include" });
