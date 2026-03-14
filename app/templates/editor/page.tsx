@@ -54,6 +54,7 @@ type TemplateListItem = {
   templateId: string;
   version: number;
   title: string;
+  shortTitle?: string;
   isActive?: boolean;
   sections?: TemplateSection[];
   metrics?: AnyObj[];
@@ -67,6 +68,7 @@ type EditorTemplate = {
   templateId: string;
   version?: number;
   title: string;
+  shortTitle?: string;
   isActive: boolean;
   sections: TemplateSection[];
   metrics: AnyObj[];
@@ -138,6 +140,7 @@ function createEmptyTemplate(): EditorTemplate {
     id: "",
     templateId: "",
     title: "",
+    shortTitle: "",
     isActive: true,
     sections: [createEmptySection()],
     metrics: [],
@@ -391,6 +394,7 @@ export default function TemplateEditorPage() {
       templateId: item.templateId || templateId,
       version: item.version,
       title: item.title || "",
+      shortTitle: String((item as any).shortTitle || ""),
       isActive: item.isActive ?? true,
       sections:
         Array.isArray(item.sections) && item.sections.length
@@ -702,6 +706,7 @@ export default function TemplateEditorPage() {
       id: editor.id || resolvedTemplateId,
       templateId: resolvedTemplateId,
       title: editor.title.trim(),
+      shortTitle: String(editor.shortTitle || "").trim() || undefined,
       isActive: editor.isActive,
       sections: buildGeneratedSections(editor.sections, mode),
       metrics: Array.isArray(editor.metrics) ? editor.metrics : [],
@@ -902,6 +907,14 @@ export default function TemplateEditorPage() {
                     value={editor.title}
                     onChange={(e) => updateEditor("title", e.target.value)}
                     placeholder="Checklist de transporte de carga"
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span>Titulo corto (opcional)</span>
+                  <input
+                    value={String(editor.shortTitle || "")}
+                    onChange={(e) => updateEditor("shortTitle", e.target.value)}
+                    placeholder="Ej: Transporte de carga"
                   />
                 </label>
                 <label className={`${styles.field} ${styles.inlineCheck}`}>
