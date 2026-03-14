@@ -8,6 +8,7 @@ import ChecklistTemplate from "@/models/ChecklistTemplate";
 type TemplateRow = {
   templateId: string;
   title: string;
+  shortTitle?: string;
   version: number;
   isActive: boolean;
 };
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   const templateDocs = await ChecklistTemplate.find({})
     .sort({ templateId: 1, version: -1 })
-    .select("templateId title version isActive")
+    .select("templateId title shortTitle version isActive")
     .lean();
 
   const map = new Map<string, TemplateRow>();
@@ -41,6 +42,7 @@ export async function GET(req: NextRequest) {
     map.set(key, {
       templateId: key,
       title: String(doc.title || key),
+      shortTitle: String((doc as any).shortTitle || ""),
       version: Number(doc.version || 1),
       isActive: Boolean(doc.isActive),
     });

@@ -37,6 +37,7 @@ export async function createTemplateVersion(params: {
   id?: string;
   templateId: string;
   title: string;
+  shortTitle?: string;
   sections: unknown;
   metrics?: unknown;
   rules?: unknown;
@@ -54,6 +55,7 @@ export async function createTemplateVersion(params: {
     templateId: params.templateId,
     version: nextVersion,
     title: params.title,
+    shortTitle: params.shortTitle || undefined,
     sections: params.sections,
     metrics: Array.isArray(params.metrics) ? params.metrics : [],
     rules: Array.isArray(params.rules) ? params.rules : [],

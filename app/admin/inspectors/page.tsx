@@ -28,6 +28,7 @@ type Inspector = {
 type TemplateItem = {
   templateId: string;
   title: string;
+  shortTitle?: string;
   version: number;
   isActive: boolean;
 };
@@ -154,6 +155,19 @@ export default function InspectorAssignmentsPage() {
     );
   }
 
+  function toggleAllAssignmentsForInspector(userId: string, checked: boolean) {
+    setError(null);
+    setSuccess(null);
+
+    const allTemplateIds = templates.map((t) => t.templateId);
+    setInspectors((prev) =>
+      prev.map((inspector) => {
+        if (inspector._id !== userId) return inspector;
+        return { ...inspector, assignedTemplateIds: checked ? allTemplateIds : [] };
+      }),
+    );
+  }
+
   async function saveChanges() {
     if (!hasPendingChanges || savingAll) return;
 
@@ -257,10 +271,11 @@ export default function InspectorAssignmentsPage() {
                     />
                   </div>
                 </th>
+                <th className={styles.allHeadCol}>Todos</th>
                 {templates.map((t) => (
                   <th key={t.templateId} title={`${t.templateId} v${t.version}`}>
                     <div className={styles.colHead}>
-                      <strong>{t.title || t.templateId}</strong>
+                      <strong>{t.shortTitle || t.title || t.templateId}</strong>
                       <small>{t.templateId}</small>
                     </div>
                   </th>
@@ -270,7 +285,7 @@ export default function InspectorAssignmentsPage() {
             <tbody>
               {visibleInspectors.length === 0 ? (
                 <tr>
-                  <td className={styles.emptyCell} colSpan={Math.max(2, templates.length + 1)}>
+                  <td className={styles.emptyCell} colSpan={Math.max(3, templates.length + 2)}>
                     No hay inspectores para ese filtro.
                   </td>
                 </tr>
@@ -288,6 +303,14 @@ export default function InspectorAssignmentsPage() {
                           <small>{inspector.email}</small>
                           <small>{normalizeRoles(inspector).map(roleLabelEs).join(" | ")}</small>
                         </div>
+                      </td>
+                      <td className={styles.centerCell}>
+                        <input
+                          type="checkbox"
+                          checked={templates.length > 0 && templates.every((t) => assigned.has(t.templateId))}
+                          disabled={savingAll || templates.length === 0}
+                          onChange={(e) => toggleAllAssignmentsForInspector(inspector._id, e.target.checked)}
+                        />
                       </td>
 
                       {templates.map((t) => {

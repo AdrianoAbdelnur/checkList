@@ -165,16 +165,26 @@
 .colHead {
   display: grid;
   gap: 4px;
-  min-width: 160px;
+  min-width: 140px;
 }
 
 .colHead strong {
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 800;
 }
 
 .colHead small {
   color: var(--ck-text-soft);
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+.allHeadCol {
+  min-width: 74px;
+  text-align: center !important;
   font-size: 11px;
+  font-weight: 800;
 }
 
 .userCell {
