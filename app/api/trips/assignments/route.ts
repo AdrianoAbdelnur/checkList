@@ -66,6 +66,36 @@ function toAssignmentMap(input: unknown): Record<string, string> {
   return map;
 }
 
+function toAssignmentMapFromCheckAssignments(input: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!input || typeof input !== "object") return out;
+  if (input instanceof Map) {
+    for (const [templateIdRaw, payload] of input.entries()) {
+      const templateId = String(templateIdRaw || "").trim();
+      const inspectorId = String((payload as any)?.inspectorId || "").trim();
+      if (!templateId || !inspectorId) continue;
+      out[templateId] = inspectorId;
+    }
+    return out;
+  }
+  for (const [templateIdRaw, payload] of Object.entries(input as Record<string, unknown>)) {
+    const templateId = String(templateIdRaw || "").trim();
+    const inspectorId = String((payload as any)?.inspectorId || "").trim();
+    if (!templateId || !inspectorId) continue;
+    out[templateId] = inspectorId;
+  }
+  return out;
+}
+
+function toCheckAssignments(input: Array<{ templateId: string; inspectorId: string }>): Record<string, { inspectorId: string; assignedAt: Date }> {
+  const out: Record<string, { inspectorId: string; assignedAt: Date }> = {};
+  const now = new Date();
+  for (const row of input) {
+    out[row.templateId] = { inspectorId: row.inspectorId, assignedAt: now };
+  }
+  return out;
+}
+
 export async function GET(req: Request) {
   await connectToDatabase();
 
@@ -111,13 +141,24 @@ export async function GET(req: Request) {
   return Response.json({
     ok: true,
     trips: (trips as any[]).map((trip) => ({
+      ...(function build() {
+        const fromObject = toAssignmentMapFromCheckAssignments((trip as any).checkAssignments);
+        const fromLegacy = toAssignmentMap((trip as any).assignedInspectorAssignments);
+        const assignedInspectorByTemplate = Object.keys(fromObject).length > 0 ? fromObject : fromLegacy;
+        return {
+          assignedInspectorByTemplate,
+          assignedTemplateIds:
+            Object.keys(assignedInspectorByTemplate).length > 0
+              ? Object.keys(assignedInspectorByTemplate)
+              : normalizeTemplateIds(trip.assignedTemplateIds),
+          checkAssignments: (trip as any).checkAssignments || {},
+        };
+      })(),
       _id: String(trip._id),
       dominio: String(trip.dominio || "").trim().toUpperCase(),
       tripDateKey: String(trip.tripDateKey || ""),
       solicitudAt: trip.solicitudAt || null,
       tipo: String(trip.tipo || ""),
-      assignedTemplateIds: normalizeTemplateIds(trip.assignedTemplateIds),
-      assignedInspectorByTemplate: toAssignmentMap((trip as any).assignedInspectorAssignments),
     })),
     templates: Array.from(map.values()),
     inspectors: (inspectors as any[]).map((u) => ({
@@ -209,10 +250,11 @@ export async function PATCH(req: Request) {
   const updatePayload: Record<string, unknown> = { assignedTemplateIds: templateIds };
   if (hasInspectorAssignmentsPayload) {
     updatePayload.assignedInspectorAssignments = normalizedAssignments;
+    updatePayload.checkAssignments = toCheckAssignments(normalizedAssignments);
   }
 
   const updated = await Trip.findByIdAndUpdate(tripId, updatePayload, { new: true })
-    .select("_id assignedTemplateIds assignedInspectorAssignments")
+    .select("_id assignedTemplateIds assignedInspectorAssignments checkAssignments")
     .lean();
 
   if (!updated) {
@@ -224,7 +266,11 @@ export async function PATCH(req: Request) {
     trip: {
       _id: String((updated as any)._id),
       assignedTemplateIds: normalizeTemplateIds((updated as any).assignedTemplateIds),
-      assignedInspectorByTemplate: toAssignmentMap((updated as any).assignedInspectorAssignments),
+      assignedInspectorByTemplate:
+        Object.keys(toAssignmentMapFromCheckAssignments((updated as any).checkAssignments)).length > 0
+          ? toAssignmentMapFromCheckAssignments((updated as any).checkAssignments)
+          : toAssignmentMap((updated as any).assignedInspectorAssignments),
+      checkAssignments: (updated as any).checkAssignments || {},
     },
   });
 }

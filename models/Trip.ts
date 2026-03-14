@@ -21,6 +21,14 @@ const TripSchema = new Schema(
       ],
       default: [],
     },
+    checkAssignments: {
+      type: Map,
+      of: {
+        inspectorId: { type: String, required: true },
+        assignedAt: { type: Date, required: true },
+      },
+      default: {},
+    },
 
     sourceFile: { type: String, default: "" },
     importBatchId: { type: String, default: "", index: true },
@@ -38,4 +46,33 @@ const TripSchema = new Schema(
 
 TripSchema.index({ tripDateKey: 1, dominio: 1, tipo: 1 });
 
-export default models.Trip || model("Trip", TripSchema);
+const TripModel = models.Trip || model("Trip", TripSchema);
+
+if (!TripModel.schema.path("assignedInspectorAssignments")) {
+  TripModel.schema.add({
+    assignedInspectorAssignments: {
+      type: [
+        {
+          templateId: { type: String, required: true },
+          inspectorId: { type: String, required: true },
+        },
+      ],
+      default: [],
+    },
+  });
+}
+
+if (!TripModel.schema.path("checkAssignments")) {
+  TripModel.schema.add({
+    checkAssignments: {
+      type: Map,
+      of: {
+        inspectorId: { type: String, required: true },
+        assignedAt: { type: Date, required: true },
+      },
+      default: {},
+    },
+  });
+}
+
+export default TripModel;
