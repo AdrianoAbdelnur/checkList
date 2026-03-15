@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
@@ -124,7 +125,10 @@ function SearchableInspectorSelect({
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const [panelStyle, setPanelStyle] = React.useState<React.CSSProperties | null>(null);
 
   const selected = options.find((o) => o.id === value);
   const filtered = React.useMemo(() => {
@@ -132,6 +136,41 @@ function SearchableInspectorSelect({
     if (!q) return options;
     return options.filter((o) => o.keywords.includes(q));
   }, [options, query]);
+
+  const updatePanelPosition = React.useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const viewportW = window.innerWidth;
+    const panelWidth = Math.min(320, Math.max(220, rect.width));
+    const gap = 6;
+    const viewportPadding = 12;
+    const spaceBelow = Math.max(0, viewportH - rect.bottom - gap - viewportPadding);
+    const spaceAbove = Math.max(0, rect.top - gap - viewportPadding);
+    const openUp = spaceAbove > spaceBelow;
+    const availableSpace = openUp ? spaceAbove : spaceBelow;
+    const panelHeight = Math.max(150, Math.min(340, availableSpace));
+
+    let left = rect.left;
+    if (left + panelWidth > viewportW - viewportPadding) left = viewportW - panelWidth - viewportPadding;
+    if (left < viewportPadding) left = viewportPadding;
+
+    let top = openUp ? rect.top - panelHeight - gap : rect.bottom + gap;
+    if (top + panelHeight > viewportH - viewportPadding) top = viewportH - viewportPadding - panelHeight;
+    if (top < viewportPadding) top = viewportPadding;
+
+    setPanelStyle({
+      position: "fixed",
+      top,
+      left,
+      width: panelWidth,
+      maxWidth: `calc(100vw - 24px)`,
+      maxHeight: panelHeight,
+      zIndex: 2000,
+    });
+  }, []);
 
   React.useEffect(() => {
     if (!open) return;
@@ -141,17 +180,30 @@ function SearchableInspectorSelect({
 
   React.useEffect(() => {
     if (!open) return;
+    updatePanelPosition();
     function onDocClick(e: MouseEvent) {
-      if (!rootRef.current) return;
-      if (!rootRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    function onReposition() {
+      updatePanelPosition();
     }
     document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
+    };
+  }, [open, updatePanelPosition]);
 
   return (
     <div ref={rootRef} className={`${styles.searchableSelect} ${className || ""}`}>
       <button
+        ref={triggerRef}
         type="button"
         className={styles.searchableTrigger}
         onClick={() => !disabled && setOpen((v) => !v)}
@@ -161,47 +213,51 @@ function SearchableInspectorSelect({
       >
         <span>{selected?.label || placeholder}</span>
       </button>
-      {open ? (
-        <div className={styles.searchablePanel}>
-          <input
-            ref={inputRef}
-            className={styles.searchableInput}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar inspector..."
-          />
-          <div className={styles.searchableList} role="listbox">
-            {allowClear ? (
-              <button
-                type="button"
-                className={styles.searchableOption}
-                onClick={() => {
-                  onChange("");
-                  setOpen(false);
-                  setQuery("");
-                }}
-              >
-                Sin asignar
-              </button>
-            ) : null}
-            {filtered.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                className={`${styles.searchableOption} ${value === o.id ? styles.searchableOptionActive : ""}`}
-                onClick={() => {
-                  onChange(o.id);
-                  setOpen(false);
-                  setQuery("");
-                }}
-              >
-                {o.label}
-              </button>
-            ))}
-            {filtered.length === 0 ? <div className={styles.searchableEmpty}>Sin resultados</div> : null}
+      {open && panelStyle
+        ? createPortal(
+          <div ref={panelRef} className={styles.searchablePanel} style={panelStyle}>
+            <input
+              ref={inputRef}
+              className={styles.searchableInput}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar inspector..."
+            />
+            <div className={styles.searchableList} role="listbox">
+              {allowClear ? (
+                <button
+                  type="button"
+                  className={styles.searchableOption}
+                  onClick={() => {
+                    onChange("");
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                >
+                  Sin asignar
+                </button>
+              ) : null}
+              {filtered.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  className={`${styles.searchableOption} ${value === o.id ? styles.searchableOptionActive : ""}`}
+                  onClick={() => {
+                    onChange(o.id);
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                >
+                  {o.label}
+                </button>
+              ))}
+              {filtered.length === 0 ? <div className={styles.searchableEmpty}>Sin resultados</div> : null}
+            </div>
           </div>
-        </div>
-      ) : null}
+          ,
+          document.body,
+        )
+        : null}
     </div>
   );
 }
