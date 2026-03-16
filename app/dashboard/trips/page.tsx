@@ -70,10 +70,10 @@ export default function TripsHomePage() {
       <main className={styles.page}>
         <section className={styles.hero}>
           <div>
-            <p className={styles.kicker}>Operacion diaria</p>
+            <p className={styles.kicker}>Operación diaria</p>
             <h1>Viajes</h1>
             <p className={styles.subtitle}>
-              Elegi el flujo que queres usar para trabajar con viajes del dia.
+              Elegí el flujo que querés usar para trabajar con viajes del día.
             </p>
           </div>
           <a href="/dashboard" className={styles.secondaryBtn}>Volver al panel</a>
@@ -90,6 +90,12 @@ export default function TripsHomePage() {
             <p className={styles.cardKicker}>Planificacion</p>
             <h3>Asignar viajes</h3>
             <p>Matriz de viajes vs checklists para definir que inspeccion requiere cada viaje.</p>
+          </a>
+
+          <a href="/dashboard/trips/status" className={styles.card}>
+            <p className={styles.cardKicker}>Seguimiento</p>
+            <h3>Estado de viajes</h3>
+            <p>Semáforo operativo por viaje: rojo, amarillo o verde según cumplimiento de checks.</p>
           </a>
         </section>
       </main>
