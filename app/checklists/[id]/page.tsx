@@ -56,7 +56,14 @@ export default async function ChecklistDetailPage({
   const checklist = toPlain(result.checklist) as AnyObj;
   const template = toPlain(result.template) as AnyObj;
   const canViewAll = hasPermission(session as Record<string, unknown>, "checklist.view_all");
-  const isOwner = String(checklist?.inspectorId?._id ?? checklist?.inspectorId ?? "") === session.userId;
+  const inspectorRef = checklist?.inspectorId;
+  const inspectorId =
+    typeof inspectorRef === "string"
+      ? inspectorRef
+      : inspectorRef && typeof inspectorRef === "object" && "_id" in inspectorRef
+        ? String((inspectorRef as Record<string, unknown>)["_id"] ?? "")
+        : String(inspectorRef ?? "");
+  const isOwner = inspectorId === session.userId;
   if (!canViewAll && !isOwner) throw new Error("No autorizado");
 
   const inspector = getChecklistInspectorLabel(checklist);

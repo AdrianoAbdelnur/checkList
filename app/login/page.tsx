@@ -1,4 +1,5 @@
 import LoginForm from "../../components/LoginForm";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Entrar",
@@ -50,7 +51,9 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-[18px] border border-slate-700/60 bg-[#111827] p-4">
-          <LoginForm />
+          <Suspense fallback={<div className="text-sm text-slate-300">Cargando...</div>}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         <div className="text-center text-[10px] font-extrabold tracking-[0.22em] text-slate-400 uppercase mt-4">

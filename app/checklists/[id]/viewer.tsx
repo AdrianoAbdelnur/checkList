@@ -14,6 +14,10 @@ function trimText(value: unknown) {
   return String(value ?? "").trim();
 }
 
+function asObj(value: unknown): AnyObj | null {
+  return value && typeof value === "object" ? (value as AnyObj) : null;
+}
+
 function objectFitFromResizeMode(resizeMode: unknown): React.CSSProperties["objectFit"] {
   const mode = trimText(resizeMode).toLowerCase();
   if (mode === "contain") return "contain";
@@ -645,7 +649,11 @@ function renderValue(field: AnyObj, v: AnyObj | undefined, onOpen: OpenMediaFn) 
     }
 
     case "number":
-      return <span>{v.value ?? "-"}</span>;
+      return (
+        <span>
+          {typeof v.value === "number" ? v.value : trimText(v.value) || "-"}
+        </span>
+      );
 
     case "date":
       return <span>{trimText(v.value) || "-"}</span>;
@@ -671,11 +679,12 @@ function renderValue(field: AnyObj, v: AnyObj | undefined, onOpen: OpenMediaFn) 
       );
     }
 
-    case "signature":
-      return v.dataUrl ? (
-        <button type="button" onClick={() => onOpen(v.dataUrl)} style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}>
+    case "signature": {
+      const signatureUrl = trimText(v.dataUrl);
+      return signatureUrl ? (
+        <button type="button" onClick={() => onOpen(signatureUrl)} style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}>
           <img
-            src={v.dataUrl}
+            src={signatureUrl}
             alt="Signature"
             style={{ width: "100%", maxWidth: 520, border: "1px solid var(--cv-border)", borderRadius: 14, background: "var(--cv-thumb-bg)", display: "block" }}
           />
@@ -683,6 +692,7 @@ function renderValue(field: AnyObj, v: AnyObj | undefined, onOpen: OpenMediaFn) 
       ) : (
         <span style={{ opacity: 0.6 }}>Sin firma</span>
       );
+    }
 
     case "cover":
       return <Badge text={v.acknowledged ? "Completada" : "Pendiente"} />;
@@ -717,14 +727,21 @@ export default function ChecklistViewer({ template, checklist }: { template: Any
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [modalOpen]);
 
-  const values: AnyObj = checklist?.data?.values ?? {};
-  const photosByFieldId: Record<string, string[]> = checklist?.data?.photosByFieldId ?? {};
+  const checklistData = asObj(checklist?.data) ?? {};
+  const values = asObj(checklistData.values) ?? {};
+  const photosByFieldId = (asObj(checklistData.photosByFieldId) ?? {}) as Record<string, string[]>;
 
-  const sections: AnyObj[] = template?.sections ?? template?.data?.sections ?? template?.items ?? [];
+  const templateData = asObj(template?.data);
+  const sections = (
+    (Array.isArray(template?.sections) ? template.sections : null) ??
+    (templateData && Array.isArray(templateData.sections) ? templateData.sections : null) ??
+    (Array.isArray(template?.items) ? template.items : null) ??
+    []
+  ) as AnyObj[];
 
   const allFieldIds = new Set<string>();
   sections.forEach((s) => {
-    const fields: AnyObj[] = s?.fields ?? [];
+    const fields: AnyObj[] = Array.isArray(s?.fields) ? (s.fields as AnyObj[]) : [];
     fields.forEach((f) => {
       if (f?.id) allFieldIds.add(String(f.id));
     });
@@ -744,9 +761,9 @@ export default function ChecklistViewer({ template, checklist }: { template: Any
       </Card>
 
       {sections.map((section) => {
-        const sectionTitle = section?.title ?? section?.label ?? section?.name ?? section?.id ?? "Seccion";
+        const sectionTitle = String(section?.title ?? section?.label ?? section?.name ?? section?.id ?? "Seccion");
 
-        const fields: AnyObj[] = section?.fields ?? [];
+        const fields: AnyObj[] = Array.isArray(section?.fields) ? (section.fields as AnyObj[]) : [];
 
         return (
           <Card key={String(section.id ?? sectionTitle)} title={sectionTitle}>
@@ -754,9 +771,9 @@ export default function ChecklistViewer({ template, checklist }: { template: Any
               const fieldId = String(field.id);
               const fieldKind = trimText(field?.kind);
               const hideLabel = fieldKind === "image" && field?.hideLabel === true;
-              const fieldLabel = hideLabel ? "Visual" : field.label ?? fieldId;
+              const fieldLabel = hideLabel ? "Visual" : String(field.label ?? fieldId);
 
-              const v = values?.[fieldId];
+              const v = asObj(values?.[fieldId]) ?? undefined;
               const photos = photosByFieldId?.[fieldId] ?? [];
 
               return (

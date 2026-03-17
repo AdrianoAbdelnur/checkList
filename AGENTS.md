@@ -91,6 +91,8 @@ It includes auth/session handling, role-based access, template/version managemen
 - Verify login/logout/me session cycle.
 - Verify role-based access and protected routes.
 - Verify critical API contracts for mobile compatibility.
+- Before any commit, run `npm run build` and ensure it finishes successfully.
+- Never commit if `npm run build` fails.
 - Report touched files and what to test.
 
 ## Useful Commands
