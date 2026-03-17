@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Button from "./Button";
 import { validateEmail, validatePassword } from "../lib/validators";
 
@@ -31,6 +31,7 @@ function FieldShell({
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const danger = "#ef4444";
 
@@ -48,6 +49,13 @@ export default function LoginForm() {
   const canSubmit = useMemo(() => {
     return email.trim().length > 0 && password.trim().length >= 4 && !loading;
   }, [email, password, loading]);
+
+  const redirectPath = useMemo(() => {
+    const next = (searchParams.get("next") || "").trim();
+    if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
+    if (next === "/login" || next === "/register") return "/dashboard";
+    return next;
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,7 +86,7 @@ export default function LoginForm() {
         throw new Error(json?.message || json?.error || "Credenciales inválidas");
       }
 
-      router.replace("/dashboard");
+      router.replace(redirectPath);
     } catch (err: any) {
       setError(err?.message || "Error de login");
     } finally {

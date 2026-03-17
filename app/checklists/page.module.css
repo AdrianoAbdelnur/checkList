@@ -125,6 +125,29 @@
   margin: 20px auto 0;
 }
 
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.filterChip {
+  text-decoration: none;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.filterChipActive {
+  border-color: color-mix(in oklab, var(--ink) 22%, var(--line));
+  background: color-mix(in oklab, var(--card) 70%, var(--ck-surface-2));
+}
+
 .listHeader {
   display: flex;
   justify-content: space-between;

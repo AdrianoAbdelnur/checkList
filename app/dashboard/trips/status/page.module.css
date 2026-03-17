@@ -1,0 +1,291 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 18px 48px;
+  color: var(--ck-text);
+}
+
+.loading,
+.error,
+.empty {
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: var(--ck-surface);
+  padding: 12px;
+}
+
+.error {
+  color: var(--ck-bad-ink);
+  background: var(--ck-bad-bg);
+  margin-top: 12px;
+}
+
+.hero {
+  border: 1px solid var(--ck-line);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
+  box-shadow: var(--ck-shadow);
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--ck-text-soft);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  max-width: 70ch;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.dateWrap {
+  display: grid;
+  gap: 6px;
+}
+
+.dateWrap span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dateWrap input {
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 8px 10px;
+}
+
+.secondaryBtn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid var(--ck-line);
+  background: var(--ck-surface);
+  color: var(--ck-text);
+  text-decoration: none;
+}
+
+.summary {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary article {
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: var(--ck-surface);
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.summary span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.summary strong {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.red { color: #ef4444; }
+.yellow { color: #f59e0b; }
+.green { color: #10b981; }
+
+.list {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: var(--ck-surface);
+  padding: 12px;
+}
+
+.rowHead {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.tripInfo {
+  min-width: 0;
+  justify-self: start;
+  align-self: center;
+}
+
+.rowHead h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rowHead p {
+  margin: 4px 0 0;
+  color: var(--ck-text-soft);
+  font-weight: 700;
+}
+
+.checkLinksCol {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  align-content: center;
+  text-align: left;
+  align-self: center;
+  padding-left: 18px;
+}
+
+.checkLinksLabel {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.checkLinksWrap {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+}
+
+.checkLink {
+  text-decoration: none;
+  border-radius: 999px;
+  border: 1px solid var(--ck-line);
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--ck-text);
+  background: color-mix(in oklab, var(--ck-surface) 70%, var(--ck-surface-2));
+}
+
+.checkLink:hover {
+  border-color: color-mix(in oklab, var(--ck-text-soft) 35%, var(--ck-line));
+}
+
+.checkLinkOBSERVED {
+  color: #f59e0b;
+  border-color: color-mix(in oklab, #f59e0b 50%, var(--ck-line));
+  background: color-mix(in oklab, #f59e0b 14%, var(--ck-surface));
+}
+
+.checkLinkOK {
+  color: #10b981;
+  border-color: color-mix(in oklab, #10b981 40%, var(--ck-line));
+  background: color-mix(in oklab, #10b981 14%, var(--ck-surface));
+}
+
+.checkLinkPENDING {
+  color: var(--ck-text-soft);
+}
+
+.noChecks {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge {
+  border-radius: 999px;
+  width: 40px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 900;
+  border: 1px solid var(--ck-line);
+  justify-self: end;
+  align-self: center;
+}
+
+.statusIcon {
+  line-height: 1;
+}
+
+.badgeRED {
+  background: color-mix(in oklab, #ef4444 14%, var(--ck-surface));
+  color: #ef4444;
+}
+
+.badgeYELLOW {
+  background: color-mix(in oklab, #f59e0b 16%, var(--ck-surface));
+  color: #f59e0b;
+}
+
+.badgeGREEN {
+  background: color-mix(in oklab, #10b981 16%, var(--ck-surface));
+  color: #10b981;
+}
+
+.badgeNONE {
+  background: color-mix(in oklab, var(--ck-text-soft) 12%, var(--ck-surface));
+  color: var(--ck-text-soft);
+}
+
+.meta {
+  margin: 10px 0 0;
+  color: var(--ck-text-soft);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.15;
+}
+
+@media (max-width: 920px) {
+  .page {
+    padding: 12px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rowHead {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .checkLinksCol {
+    padding-left: 0;
+  }
+}

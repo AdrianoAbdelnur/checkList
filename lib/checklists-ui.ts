@@ -1,7 +1,21 @@
-type AnyObj = Record<string, any>;
+﻿type AnyObj = Record<string, unknown>;
 
 function asText(value: unknown) {
   return String(value ?? "").trim();
+}
+
+function asObj(value: unknown): AnyObj {
+  return value && typeof value === "object" ? (value as AnyObj) : {};
+}
+
+function getIn(source: unknown, path: string[]): unknown {
+  let current: unknown = source;
+  for (const key of path) {
+    const obj = asObj(current);
+    current = obj[key];
+    if (current === undefined || current === null) return current;
+  }
+  return current;
 }
 
 export function normalizeChecklistText(value: unknown) {
@@ -9,55 +23,57 @@ export function normalizeChecklistText(value: unknown) {
 }
 
 export function getChecklistInspectorLabel(item: AnyObj) {
-  const inspector = item?.inspectorId;
-  const first = inspector?.firstName ?? item?.inspectorSnapshot?.firstName;
-  const last = inspector?.lastName ?? item?.inspectorSnapshot?.lastName;
-  const email = inspector?.email ?? item?.inspectorSnapshot?.email;
-  const fullName = [first, last].filter(Boolean).join(" ").trim();
-  return fullName || email || "Inspector sin nombre";
+  const inspector = asObj(getIn(item, ["inspectorId"]));
+  const snapshot = asObj(getIn(item, ["inspectorSnapshot"]));
+  const first = getIn(inspector, ["firstName"]) ?? getIn(snapshot, ["firstName"]);
+  const last = getIn(inspector, ["lastName"]) ?? getIn(snapshot, ["lastName"]);
+  const email = getIn(inspector, ["email"]) ?? getIn(snapshot, ["email"]);
+  const fullName = [asText(first), asText(last)].filter(Boolean).join(" ").trim();
+  return fullName || asText(email) || "Inspector sin nombre";
 }
 
 export function getChecklistInspectorRole(item: AnyObj) {
-  return item?.inspectorId?.role ?? item?.inspectorSnapshot?.role ?? "—";
+  const role = getIn(item, ["inspectorId", "role"]) ?? getIn(item, ["inspectorSnapshot", "role"]);
+  return asText(role) || "-";
 }
 
 export function getChecklistPlate(item: AnyObj) {
   return (
-    item?.data?.subject?.plate ??
-    item?.data?.vehicle?.plate ??
-    item?.data?.plate ??
-    item?.subject?.plate ??
+    getIn(item, ["data", "subject", "plate"]) ??
+    getIn(item, ["data", "vehicle", "plate"]) ??
+    getIn(item, ["data", "plate"]) ??
+    getIn(item, ["subject", "plate"]) ??
     null
   );
 }
 
 export function getChecklistVisibility(item: AnyObj) {
   const raw =
-    item?.visibility ??
-    item?.visibilidad ??
-    item?.data?.visibility ??
-    item?.data?.visibilidad ??
-    item?.data?.meta?.visibility ??
-    item?.data?.meta?.visibilidad;
+    getIn(item, ["visibility"]) ??
+    getIn(item, ["visibilidad"]) ??
+    getIn(item, ["data", "visibility"]) ??
+    getIn(item, ["data", "visibilidad"]) ??
+    getIn(item, ["data", "meta", "visibility"]) ??
+    getIn(item, ["data", "meta", "visibilidad"]);
 
-  if (typeof raw === "boolean") return raw ? "Público" : "Privado";
+  if (typeof raw === "boolean") return raw ? "Publico" : "Privado";
   return asText(raw) || "Interno";
 }
 
 export function getChecklistDecision(item: AnyObj) {
   const rawCandidates = [
-    item?.approvalStatus,
-    item?.reviewStatus,
-    item?.decision,
-    item?.result,
-    item?.data?.approvalStatus,
-    item?.data?.reviewStatus,
-    item?.data?.decision,
-    item?.data?.result,
-    item?.data?.approval?.status,
-    item?.data?.approval?.decision,
-    item?.data?.review?.status,
-    item?.data?.review?.decision,
+    getIn(item, ["approvalStatus"]),
+    getIn(item, ["reviewStatus"]),
+    getIn(item, ["decision"]),
+    getIn(item, ["result"]),
+    getIn(item, ["data", "approvalStatus"]),
+    getIn(item, ["data", "reviewStatus"]),
+    getIn(item, ["data", "decision"]),
+    getIn(item, ["data", "result"]),
+    getIn(item, ["data", "approval", "status"]),
+    getIn(item, ["data", "approval", "decision"]),
+    getIn(item, ["data", "review", "status"]),
+    getIn(item, ["data", "review", "decision"]),
   ];
 
   for (const candidate of rawCandidates) {
@@ -68,8 +84,12 @@ export function getChecklistDecision(item: AnyObj) {
     if (["PENDING", "PENDIENTE", "UNDER_REVIEW"].includes(text)) return "PENDING" as const;
   }
 
-  if (item?.approved === true || item?.data?.approved === true) return "APPROVED" as const;
-  if (item?.rejected === true || item?.data?.rejected === true) return "REJECTED" as const;
+  if (getIn(item, ["approved"]) === true || getIn(item, ["data", "approved"]) === true) {
+    return "APPROVED" as const;
+  }
+  if (getIn(item, ["rejected"]) === true || getIn(item, ["data", "rejected"]) === true) {
+    return "REJECTED" as const;
+  }
   return null;
 }
 
@@ -78,13 +98,37 @@ export function getChecklistDecisionLabel(item: AnyObj) {
   if (decision === "APPROVED") return "Aprobado";
   if (decision === "REJECTED") return "Rechazado";
   if (decision === "PENDING") return "Pendiente";
-  return "Sin revisión";
+  return "Sin decision";
+}
+
+export function getChecklistReviewStatus(item: AnyObj) {
+  const rawCandidates = [
+    getIn(item, ["reviewStatus"]),
+    getIn(item, ["data", "reviewStatus"]),
+    getIn(item, ["review", "status"]),
+    getIn(item, ["data", "review", "status"]),
+  ];
+
+  for (const candidate of rawCandidates) {
+    const text = normalizeChecklistText(candidate);
+    if (!text) continue;
+    if (["REVISADO", "REVIEWED", "DONE", "OK"].includes(text)) return "REVISADO" as const;
+    if (["SIN_REVISION", "SIN REVISION", "UNREVIEWED", "NONE", "PENDING"].includes(text)) {
+      return "SIN_REVISION" as const;
+    }
+  }
+
+  return "SIN_REVISION" as const;
+}
+
+export function getChecklistReviewStatusLabel(item: AnyObj) {
+  return getChecklistReviewStatus(item) === "REVISADO" ? "Revisado" : "Sin revision";
 }
 
 export function formatChecklistDate(value: unknown) {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(String(value));
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
     month: "short",

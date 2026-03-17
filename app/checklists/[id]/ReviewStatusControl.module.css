@@ -1,0 +1,80 @@
+﻿.wrap {
+  margin-top: 14px;
+  border: 1px solid var(--ck-line);
+  border-radius: 16px;
+  background: var(--ck-surface);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid transparent;
+}
+
+.reviewed {
+  background: var(--ck-good-bg);
+  color: var(--ck-good-ink);
+  border-color: color-mix(in oklab, var(--ck-good-ink) 16%, transparent);
+}
+
+.unreviewed {
+  background: var(--ck-muted-bg);
+  color: var(--ck-muted-ink);
+  border-color: color-mix(in oklab, var(--ck-muted-ink) 16%, transparent);
+}
+
+.help,
+.readOnly,
+.error {
+  margin: 0;
+  color: var(--ck-text-soft);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 72%, var(--ck-surface-2));
+  color: var(--ck-text);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.active {
+  border-color: color-mix(in oklab, var(--ck-accent, #3b82f6) 40%, var(--ck-line));
+}
+
+.error {
+  color: var(--ck-bad-ink);
+}
