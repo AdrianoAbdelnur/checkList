@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
@@ -24,7 +25,12 @@ type TripStatusItem = {
   observedCount: number;
   pendingCount: number;
   status: "RED" | "YELLOW" | "GREEN" | "NONE";
-  checks: Array<{ templateId: string; state: "PENDING" | "OBSERVED" | "OK"; badCount: number }>;
+  checks: Array<{
+    templateId: string;
+    state: "PENDING" | "OBSERVED" | "OK";
+    badCount: number;
+    checklistId?: string;
+  }>;
 };
 
 function formatTodayKey() {
@@ -40,6 +46,22 @@ function statusLabel(status: TripStatusItem["status"]) {
   if (status === "YELLOW") return "Amarillo";
   if (status === "GREEN") return "Verde";
   return "Sin checks";
+}
+
+function statusIcon(status: TripStatusItem["status"]) {
+  if (status === "RED") return "✕";
+  if (status === "YELLOW") return "!";
+  if (status === "GREEN") return "✓";
+  return "•";
+}
+
+function templateLabel(templateId: string) {
+  const raw = String(templateId || "").trim();
+  if (!raw) return "Checklist";
+  return raw
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export default function TripsStatusPage() {
@@ -79,8 +101,8 @@ export default function TripsStatusPage() {
         }
 
         const allowed =
-          hasPermission(data.user as any, "checklist.view_all") ||
-          hasAnyRole(data.user as any, ["admin", "supervisor", "reviewer"]);
+          hasPermission(data.user as Record<string, unknown>, "checklist.view_all") ||
+          hasAnyRole(data.user as Record<string, unknown>, ["admin", "supervisor", "reviewer"]);
         if (!allowed) {
           router.push("/dashboard");
           return;
@@ -89,8 +111,9 @@ export default function TripsStatusPage() {
         if (cancelled) return;
         setMe(data.user);
         await load(dateKey);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Error al cargar");
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Error al cargar";
+        if (!cancelled) setError(message);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -118,9 +141,7 @@ export default function TripsStatusPage() {
           <div>
             <p className={styles.kicker}>Control operativo</p>
             <h1>Estado de viajes</h1>
-            <p className={styles.subtitle}>
-              Semáforo por viaje según cumplimiento de checklists asignados.
-            </p>
+            <p className={styles.subtitle}>Semaforo por viaje segun cumplimiento de checklists asignados.</p>
           </div>
           <div className={styles.actions}>
             <label className={styles.dateWrap}>
@@ -147,17 +168,44 @@ export default function TripsStatusPage() {
             items.map((item) => (
               <article key={item.tripId} className={styles.row}>
                 <div className={styles.rowHead}>
-                  <div>
+                  <div className={styles.tripInfo}>
                     <h3>{item.dominio || "-"}</h3>
                     <p>{item.tipo || "Viaje"}</p>
+                    <p className={styles.meta}>
+                      Asignados: {item.expectedCount} · Realizados: {item.completedCount} · Pendientes: {item.pendingCount} · Observados: {item.observedCount}
+                    </p>
                   </div>
-                  <div className={`${styles.badge} ${styles[`badge${item.status}`]}`}>
-                    {statusLabel(item.status)}
+
+                  <div className={styles.checkLinksCol}>
+                    <span className={styles.checkLinksLabel}>Checks realizados</span>
+                    <div className={styles.checkLinksWrap}>
+                      {item.checks.filter((c) => c.checklistId).length === 0 ? (
+                        <span className={styles.noChecks}>Sin checks completados</span>
+                      ) : (
+                        item.checks
+                          .filter((c) => c.checklistId)
+                          .map((c) => (
+                            <Link
+                              key={`${item.tripId}-${c.templateId}-${c.checklistId}`}
+                              href={`/checklists/${c.checklistId}`}
+                              className={`${styles.checkLink} ${styles[`checkLink${c.state}`]}`}
+                              title={`Ver checklist ${templateLabel(c.templateId)}`}
+                            >
+                              {templateLabel(c.templateId)}
+                            </Link>
+                          ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div
+                    className={`${styles.badge} ${styles[`badge${item.status}`]}`}
+                    title={statusLabel(item.status)}
+                    aria-label={statusLabel(item.status)}
+                  >
+                    <span className={styles.statusIcon}>{statusIcon(item.status)}</span>
                   </div>
                 </div>
-                <p className={styles.meta}>
-                  Asignados: {item.expectedCount} · Realizados: {item.completedCount} · Pendientes: {item.pendingCount} · Observados: {item.observedCount}
-                </p>
               </article>
             ))
           )}
@@ -166,4 +214,3 @@ export default function TripsStatusPage() {
     </ThemeShell>
   );
 }
-

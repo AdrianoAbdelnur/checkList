@@ -1,15 +1,17 @@
 import ChecklistViewer from "./viewer";
+import ReviewStatusControl from "./ReviewStatusControl";
 import { cookies } from "next/headers";
 import { getSessionData } from "@/lib/auth";
 import { getChecklistWithTemplateById } from "@/lib/checklists";
-import { hasPermission } from "@/lib/roles";
+import { hasAnyRole, hasPermission } from "@/lib/roles";
 import {
   formatChecklistDate,
-  getChecklistDecision,
   getChecklistDecisionLabel,
   getChecklistInspectorLabel,
   getChecklistInspectorRole,
   getChecklistPlate,
+  getChecklistReviewStatus,
+  getChecklistReviewStatusLabel,
   getChecklistVisibility,
   normalizeChecklistText,
 } from "@/lib/checklists-ui";
@@ -20,7 +22,7 @@ function toPlain<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 
-type AnyObj = Record<string, any>;
+type AnyObj = Record<string, unknown>;
 
 function getToneByStatus(status: string) {
   const t = normalizeChecklistText(status);
@@ -29,6 +31,10 @@ function getToneByStatus(status: string) {
   if (t.includes("SUBMIT")) return styles.warn;
   if (t.includes("DRAFT")) return styles.muted;
   return styles.neutral;
+}
+
+function getToneByReview(reviewStatus: "REVISADO" | "SIN_REVISION") {
+  return reviewStatus === "REVISADO" ? styles.good : styles.muted;
 }
 
 export default async function ChecklistDetailPage({
@@ -49,7 +55,7 @@ export default async function ChecklistDetailPage({
 
   const checklist = toPlain(result.checklist) as AnyObj;
   const template = toPlain(result.template) as AnyObj;
-  const canViewAll = hasPermission(session as any, "checklist.view_all");
+  const canViewAll = hasPermission(session as Record<string, unknown>, "checklist.view_all");
   const isOwner = String(checklist?.inspectorId?._id ?? checklist?.inspectorId ?? "") === session.userId;
   if (!canViewAll && !isOwner) throw new Error("No autorizado");
 
@@ -57,25 +63,29 @@ export default async function ChecklistDetailPage({
   const inspectorRole = getChecklistInspectorRole(checklist);
   const visibility = getChecklistVisibility(checklist);
   const decision = getChecklistDecisionLabel(checklist);
-  const status = String(checklist.status ?? "—");
+  const reviewStatus = getChecklistReviewStatus(checklist);
+  const reviewLabel = getChecklistReviewStatusLabel(checklist);
+  const status = String(checklist.status ?? "-");
+  const checklistTitle = String(template?.title ?? checklist?.title ?? "Checklist");
+  const canManageReview =
+    hasAnyRole(session as Record<string, unknown>, ["admin", "reviewer"]) ||
+    hasPermission(session as Record<string, unknown>, "checklist.review");
 
   return (
     <ThemeShellServer user={session}>
       <main className={styles.page}>
         <section className={styles.hero}>
           <div className={styles.heroTitle}>
-            <p className={styles.kicker}>Detalle de inspección</p>
-            <h1>
-              {String(checklist.templateId ?? "Template")} v{String(checklist.templateVersion ?? "—")}
-            </h1>
+            <p className={styles.kicker}>Detalle de inspeccion</p>
+            <h1>{checklistTitle}</h1>
             <p>
-              {template?.title ? String(template.title) : "Checklist"} · Vehículo {String(getChecklistPlate(checklist) ?? "—")}
+              {template?.title ? String(template.title) : "Checklist"} · Vehiculo {String(getChecklistPlate(checklist) ?? "-")}
             </p>
           </div>
 
           <div className={styles.heroBadges}>
             <span className={`${styles.badge} ${getToneByStatus(status)}`}>{status}</span>
-            <span className={`${styles.badge} ${getToneByStatus(decision)}`}>{decision}</span>
+            <span className={`${styles.badge} ${getToneByReview(reviewStatus)}`}>{reviewLabel}</span>
           </div>
         </section>
 
@@ -105,8 +115,13 @@ export default async function ChecklistDetailPage({
         <section className={styles.viewerFrame}>
           <ChecklistViewer template={template} checklist={checklist} />
         </section>
+
+        <ReviewStatusControl
+          checklistId={String(checklist?._id ?? "")}
+          initialStatus={reviewStatus}
+          canEdit={canManageReview}
+        />
       </main>
     </ThemeShellServer>
   );
 }
-

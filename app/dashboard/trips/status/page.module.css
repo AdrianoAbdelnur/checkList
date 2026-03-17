@@ -134,10 +134,16 @@
 }
 
 .rowHead {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) 1fr auto;
   gap: 12px;
   align-items: center;
+}
+
+.tripInfo {
+  min-width: 0;
+  justify-self: start;
+  align-self: center;
 }
 
 .rowHead h3 {
@@ -151,12 +157,85 @@
   font-weight: 700;
 }
 
+.checkLinksCol {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  align-content: center;
+  text-align: left;
+  align-self: center;
+  padding-left: 18px;
+}
+
+.checkLinksLabel {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.checkLinksWrap {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+}
+
+.checkLink {
+  text-decoration: none;
+  border-radius: 999px;
+  border: 1px solid var(--ck-line);
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--ck-text);
+  background: color-mix(in oklab, var(--ck-surface) 70%, var(--ck-surface-2));
+}
+
+.checkLink:hover {
+  border-color: color-mix(in oklab, var(--ck-text-soft) 35%, var(--ck-line));
+}
+
+.checkLinkOBSERVED {
+  color: #f59e0b;
+  border-color: color-mix(in oklab, #f59e0b 50%, var(--ck-line));
+  background: color-mix(in oklab, #f59e0b 14%, var(--ck-surface));
+}
+
+.checkLinkOK {
+  color: #10b981;
+  border-color: color-mix(in oklab, #10b981 40%, var(--ck-line));
+  background: color-mix(in oklab, #10b981 14%, var(--ck-surface));
+}
+
+.checkLinkPENDING {
+  color: var(--ck-text-soft);
+}
+
+.noChecks {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .badge {
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
+  width: 40px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 18px;
   font-weight: 900;
   border: 1px solid var(--ck-line);
+  justify-self: end;
+  align-self: center;
+}
+
+.statusIcon {
+  line-height: 1;
 }
 
 .badgeRED {
@@ -183,6 +262,8 @@
   margin: 10px 0 0;
   color: var(--ck-text-soft);
   font-weight: 700;
+  font-size: 12px;
+  line-height: 1.15;
 }
 
 @media (max-width: 920px) {
@@ -198,5 +279,13 @@
   .summary {
     grid-template-columns: 1fr 1fr;
   }
-}
 
+  .rowHead {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .checkLinksCol {
+    padding-left: 0;
+  }
+}
