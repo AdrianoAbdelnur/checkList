@@ -86,6 +86,11 @@ export default function LoginForm() {
         throw new Error(json?.message || json?.error || "Credenciales inválidas");
       }
 
+      if (json?.user?.mustChangePassword) {
+        router.replace("/force-change-password");
+        return;
+      }
+
       router.replace(redirectPath);
     } catch (err: any) {
       setError(err?.message || "Error de login");

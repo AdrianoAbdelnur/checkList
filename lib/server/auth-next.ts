@@ -13,7 +13,10 @@ type AuthOk = {
   session: SessionData;
 };
 
-export async function requireAuthSession(req: NextRequest): Promise<AuthOk | AuthFail> {
+export async function requireAuthSession(
+  req: NextRequest,
+  options?: { allowMustChangePassword?: boolean }
+): Promise<AuthOk | AuthFail> {
   const token = req.cookies.get("session")?.value;
   if (!token) {
     return { ok: false, status: 401, error: "No autenticado" };
@@ -22,6 +25,10 @@ export async function requireAuthSession(req: NextRequest): Promise<AuthOk | Aut
   const session = await getSessionData(token);
   if (!session) {
     return { ok: false, status: 401, error: "No autenticado" };
+  }
+
+  if (session.mustChangePassword && !options?.allowMustChangePassword) {
+    return { ok: false, status: 403, error: "Debe actualizar su contraseña" };
   }
 
   return { ok: true, session };

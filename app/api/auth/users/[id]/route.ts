@@ -116,6 +116,8 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       const derived = crypto.scryptSync(String(password), salt, 64).toString("hex");
       update.salt = salt;
       update.password = derived;
+      update.mustChangePassword = true;
+      update.passwordChangedAt = null;
     }
 
     if (Object.keys(update).length === 0) {

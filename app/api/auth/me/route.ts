@@ -3,7 +3,7 @@ import { requireAuthSession } from '@/lib/server/auth-next'
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireAuthSession(req)
+    const auth = await requireAuthSession(req, { allowMustChangePassword: true })
     if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
     return NextResponse.json({ user: auth.session })
   } catch {

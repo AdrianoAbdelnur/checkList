@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role,
+        roles: Array.isArray((user as any).roles) ? (user as any).roles : [],
+        mustChangePassword: Boolean((user as any).mustChangePassword),
       },
     });
 

@@ -12,6 +12,8 @@ export interface IUser extends Document {
   role: string
   roles?: string[]
   userNumber?: string
+  mustChangePassword?: boolean
+  passwordChangedAt?: Date | null
 }
 
 const UserSchema = new Schema<IUser>(
@@ -62,6 +64,15 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       sparse: true,
       index: true,
+    },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    passwordChangedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
