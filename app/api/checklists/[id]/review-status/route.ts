@@ -21,7 +21,7 @@ function normalizeReviewStatus(value: unknown): ReviewStatus | null {
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   await connectToDatabase();
 
-  const auth = await requireRolesSession(req, ["admin", "reviewer"]);
+  const auth = await requireRolesSession(req, ["admin", "manager", "supervisor"]);
   if (!auth.ok) {
     return Response.json({ ok: false, message: auth.error }, { status: auth.status });
   }
@@ -74,3 +74,4 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     },
   });
 }
+

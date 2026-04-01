@@ -1,13 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "../../../../lib/mongoose";
 import User from "../../../../models/User";
+import Counter from "../../../../models/Counter";
 import crypto from "crypto";
 import { requireAdminSession } from "@/lib/server/auth-next";
 import { getPrimaryRole, isAppRole, normalizeRoles } from "@/lib/roles";
 
-function normalizeInspectorNumber(input: unknown): string | undefined {
-  const value = String(input ?? "").trim();
-  return value ? value : undefined;
+async function getNextUserNumber(): Promise<string> {
+  const counter = await Counter.findOneAndUpdate(
+    { key: "userNumber" },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  ).lean();
+  return String(counter?.seq || "");
 }
 
 export async function GET(req: NextRequest) {
@@ -28,10 +33,14 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, email, password, role, roles, telephone, inspectorNumber } = body;
+  const { firstName, lastName, email, password, role, roles, telephone, userNumber, inspectorNumber } = body;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email y password son requeridos" }, { status: 400 });
+  }
+
+  if (userNumber !== undefined || inspectorNumber !== undefined) {
+    return NextResponse.json({ error: "userNumber se asigna automaticamente" }, { status: 400 });
   }
 
   if (role !== undefined && !isAppRole(String(role))) {
@@ -46,28 +55,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "roles contiene valores invalidos" }, { status: 400 });
   }
 
-  const normalizedInspectorNumber = normalizeInspectorNumber(inspectorNumber);
-  if (normalizedInspectorNumber && !/^\d+$/.test(normalizedInspectorNumber)) {
-    return NextResponse.json({ error: "inspectorNumber debe contener solo números" }, { status: 400 });
-  }
-
   await connectToDatabase();
   try {
     const existing = await User.findOne({ email }).lean();
     if (existing) return NextResponse.json({ error: "Email ya registrado" }, { status: 409 });
 
-    if (normalizedInspectorNumber) {
-      const existingInspectorNumber = await User.findOne({
-        inspectorNumber: normalizedInspectorNumber,
-        isDelete: { $ne: true },
-      }).lean();
-      if (existingInspectorNumber) {
-        return NextResponse.json({ error: "Número de inspector ya registrado" }, { status: 409 });
-      }
-    }
-
     const salt = crypto.randomBytes(16).toString("hex");
     const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+    const nextUserNumber = await getNextUserNumber();
 
     const normalizedRoles = normalizeRoles({
       role: role ?? undefined,
@@ -85,14 +80,17 @@ export async function POST(req: NextRequest) {
       role: primaryRole,
       roles: persistedRoles,
       telephone: telephone || "",
-      inspectorNumber: normalizedInspectorNumber,
+      userNumber: nextUserNumber,
     });
 
     await user.save();
     const u = await User.findById(user._id).select("-password -salt").lean();
 
     return NextResponse.json({ user: u }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Error al crear usuario" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e?.message ? `Error al crear usuario: ${String(e.message)}` : "Error al crear usuario" },
+      { status: 500 },
+    );
   }
 }

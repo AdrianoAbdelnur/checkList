@@ -34,7 +34,7 @@ export default function TripsHomePage() {
 
         const allowed =
           hasPermission(data.user as any, "checklist.view_all") ||
-          hasAnyRole(data.user as any, ["admin", "supervisor", "reviewer"]);
+          hasAnyRole(data.user as any, ["admin", "manager", "supervisor"]);
 
         if (!allowed) {
           router.push("/dashboard");
@@ -73,7 +73,7 @@ export default function TripsHomePage() {
             <p className={styles.kicker}>Operación diaria</p>
             <h1>Viajes</h1>
             <p className={styles.subtitle}>
-              Elegí el flujo que querés usar para trabajar con viajes del día.
+              Cargá viajes y seguí su estado por patente según checklists activos.
             </p>
           </div>
           <a href="/dashboard" className={styles.secondaryBtn}>Volver al panel</a>
@@ -86,12 +86,6 @@ export default function TripsHomePage() {
             <p>Subi Excel, valida por fecha y guarda viajes en base de datos.</p>
           </a>
 
-          <a href="/dashboard/trips/assign" className={styles.card}>
-            <p className={styles.cardKicker}>Planificacion</p>
-            <h3>Asignar viajes</h3>
-            <p>Matriz de viajes vs checklists para definir que inspeccion requiere cada viaje.</p>
-          </a>
-
           <a href="/dashboard/trips/status" className={styles.card}>
             <p className={styles.cardKicker}>Seguimiento</p>
             <h3>Estado de viajes</h3>
@@ -102,3 +96,4 @@ export default function TripsHomePage() {
     </ThemeShell>
   );
 }
+

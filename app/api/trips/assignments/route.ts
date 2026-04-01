@@ -15,7 +15,7 @@ function normalizeDateKey(value: unknown): string {
 function isAllowed(user: any) {
   return (
     hasPermission(user as any, "checklist.view_all") ||
-    hasAnyRole(user as any, ["admin", "supervisor", "reviewer"])
+    hasAnyRole(user as any, ["admin", "manager", "supervisor"])
   );
 }
 
@@ -135,7 +135,7 @@ export async function GET(req: Request) {
     $or: [{ role: "inspector" }, { roles: "inspector" }],
   })
     .sort({ firstName: 1, lastName: 1, email: 1 })
-    .select("firstName lastName email role roles inspectorNumber assignedTemplateIds")
+    .select("firstName lastName email role roles userNumber assignedTemplateIds")
     .lean();
 
   return Response.json({
@@ -166,7 +166,7 @@ export async function GET(req: Request) {
       firstName: String(u.firstName || "").trim(),
       lastName: String(u.lastName || "").trim(),
       email: String(u.email || "").trim().toLowerCase(),
-      inspectorNumber: String(u.inspectorNumber || "").trim(),
+      userNumber: String(u.userNumber || "").trim(),
       assignedTemplateIds: normalizeTemplateIds(u.assignedTemplateIds),
       isInspector: hasInspectorRole(u),
     })),
@@ -274,3 +274,5 @@ export async function PATCH(req: Request) {
     },
   });
 }
+
+

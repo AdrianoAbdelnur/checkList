@@ -8,7 +8,7 @@ type Ctx = { params: Promise<{ id: string }> };
 function isAllowed(user: any) {
   return (
     hasPermission(user as any, "checklist.view_all") ||
-    hasAnyRole(user as any, ["admin", "supervisor", "reviewer"])
+    hasAnyRole(user as any, ["admin", "manager", "supervisor"])
   );
 }
 
@@ -88,3 +88,4 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return Response.json({ ok: true });
 }
+

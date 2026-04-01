@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { connectToDatabase } from "../../../../../lib/mongoose";
 import User from "../../../../../models/User";
@@ -6,11 +6,6 @@ import { requireAdminSession } from "@/lib/server/auth-next";
 import { getPrimaryRole, isAppRole, normalizeRoles } from "@/lib/roles";
 
 type Ctx = { params: Promise<{ id: string }> };
-
-function normalizeInspectorNumber(input: unknown): string | undefined {
-  const value = String(input ?? "").trim();
-  return value ? value : undefined;
-}
 
 export async function GET(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
@@ -42,12 +37,16 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, telephone, userId, role, roles, email, password, inspectorNumber } = body;
+  const { firstName, lastName, telephone, userId, role, roles, email, password, userNumber, inspectorNumber } = body;
   const { id: routeId } = await ctx.params;
   const targetId = userId || routeId;
 
   if (!targetId) {
     return NextResponse.json({ error: "userId es requerido" }, { status: 400 });
+  }
+
+  if (userNumber !== undefined || inspectorNumber !== undefined) {
+    return NextResponse.json({ error: "userNumber no se puede editar" }, { status: 400 });
   }
 
   if (role !== undefined && !isAppRole(String(role))) {
@@ -62,16 +61,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "roles contiene valores invalidos" }, { status: 400 });
   }
 
-  const normalizedInspectorNumber = normalizeInspectorNumber(inspectorNumber);
-  if (inspectorNumber !== undefined && normalizedInspectorNumber && !/^\d+$/.test(normalizedInspectorNumber)) {
-    return NextResponse.json({ error: "inspectorNumber debe contener solo números" }, { status: 400 });
-  }
-
   const update: any = {};
   if (firstName !== undefined) update.firstName = firstName;
   if (lastName !== undefined) update.lastName = lastName;
   if (telephone !== undefined) update.telephone = telephone;
-  if (inspectorNumber !== undefined) update.inspectorNumber = normalizedInspectorNumber ?? undefined;
   if (email !== undefined) update.email = String(email).trim().toLowerCase();
 
   if (email !== undefined && !update.email) {
@@ -92,17 +85,6 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
       if (existing) {
         return NextResponse.json({ error: "Email ya registrado" }, { status: 409 });
-      }
-    }
-
-    if (inspectorNumber !== undefined && normalizedInspectorNumber) {
-      const existingInspectorNumber = await User.findOne({
-        inspectorNumber: normalizedInspectorNumber,
-        _id: { $ne: targetId },
-        isDelete: { $ne: true },
-      }).lean();
-      if (existingInspectorNumber) {
-        return NextResponse.json({ error: "Número de inspector ya registrado" }, { status: 409 });
       }
     }
 
@@ -149,8 +131,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     }
 
     return NextResponse.json({ user: updatedUser });
-  } catch {
-    return NextResponse.json({ error: "Error al actualizar usuario" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e?.message ? `Error al actualizar usuario: ${String(e.message)}` : "Error al actualizar usuario" },
+      { status: 500 },
+    );
   }
 }
 

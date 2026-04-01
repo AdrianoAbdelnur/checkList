@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -56,7 +56,7 @@ export default function TemplatesEditionPage() {
           router.push("/login");
           return;
         }
-        if (!hasAnyRole(meJson.user as any, ["admin", "reviewer"])) {
+        if (!hasAnyRole(meJson.user as any, ["admin"])) {
           router.push("/dashboard");
           return;
         }
@@ -84,7 +84,7 @@ export default function TemplatesEditionPage() {
     <ThemeShell user={user}>
       <main className={styles.page}>
         <section className={styles.hero}>
-          <p className={styles.kicker}>Templates · Edition</p>
+          <p className={styles.kicker}>Templates Â· Edition</p>
           <h1>Elegi metodo de trabajo</h1>
           <p>
             Usuario: <strong>{getUserLabel(user)}</strong>. Selecciona como queres cargar o editar el template.
@@ -106,5 +106,6 @@ export default function TemplatesEditionPage() {
     </ThemeShell>
   );
 }
+
 
 

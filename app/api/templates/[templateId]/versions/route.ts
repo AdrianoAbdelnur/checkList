@@ -1,4 +1,4 @@
-import { createTemplateVersion, listTemplateVersions } from "@/lib/templates";
+﻿import { createTemplateVersion, listTemplateVersions } from "@/lib/templates";
 import { NextRequest } from "next/server";
 import { requireRolesSession } from "@/lib/server/auth-next";
 
@@ -12,7 +12,7 @@ export async function GET(_: Request, ctx: Ctx) {
 }
 
 export async function POST(req: NextRequest, ctx: Ctx) {
-  const auth = await requireRolesSession(req, ["admin", "reviewer"]);
+  const auth = await requireRolesSession(req, ["admin"]);
   if (!auth.ok) return Response.json({ ok: false, message: auth.error }, { status: auth.status });
 
   const { templateId } = await ctx.params;
@@ -51,3 +51,4 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   return Response.json({ ok: true, item: created }, { status: 201 });
 }
+

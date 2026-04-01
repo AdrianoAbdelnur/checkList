@@ -1,10 +1,9 @@
-export const ROLE_VALUES = [
+﻿export const ROLE_VALUES = [
   "inspector",
   "reviewer",
   "supervisor",
+  "manager",
   "admin",
-  "client",
-  "auditor",
 ] as const;
 
 export type AppRole = (typeof ROLE_VALUES)[number];
@@ -21,12 +20,10 @@ export function roleLabelEs(role?: string | null) {
       return "Reviewer";
     case "supervisor":
       return "Supervisor";
+    case "manager":
+      return "Manager";
     case "admin":
       return "Administrator";
-    case "client":
-      return "Client";
-    case "auditor":
-      return "Auditor";
     default:
       return role || "-";
   }
@@ -36,9 +33,8 @@ export const ROLE_OPTIONS_ES: Array<{ value: AppRole; label: string }> = [
   { value: "inspector", label: "Inspector" },
   { value: "reviewer", label: "Reviewer" },
   { value: "supervisor", label: "Supervisor" },
+  { value: "manager", label: "Manager" },
   { value: "admin", label: "Administrator" },
-  { value: "client", label: "Client" },
-  { value: "auditor", label: "Auditor" },
 ];
 
 export type RoleCarrier =
@@ -60,24 +56,18 @@ export type AppPermission =
   | "template.manage"
   | "user.manage"
   | "dashboard.metrics"
-  | "report.audit"
-  | "report.client"
-  | "vehicle.client_upload_docs";
+  | "special.authorize";
 
 export const ROLE_PERMISSIONS: Record<AppRole, ReadonlyArray<AppPermission>> = {
   inspector: ["checklist.create", "checklist.view_assigned"],
-  reviewer: [
-    "checklist.view_assigned",
+  reviewer: ["checklist.view_all"],
+  supervisor: ["checklist.view_all", "checklist.review", "checklist.approve_reject", "dashboard.metrics"],
+  manager: [
+    "checklist.view_all",
     "checklist.review",
     "checklist.approve_reject",
     "dashboard.metrics",
-    "template.manage",
-  ],
-  supervisor: [
-    "checklist.view_all",
-    "checklist.reassign",
-    "dashboard.metrics",
-    "report.audit",
+    "special.authorize",
   ],
   admin: [
     "checklist.create",
@@ -88,12 +78,8 @@ export const ROLE_PERMISSIONS: Record<AppRole, ReadonlyArray<AppPermission>> = {
     "template.manage",
     "user.manage",
     "dashboard.metrics",
-    "report.audit",
-    "report.client",
-    "vehicle.client_upload_docs",
+    "special.authorize",
   ],
-  client: ["report.client", "vehicle.client_upload_docs"],
-  auditor: ["checklist.view_all", "report.audit", "dashboard.metrics"],
 };
 
 export function normalizeRoles(input: RoleCarrier): AppRole[] {
@@ -115,14 +101,7 @@ export function normalizeRoles(input: RoleCarrier): AppRole[] {
 
 export function getPrimaryRole(input: RoleCarrier): AppRole {
   const roles = normalizeRoles(input);
-  const priority: AppRole[] = [
-    "admin",
-    "supervisor",
-    "reviewer",
-    "inspector",
-    "auditor",
-    "client",
-  ];
+  const priority: AppRole[] = ["admin", "manager", "supervisor", "reviewer", "inspector"];
   return priority.find((r) => roles.includes(r)) ?? "inspector";
 }
 

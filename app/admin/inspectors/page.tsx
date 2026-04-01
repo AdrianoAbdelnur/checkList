@@ -19,7 +19,7 @@ type Inspector = {
   firstName?: string;
   lastName?: string;
   email: string;
-  inspectorNumber?: string;
+  userNumber?: string;
   role: string;
   roles?: string[];
   assignedTemplateIds?: string[];
@@ -130,7 +130,7 @@ export default function InspectorAssignmentsPage() {
       const haystack = [
         displayName(inspector),
         inspector.email,
-        inspector.inspectorNumber || "",
+        inspector.userNumber || "",
         normalizeRoles(inspector).map(roleLabelEs).join(" "),
       ]
         .join(" ")
@@ -302,7 +302,7 @@ export default function InspectorAssignmentsPage() {
                       <td className={styles.stickyCol}>
                         <div className={styles.userCell}>
                           <strong>{displayName(inspector)}</strong>
-                          {inspector.inspectorNumber ? <small>N° {inspector.inspectorNumber}</small> : null}
+                          {inspector.userNumber ? <small>User Number: {inspector.userNumber}</small> : null}
                           <small>{inspector.email}</small>
                           <small>{normalizeRoles(inspector).map(roleLabelEs).join(" | ")}</small>
                         </div>
@@ -340,3 +340,4 @@ export default function InspectorAssignmentsPage() {
     </ThemeShell>
   );
 }
+
