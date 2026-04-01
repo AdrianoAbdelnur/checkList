@@ -11,7 +11,6 @@ export interface IUser extends Document {
   isDelete: boolean
   role: string
   roles?: string[]
-  assignedTemplateIds?: string[]
   userNumber?: string
 }
 
@@ -56,10 +55,6 @@ const UserSchema = new Schema<IUser>(
       type: [String],
       enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin'],
       default: ['inspector'],
-    },
-    assignedTemplateIds: {
-      type: [String],
-      default: [],
     },
     userNumber: {
       type: String,

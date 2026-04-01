@@ -44,7 +44,6 @@ const UserSchema = new mongoose.Schema(
       enum: ["inspector", "reviewer", "supervisor", "manager", "admin"],
       default: ["inspector"],
     },
-    assignedTemplateIds: { type: [String], default: [] },
     userNumber: { type: String, trim: true, unique: true, sparse: true, index: true },
   },
   { versionKey: false, strict: false }
