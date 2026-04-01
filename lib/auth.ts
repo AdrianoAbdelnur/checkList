@@ -11,6 +11,7 @@ export type SessionData = {
   lastName: string
   role: string
   roles: string[]
+  mustChangePassword: boolean
 }
 
 export async function getUserById(userId: string): Promise<(Omit<IUser, 'password' | 'salt'> & { _id: any }) | null> {
@@ -64,6 +65,7 @@ export async function getSessionData(token?: string): Promise<SessionData | null
       lastName: user.lastName || '',
       role: getPrimaryRole({ role: user.role || 'inspector', roles }),
       roles,
+      mustChangePassword: Boolean((user as any).mustChangePassword),
     }
   } catch (e) {
     console.error('Error getting session data:', e)

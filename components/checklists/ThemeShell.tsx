@@ -12,6 +12,7 @@ type HeaderUser = {
   firstName?: string;
   lastName?: string;
   role?: string;
+  mustChangePassword?: boolean;
 } | null;
 
 function getInitialTheme(): ThemeMode {
@@ -52,6 +53,27 @@ export default function ThemeShell({
     window.localStorage.setItem("checklists-theme", theme);
     document.cookie = `checklists-theme=${theme}; Path=/; Max-Age=31536000; SameSite=Lax`;
   }, [theme, hydrated]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!pathname || pathname === "/login" || pathname === "/force-change-password") return;
+    async function enforcePasswordChange() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (res.ok && data?.user?.mustChangePassword) {
+          router.replace("/force-change-password");
+        }
+      } catch {
+        // noop
+      }
+    }
+    enforcePasswordChange();
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, router]);
 
   const showBackButton = !!pathname && pathname !== "/dashboard";
 

@@ -81,6 +81,8 @@ export async function POST(req: NextRequest) {
       roles: persistedRoles,
       telephone: telephone || "",
       userNumber: nextUserNumber,
+      mustChangePassword: true,
+      passwordChangedAt: null,
     });
 
     await user.save();

@@ -12,7 +12,10 @@ function readCookie(cookiesHeader: string, name: string) {
   return null;
 }
 
-export async function requireUser(req: Request) {
+export async function requireUser(
+  req: Request,
+  options?: { allowMustChangePassword?: boolean },
+) {
   const headerToken = (req.headers.get("x-session-token") ?? "").trim();
 
   const cookieHeader = req.headers.get("cookie") ?? "";
@@ -35,6 +38,10 @@ export async function requireUser(req: Request) {
   const user = await User.findById(session.userId).lean();
   if (!user) {
     return { ok: false as const, status: 401 as const, message: "Usuario no existe" };
+  }
+
+  if (Boolean((user as any).mustChangePassword) && !options?.allowMustChangePassword) {
+    return { ok: false as const, status: 403 as const, message: "Debe actualizar su contraseña" };
   }
 
   return { ok: true as const, user };
