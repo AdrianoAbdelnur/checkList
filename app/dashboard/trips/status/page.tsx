@@ -42,6 +42,12 @@ function formatTodayKey() {
   return `${y}-${m}-${day}`;
 }
 
+function formatDateEsFromKey(key: string) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ""));
+  if (!m) return key || "-";
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
 function statusLabel(status: TripStatusItem["status"]) {
   if (status === "RED") return "Rojo";
   if (status === "YELLOW") return "Amarillo";
@@ -147,7 +153,33 @@ export default function TripsStatusPage() {
           <div className={styles.actions}>
             <label className={styles.dateWrap}>
               <span>Fecha</span>
-              <input type="date" value={dateKey} onChange={(e) => setDateKey(e.target.value)} />
+              <div className={styles.dateSelector}>
+                <input
+                  type="text"
+                  className={styles.dateDisplay}
+                  value={formatDateEsFromKey(dateKey)}
+                  readOnly
+                  aria-label="Fecha seleccionada en formato español"
+                />
+                <svg
+                  aria-hidden
+                  className={styles.dateIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+                  <path d="M8 3V7M16 3V7M3 10H21" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                <input
+                  type="date"
+                  className={styles.datePickerNative}
+                  value={dateKey}
+                  onChange={(e) => setDateKey(e.target.value)}
+                  lang="es-AR"
+                  aria-label="Selector de fecha"
+                />
+              </div>
             </label>
             <a href="/dashboard/trips" className={styles.secondaryBtn}>Volver</a>
           </div>
