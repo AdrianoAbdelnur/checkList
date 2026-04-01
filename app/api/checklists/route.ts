@@ -5,6 +5,50 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { listChecklistsForInspector } from "@/lib/checklists";
 import { hasPermission } from "@/lib/roles";
 
+function normalizePlate(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function dateRangeForKey(key: string) {
+  const start = new Date(`${key}T00:00:00.000Z`);
+  const end = new Date(`${key}T23:59:59.999Z`);
+  return { start, end };
+}
+
+function extractPlate(body: any): string {
+  const subject =
+    body?.data?.subject?.plate ??
+    body?.data?.subject?.patente ??
+    body?.data?.subject?.dominio ??
+    body?.data?.subject?.vehicle_domain ??
+    body?.data?.subject?.vehicleDomain;
+  const values =
+    body?.data?.values?.vehicle_domain ??
+    body?.data?.values?.vehicleDomain ??
+    body?.data?.values?.pre_plate ??
+    body?.data?.values?.plate ??
+    body?.data?.values?.patente ??
+    body?.data?.values?.dominio;
+  const meta =
+    body?.data?.meta?.vehicle_domain ??
+    body?.data?.meta?.vehicleDomain ??
+    body?.data?.meta?.plate ??
+    body?.data?.meta?.patente ??
+    body?.data?.meta?.dominio;
+  return normalizePlate(subject ?? values ?? meta ?? "");
+}
+
 export async function GET(req: Request) {
   await connectToDatabase();
 
@@ -72,6 +116,43 @@ export async function POST(req: Request) {
     lastName: auth.user.lastName,
     role: auth.user.role,
   };
+
+  const plate = extractPlate(body);
+  if (plate) {
+    const dateKey = todayKey();
+    const { start, end } = dateRangeForKey(dateKey);
+    const existing = await Checklist.findOne({
+      templateId,
+      submittedAt: { $gte: start, $lte: end },
+      $or: [
+        { "data.subject.plate": plate },
+        { "data.subject.patente": plate },
+        { "data.subject.dominio": plate },
+        { "data.subject.vehicle_domain": plate },
+        { "data.subject.vehicleDomain": plate },
+        { "data.values.pre_plate": plate },
+        { "data.values.plate": plate },
+        { "data.values.patente": plate },
+        { "data.values.dominio": plate },
+        { "data.values.vehicle_domain": plate },
+        { "data.values.vehicleDomain": plate },
+        { "data.meta.plate": plate },
+        { "data.meta.patente": plate },
+        { "data.meta.dominio": plate },
+        { "data.meta.vehicle_domain": plate },
+        { "data.meta.vehicleDomain": plate },
+      ],
+    })
+      .select("_id")
+      .lean();
+
+    if (existing) {
+      return Response.json(
+        { ok: false, message: "Este check ya está realizado para este vehículo el día de hoy." },
+        { status: 409 },
+      );
+    }
+  }
 
   const created = await Checklist.create({
     templateId,

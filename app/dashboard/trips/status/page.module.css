@@ -63,6 +63,7 @@
 .dateWrap {
   display: grid;
   gap: 6px;
+  width: 200px;
 }
 
 .dateWrap span {
@@ -71,12 +72,52 @@
   font-weight: 700;
 }
 
-.dateWrap input {
+.dateSelector {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
   border-radius: 10px;
   border: 1px solid var(--ck-line);
-  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  background: color-mix(in oklab, var(--ck-surface) 68%, var(--ck-surface-2));
   color: var(--ck-text);
-  padding: 8px 10px;
+}
+
+.dateDisplay {
+  width: 100%;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ck-text);
+  padding: 8px 42px 8px 10px;
+  font-weight: 800;
+}
+
+.dateIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--ck-text);
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+.datePickerNative {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+}
+
+.datePickerNative::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(1) brightness(1.35) contrast(1.2);
 }
 
 .secondaryBtn {

@@ -35,12 +35,25 @@ function normalizePlate(value: unknown) {
 
 function checklistPlate(row: any): string {
   const fromSubject =
+    row?.data?.subject?.vehicle_domain ??
+    row?.data?.subject?.vehicleDomain ??
     row?.data?.subject?.plate ??
     row?.data?.subject?.patente ??
     row?.data?.subject?.dominio ??
     row?.data?.subject?.vehiclePlate;
-  const fromValues = row?.data?.values?.pre_plate ?? row?.data?.values?.plate;
-  const fromMeta = row?.data?.meta?.plate;
+  const fromValues =
+    row?.data?.values?.vehicle_domain ??
+    row?.data?.values?.vehicleDomain ??
+    row?.data?.values?.pre_plate ??
+    row?.data?.values?.plate ??
+    row?.data?.values?.patente ??
+    row?.data?.values?.dominio;
+  const fromMeta =
+    row?.data?.meta?.vehicle_domain ??
+    row?.data?.meta?.vehicleDomain ??
+    row?.data?.meta?.plate ??
+    row?.data?.meta?.patente ??
+    row?.data?.meta?.dominio;
   return normalizePlate(fromSubject ?? fromValues ?? fromMeta ?? "");
 }
 
