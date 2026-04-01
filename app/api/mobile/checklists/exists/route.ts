@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
+import Trip from "@/models/Trip";
 import { requireUser } from "@/lib/auth/requireUser";
 
 function normalizeDateKey(value: unknown): string {
@@ -51,6 +52,22 @@ export async function GET(req: Request) {
   }
 
   const { start, end } = dateRangeForKey(date);
+  const trips = await Trip.find({ tripDateKey: date })
+    .select("dominio")
+    .lean();
+  const plateFound = (trips as any[]).some(
+    (t) => normalizePlate(t?.dominio) === plate,
+  );
+
+  if (!plateFound) {
+    return Response.json({
+      ok: true,
+      exists: false,
+      plateFound: false,
+      message: "La patente no existe en la lista de hoy.",
+      item: null,
+    });
+  }
 
   const existing = await Checklist.findOne({
     templateId,
@@ -81,6 +98,10 @@ export async function GET(req: Request) {
   return Response.json({
     ok: true,
     exists: !!existing,
+    plateFound: true,
+    message: existing
+      ? "Este check ya está realizado para este vehículo el día de hoy."
+      : null,
     item: existing
       ? {
           id: String(existing._id),
@@ -89,4 +110,3 @@ export async function GET(req: Request) {
       : null,
   });
 }
-
