@@ -1,8 +1,9 @@
-import { connectToDatabase } from "@/lib/db";
+﻿import { connectToDatabase } from "@/lib/db";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
 import Trip from "@/models/Trip";
 import Checklist from "@/models/Checklist";
+import ChecklistTemplate from "@/models/ChecklistTemplate";
 
 function normalizeDateKey(value: unknown): string {
   const raw = String(value ?? "").trim();
@@ -19,39 +20,42 @@ function todayKey() {
   return `${y}-${m}-${day}`;
 }
 
+function dateRangeForKey(key: string) {
+  const start = new Date(`${key}T00:00:00.000Z`);
+  const end = new Date(`${key}T23:59:59.999Z`);
+  return { start, end };
+}
+
+function normalizePlate(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function checklistPlate(row: any): string {
+  const fromSubject =
+    row?.data?.subject?.plate ??
+    row?.data?.subject?.patente ??
+    row?.data?.subject?.dominio ??
+    row?.data?.subject?.vehiclePlate;
+  const fromValues = row?.data?.values?.pre_plate ?? row?.data?.values?.plate;
+  const fromMeta = row?.data?.meta?.plate;
+  return normalizePlate(fromSubject ?? fromValues ?? fromMeta ?? "");
+}
+
 function isAllowed(user: any) {
   return (
     hasPermission(user as any, "checklist.view_all") ||
-    hasAnyRole(user as any, ["admin", "supervisor", "reviewer"])
+    hasAnyRole(user as any, ["admin", "manager", "supervisor"])
   );
-}
-
-function getAssignedTemplates(trip: any): string[] {
-  const fromCheckAssignments =
-    trip?.checkAssignments && typeof trip.checkAssignments === "object"
-      ? Object.keys(trip.checkAssignments).map((x) => String(x || "").trim()).filter(Boolean)
-      : [];
-  if (fromCheckAssignments.length > 0) return fromCheckAssignments;
-
-  const fromInspectorAssignments = Array.isArray(trip?.assignedInspectorAssignments)
-    ? trip.assignedInspectorAssignments
-        .map((x: any) => String(x?.templateId || "").trim())
-        .filter(Boolean)
-    : [];
-  if (fromInspectorAssignments.length > 0) return Array.from(new Set(fromInspectorAssignments));
-
-  return Array.isArray(trip?.assignedTemplateIds)
-    ? Array.from(
-        new Set(trip.assignedTemplateIds.map((x: unknown) => String(x || "").trim()).filter(Boolean)),
-      )
-    : [];
 }
 
 type ChecklistRow = {
   _id: string;
   tripId: string;
   templateId: string;
-  createdAt: string;
+  submittedAt: string;
   badCount: number;
 };
 
@@ -67,50 +71,80 @@ export async function GET(req: Request) {
 
   const trips = await Trip.find({ tripDateKey: date })
     .sort({ dominio: 1, solicitudAt: 1, createdAt: 1 })
-    .select("_id dominio tipo tripDateKey assignedTemplateIds assignedInspectorAssignments checkAssignments")
+    .select("_id dominio tipo tripDateKey")
     .lean();
 
-  const tripIds = (trips as any[]).map((t) => String(t._id));
-  const checklistRows = tripIds.length
+  const templateDocs = await ChecklistTemplate.find({ isActive: true })
+    .sort({ templateId: 1, version: -1 })
+    .select("templateId title shortTitle version")
+    .lean();
+
+  const templateMap = new Map<string, { title: string; shortTitle: string; version: number }>();
+  for (const t of templateDocs as any[]) {
+    const templateId = String(t.templateId || "").trim();
+    if (!templateId || templateMap.has(templateId)) continue;
+    templateMap.set(templateId, {
+      title: String(t.title || templateId),
+      shortTitle: String(t.shortTitle || ""),
+      version: Number(t.version || 1),
+    });
+  }
+  const expectedTemplateIds = Array.from(templateMap.keys());
+
+  const tripIdSet = new Set((trips as any[]).map((t) => String(t._id)));
+  const tripByPlate = new Map<string, string>();
+  for (const trip of trips as any[]) {
+    const plate = normalizePlate(trip.dominio);
+    if (!plate || tripByPlate.has(plate)) continue;
+    tripByPlate.set(plate, String(trip._id));
+  }
+
+  const { start, end } = dateRangeForKey(date);
+  const checklistRows = expectedTemplateIds.length
     ? ((await Checklist.find({
-        "data.assignment.tripId": { $in: tripIds },
+        submittedAt: { $gte: start, $lte: end },
+        templateId: { $in: expectedTemplateIds },
       })
-        .sort({ createdAt: -1 })
-        .select("_id templateId createdAt data")
+        .sort({ submittedAt: -1, createdAt: -1 })
+        .select("_id templateId submittedAt data")
         .lean()) as any[])
     : [];
 
   const latestByTripTemplate = new Map<string, ChecklistRow>();
   for (const c of checklistRows) {
-    const tripId = String(c?.data?.assignment?.tripId || "").trim();
     const templateId = String(c?.templateId || c?.data?.assignment?.assignedTemplateId || "").trim();
-    if (!tripId || !templateId) continue;
+    if (!templateId || !templateMap.has(templateId)) continue;
 
-    const key = `${tripId}::${templateId}`;
+    const explicitTripId = String(c?.data?.assignment?.tripId || "").trim();
+    const inferredTripId = tripIdSet.has(explicitTripId)
+      ? explicitTripId
+      : tripByPlate.get(checklistPlate(c)) || "";
+    if (!inferredTripId) continue;
+
+    const key = `${inferredTripId}::${templateId}`;
     if (latestByTripTemplate.has(key)) continue;
 
     latestByTripTemplate.set(key, {
       _id: String(c._id),
-      tripId,
+      tripId: inferredTripId,
       templateId,
-      createdAt: String(c.createdAt || ""),
+      submittedAt: String(c.submittedAt || ""),
       badCount: Number(c?.data?.meta?.badCount || 0),
     });
   }
 
   const items = (trips as any[]).map((trip) => {
-    const expectedTemplates = getAssignedTemplates(trip);
     let completed = 0;
     let observed = 0;
     let pending = 0;
 
-    const checks = expectedTemplates.map((templateId) => {
-      const key = `${String(trip._id)}::${templateId}`;
-      const row = latestByTripTemplate.get(key);
+    const checks = expectedTemplateIds.map((templateId) => {
+      const row = latestByTripTemplate.get(`${String(trip._id)}::${templateId}`);
       if (!row) {
         pending += 1;
         return {
           templateId,
+          templateTitle: templateMap.get(templateId)?.title || templateId,
           state: "PENDING",
           badCount: 0,
         };
@@ -121,6 +155,7 @@ export async function GET(req: Request) {
       if (hasObs) observed += 1;
       return {
         templateId,
+        templateTitle: templateMap.get(templateId)?.title || templateId,
         state: hasObs ? "OBSERVED" : "OK",
         badCount: row.badCount,
         checklistId: row._id,
@@ -128,7 +163,7 @@ export async function GET(req: Request) {
     });
 
     let status: "RED" | "YELLOW" | "GREEN" | "NONE" = "NONE";
-    if (expectedTemplates.length > 0) {
+    if (expectedTemplateIds.length > 0) {
       status = pending > 0 ? "RED" : observed > 0 ? "YELLOW" : "GREEN";
     }
 
@@ -137,7 +172,7 @@ export async function GET(req: Request) {
       dominio: String(trip.dominio || "").trim().toUpperCase(),
       tipo: String(trip.tipo || "").trim(),
       tripDateKey: String(trip.tripDateKey || ""),
-      expectedCount: expectedTemplates.length,
+      expectedCount: expectedTemplateIds.length,
       completedCount: completed,
       observedCount: observed,
       pendingCount: pending,
@@ -156,4 +191,3 @@ export async function GET(req: Request) {
 
   return Response.json({ ok: true, date, summary, items });
 }
-

@@ -12,7 +12,7 @@ type User = {
   firstName?: string;
   lastName?: string;
   telephone?: string;
-  inspectorNumber?: string;
+  userNumber?: string;
   role: string;
   roles?: string[];
   isDelete?: boolean;
@@ -32,7 +32,6 @@ type FormState = {
   lastName: string;
   email: string;
   telephone: string;
-  inspectorNumber: string;
   roles: string[];
   password: string;
 };
@@ -42,7 +41,6 @@ const defaultForm: FormState = {
   lastName: "",
   email: "",
   telephone: "",
-  inspectorNumber: "",
   roles: ["inspector"],
   password: "",
 };
@@ -68,6 +66,7 @@ function formatDate(value?: string) {
 
 export default function AdminPage() {
   const router = useRouter();
+  const lastAutoPasswordRef = React.useRef("");
   const [me, setMe] = React.useState<SessionUser | null>(null);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -150,6 +149,19 @@ export default function AdminPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isModalOpen, closeModal]);
 
+  React.useEffect(() => {
+    if (mode !== "create") {
+      lastAutoPasswordRef.current = "";
+      return;
+    }
+    const lastName = form.lastName.trim();
+    const nextDefault = `${lastName || ""}123`;
+    if (!form.password || form.password === lastAutoPasswordRef.current) {
+      patchForm("password", nextDefault);
+      lastAutoPasswordRef.current = nextDefault;
+    }
+  }, [mode, form.lastName, form.password]);
+
   function patchForm<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -171,7 +183,6 @@ export default function AdminPage() {
       lastName: user.lastName || "",
       email: user.email || "",
       telephone: user.telephone || "",
-      inspectorNumber: user.inspectorNumber || "",
       roles: normalizeRoles({ role: user.role, roles: user.roles }),
       password: "",
     });
@@ -189,7 +200,6 @@ export default function AdminPage() {
       lastName: form.lastName,
       email: form.email,
       telephone: form.telephone,
-      inspectorNumber: form.inspectorNumber,
       roles: form.roles,
       role: getPrimaryRole({ roles: form.roles }),
     };
@@ -250,7 +260,7 @@ export default function AdminPage() {
       .filter((u) => {
         if (!q) return true;
         const rolesText = normalizeRoles({ role: u.role, roles: u.roles }).join(" ");
-        const haystack = [fullName(u), u.email, u.telephone || "", u.inspectorNumber || "", u.role || "", rolesText]
+        const haystack = [fullName(u), u.email, u.telephone || "", u.userNumber || "", u.role || "", rolesText]
           .join(" ")
           .toLowerCase();
         return haystack.includes(q);
@@ -362,7 +372,7 @@ export default function AdminPage() {
                             <div>
                               <strong>{fullName(u)}</strong>
                               <small>{u.telephone || "Sin teléfono"}</small>
-                              {u.inspectorNumber ? <small>N° Inspector: {u.inspectorNumber}</small> : null}
+                              {u.userNumber ? <small>User Number: {u.userNumber}</small> : null}
                             </div>
                           </div>
                         </td>
@@ -445,33 +455,21 @@ export default function AdminPage() {
                   </label>
                 </div>
 
-                <label className={styles.field}>
-                  <span>Email</span>
-                  <input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={(e) => patchForm("email", e.target.value)}
-                  />
-                </label>
-
                 <div className={styles.fieldGrid}>
+                  <label className={styles.field}>
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={(e) => patchForm("email", e.target.value)}
+                    />
+                  </label>
+
                   <label className={styles.field}>
                     <span>Teléfono</span>
                     <input value={form.telephone} onChange={(e) => patchForm("telephone", e.target.value)} />
                   </label>
-
-                  <label className={styles.field}>
-                    <span>N° Inspector</span>
-                    <input
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="Ej: 1024"
-                      value={form.inspectorNumber}
-                      onChange={(e) => patchForm("inspectorNumber", e.target.value.replace(/\D+/g, ""))}
-                    />
-                  </label>
-
                 </div>
 
                 <div className={styles.fieldGrid}>
@@ -503,7 +501,7 @@ export default function AdminPage() {
                 <label className={styles.field}>
                   <span>{mode === "create" ? "Contraseña" : "Nueva contraseña (opcional)"}</span>
                   <input
-                    type="password"
+                    type="text"
                     required={mode === "create"}
                     value={form.password}
                     onChange={(e) => patchForm("password", e.target.value)}
@@ -563,6 +561,7 @@ export default function AdminPage() {
     </ThemeShell>
   );
 }
+
 
 
 

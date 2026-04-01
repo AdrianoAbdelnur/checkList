@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
     isDelete: { $ne: true },
     $or: [{ role: "inspector" }, { roles: "inspector" }],
   })
-    .select("firstName lastName email role roles inspectorNumber assignedTemplateIds")
+    .select("firstName lastName email role roles userNumber assignedTemplateIds")
     .lean();
 
   return NextResponse.json({
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       email: String(u.email || ""),
       role: String(u.role || "inspector"),
       roles: Array.isArray(u.roles) ? u.roles : undefined,
-      inspectorNumber: String(u.inspectorNumber || ""),
+      userNumber: String(u.userNumber || ""),
       assignedTemplateIds: normalizeTemplateIds(u.assignedTemplateIds),
     })),
     templates,
@@ -120,4 +120,5 @@ export async function PATCH(req: NextRequest) {
     },
   });
 }
+
 

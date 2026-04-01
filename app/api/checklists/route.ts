@@ -40,27 +40,10 @@ export async function POST(req: Request) {
 
   const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
   const isInspector = hasPermission(auth.user as any, "checklist.create") && !canViewAll;
-  const assignedTemplateIds = Array.isArray((auth.user as any)?.assignedTemplateIds)
-    ? (auth.user as any).assignedTemplateIds.map((x: unknown) => String(x || "").trim()).filter(Boolean)
-    : [];
 
   const templateId = String(body?.templateId ?? "");
   if (!templateId) {
     return Response.json({ ok: false, message: "templateId requerido" }, { status: 400 });
-  }
-
-  if (isInspector && assignedTemplateIds.length === 0) {
-    return Response.json(
-      { ok: false, message: "No tenés checklists asignados" },
-      { status: 403 },
-    );
-  }
-
-  if (isInspector && !assignedTemplateIds.includes(templateId)) {
-    return Response.json(
-      { ok: false, message: "Template no asignado al inspector" },
-      { status: 403 },
-    );
   }
 
   let templateVersion = body?.templateVersion ? Number(body.templateVersion) : null;
@@ -97,7 +80,7 @@ export async function POST(req: Request) {
     inspectorSnapshot,
     data: body?.data ?? {},
     status: "SUBMITTED",
-    submittedAt: null,
+    submittedAt: new Date(),
   });
 
   return Response.json({ ok: true, item: created }, { status: 201 });

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ThemeShell from '@/components/checklists/ThemeShell'
-import { hasPermission, roleLabelEs } from '@/lib/roles'
+import { roleLabelEs } from '@/lib/roles'
 import styles from './page.module.css'
 
 type User = {
@@ -26,44 +26,37 @@ const roleCards: RoleCard[] = [
   {
     role: 'admin',
     title: 'Panel Administrador',
-    description: 'Acceso a funciones administrativas y gestión global.',
+    description: 'Acceso total del sistema, incluyendo usuarios y configuraciones.',
     href: '/admin',
     tone: 'blue',
   },
   {
-    role: 'inspector',
-    title: 'Panel de Inspector',
-    description: 'Carga y seguimiento de checklists de inspección.',
+    role: 'manager',
+    title: 'Panel Manager',
+    description: 'Mismos permisos del supervisor y autorización de situaciones especiales.',
     href: '/checklists',
-    tone: 'green',
-  },
-  {
-    role: 'reviewer',
-    title: 'Panel de Revisor',
-    description: 'Revisión de checklists, validación y decisiones.',
-    href: '/templates/edition',
     tone: 'violet',
   },
   {
     role: 'supervisor',
-    title: 'Supervisor Panel',
-    description: 'Operational oversight, prioritization, and reassignment.',
+    title: 'Panel Supervisor',
+    description: 'Vista global de checklists con aprobación y rechazo.',
     href: '/checklists',
     tone: 'amber',
   },
   {
-    role: 'client',
-    title: 'Client Portal',
-    description: 'Results, observations, and report visibility.',
+    role: 'reviewer',
+    title: 'Panel Reviewer',
+    description: 'Acceso de solo lectura a checklists.',
     href: '/checklists',
-    tone: 'blue',
+    tone: 'green',
   },
   {
-    role: 'auditor',
-    title: 'Audit Console',
-    description: 'Traceability, compliance, and historical analysis.',
-    href: '/checklists',
-    tone: 'violet',
+    role: 'inspector',
+    title: 'Inspector (solo app)',
+    description: 'Este perfil opera desde la app móvil y no tiene operación web.',
+    href: '/dashboard',
+    tone: 'green',
   },
 ]
 
@@ -104,7 +97,7 @@ export default function DashboardPage() {
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() || user?.email || 'Usuario'
   const activeRoleCard = roleCards.find((r) => r.role === user?.role)
-  const canManageUsers = hasPermission(user as any, 'user.manage')
+  const isInspector = user?.role === 'inspector'
 
   return (
     <ThemeShell user={user}>
@@ -155,20 +148,21 @@ export default function DashboardPage() {
               <span>Operación diaria</span>
             </div>
             <div className={styles.quickActions}>
-              <a href="/checklists" className={styles.quickBtn}>
-                Abrir listados de checklists
-              </a>
-              <a href="/dashboard/trips" className={styles.quickBtn}>
-                Viajes
-              </a>
-              <a href="/checklists" className={styles.quickBtnGhost}>
-                Ir por enlace directo
-              </a>
-              {canManageUsers ? (
-                <a href="/admin/inspectors" className={styles.quickBtnGhost}>
-                  Administración de inspectores
-                </a>
-              ) : null}
+              {isInspector ? (
+                <span className={styles.quickBtnGhost}>Este perfil no tiene acciones en web.</span>
+              ) : (
+                <>
+                  <a href="/checklists" className={styles.quickBtn}>
+                    Abrir listados de checklists
+                  </a>
+                  <a href="/dashboard/trips" className={styles.quickBtn}>
+                    Viajes
+                  </a>
+                  <a href="/checklists" className={styles.quickBtnGhost}>
+                    Ir por enlace directo
+                  </a>
+                </>
+              )}
             </div>
           </article>
         </section>
@@ -180,9 +174,11 @@ export default function DashboardPage() {
               <h3>{activeRoleCard.title}</h3>
               <p>{activeRoleCard.description}</p>
             </div>
-            <a href={activeRoleCard.href} className={styles.roleLink}>
-              Abrir módulo
-            </a>
+            {!isInspector ? (
+              <a href={activeRoleCard.href} className={styles.roleLink}>
+                Abrir módulo
+              </a>
+            ) : null}
           </section>
         ) : null}
       </main>

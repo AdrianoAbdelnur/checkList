@@ -194,7 +194,7 @@ export default function TripsDashboardPage() {
 
         const allowed =
           hasPermission(data.user as any, "checklist.view_all") ||
-          hasAnyRole(data.user as any, ["admin", "supervisor", "reviewer"]);
+          hasAnyRole(data.user as any, ["admin", "manager", "supervisor"]);
 
         if (!allowed) {
           router.push("/dashboard");
@@ -755,3 +755,4 @@ export default function TripsDashboardPage() {
     </ThemeShell>
   );
 }
+

@@ -77,7 +77,7 @@ function normalizeTripRow(input: IncomingTrip) {
 function isAllowed(user: any) {
   return (
     hasPermission(user as any, "checklist.view_all") ||
-    hasAnyRole(user as any, ["admin", "supervisor", "reviewer"])
+    hasAnyRole(user as any, ["admin", "manager", "supervisor"])
   );
 }
 
@@ -175,3 +175,4 @@ export async function POST(req: Request) {
     importBatchId,
   });
 }
+

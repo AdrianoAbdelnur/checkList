@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+﻿/* eslint-disable no-console */
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -36,16 +36,16 @@ const UserSchema = new mongoose.Schema(
     isDelete: { type: Boolean, default: false },
     role: {
       type: String,
-      enum: ["inspector", "reviewer", "supervisor", "admin", "client", "auditor"],
+      enum: ["inspector", "reviewer", "supervisor", "manager", "admin"],
       default: "inspector",
     },
     roles: {
       type: [String],
-      enum: ["inspector", "reviewer", "supervisor", "admin", "client", "auditor"],
+      enum: ["inspector", "reviewer", "supervisor", "manager", "admin"],
       default: ["inspector"],
     },
     assignedTemplateIds: { type: [String], default: [] },
-    inspectorNumber: { type: String, trim: true, unique: true, sparse: true, index: true },
+    userNumber: { type: String, trim: true, unique: true, sparse: true, index: true },
   },
   { versionKey: false, strict: false }
 );
@@ -55,7 +55,7 @@ const User = mongoose.models.User || mongoose.model("User", UserSchema);
 async function run() {
   const dbUrl = loadDatabaseUrl();
   if (!dbUrl) {
-    throw new Error("No se encontró DATABASE_URL (env o .env.local)");
+    throw new Error("No se encontrÃ³ DATABASE_URL (env o .env.local)");
   }
 
   const count = Number(process.argv[2] || 20);
@@ -72,7 +72,7 @@ async function run() {
     const email = `${baseEmail}${idx}@demo.local`;
     const firstName = `Inspector ${idx}`;
     const lastName = "Prueba";
-    const inspectorNumber = `9${String(i).padStart(3, "0")}`;
+    const userNumber = `9${String(i).padStart(3, "0")}`;
     const salt = crypto.randomBytes(16).toString("hex");
     const derived = crypto.scryptSync(password, salt, 64).toString("hex");
 
@@ -88,7 +88,7 @@ async function run() {
           isDelete: false,
           password: derived,
           salt,
-          inspectorNumber,
+          userNumber,
         },
         $setOnInsert: { createdAt: new Date() },
       },
@@ -101,7 +101,7 @@ async function run() {
 
   await mongoose.disconnect();
   console.log(`OK. Inspectores procesados: ${count}. Creados: ${created}. Actualizados: ${updated}.`);
-  console.log(`Password común: ${password}`);
+  console.log(`Password comÃºn: ${password}`);
   console.log(`Email ejemplo: ${baseEmail}01@demo.local`);
 }
 
@@ -114,3 +114,5 @@ run().catch(async (err) => {
   }
   process.exit(1);
 });
+
+

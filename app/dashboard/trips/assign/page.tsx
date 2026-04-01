@@ -37,7 +37,7 @@ type InspectorItem = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  inspectorNumber?: string;
+  userNumber?: string;
   assignedTemplateIds?: string[];
 };
 type InspectorOption = {
@@ -98,9 +98,9 @@ function equalAssignmentMaps(a?: Record<string, string>, b?: Record<string, stri
 
 function inspectorName(inspector: InspectorItem) {
   const full = `${inspector.firstName || ""} ${inspector.lastName || ""}`.trim();
-  if (inspector.inspectorNumber) {
+  if (inspector.userNumber) {
     const suffix = full || inspector.email || inspector._id;
-    return `N° ${inspector.inspectorNumber} - ${suffix}`;
+    return `User #${inspector.userNumber} - ${suffix}`;
   }
   return full || inspector.email || inspector._id;
 }
@@ -304,7 +304,7 @@ export default function AssignTripsPage() {
 
         const allowed =
           hasPermission(data.user as any, "checklist.view_all") ||
-          hasAnyRole(data.user as any, ["admin", "supervisor", "reviewer"]);
+          hasAnyRole(data.user as any, ["admin", "manager", "supervisor"]);
         if (!allowed) {
           router.push("/dashboard");
           return;
@@ -348,7 +348,7 @@ export default function AssignTripsPage() {
   const inspectorOptions = React.useMemo<InspectorOption[]>(() => {
     return inspectors.map((inspector) => {
       const label = inspectorName(inspector);
-      const keywords = [label, inspector.email || "", inspector.inspectorNumber || ""].join(" ").toLowerCase();
+      const keywords = [label, inspector.email || "", inspector.userNumber || ""].join(" ").toLowerCase();
       return { id: inspector._id, label, keywords };
     });
   }, [inspectors]);
@@ -590,7 +590,7 @@ export default function AssignTripsPage() {
                                 options={(inspectorsByTemplate[t.templateId] || []).map((inspector) => ({
                                   id: inspector._id,
                                   label: inspectorName(inspector),
-                                  keywords: [inspectorName(inspector), inspector.email || "", inspector.inspectorNumber || ""].join(" ").toLowerCase(),
+                                  keywords: [inspectorName(inspector), inspector.email || "", inspector.userNumber || ""].join(" ").toLowerCase(),
                                 }))}
                                 value={assignedByTemplate[t.templateId] || ""}
                                 disabled={savingAll}
@@ -655,3 +655,5 @@ export default function AssignTripsPage() {
     </ThemeShell>
   );
 }
+
+

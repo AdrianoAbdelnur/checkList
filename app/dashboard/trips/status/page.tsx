@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -27,6 +27,7 @@ type TripStatusItem = {
   status: "RED" | "YELLOW" | "GREEN" | "NONE";
   checks: Array<{
     templateId: string;
+    templateTitle?: string;
     state: "PENDING" | "OBSERVED" | "OK";
     badCount: number;
     checklistId?: string;
@@ -49,7 +50,7 @@ function statusLabel(status: TripStatusItem["status"]) {
 }
 
 function statusIcon(status: TripStatusItem["status"]) {
-  if (status === "RED") return "✕";
+  if (status === "RED") return "X";
   if (status === "YELLOW") return "!";
   if (status === "GREEN") return "✓";
   return "•";
@@ -102,7 +103,7 @@ export default function TripsStatusPage() {
 
         const allowed =
           hasPermission(data.user as Record<string, unknown>, "checklist.view_all") ||
-          hasAnyRole(data.user as Record<string, unknown>, ["admin", "supervisor", "reviewer"]);
+          hasAnyRole(data.user as Record<string, unknown>, ["admin", "manager", "supervisor"]);
         if (!allowed) {
           router.push("/dashboard");
           return;
@@ -141,7 +142,7 @@ export default function TripsStatusPage() {
           <div>
             <p className={styles.kicker}>Control operativo</p>
             <h1>Estado de viajes</h1>
-            <p className={styles.subtitle}>Semaforo por viaje segun cumplimiento de checklists asignados.</p>
+            <p className={styles.subtitle}>Semáforo por viaje según cumplimiento de checklists activos.</p>
           </div>
           <div className={styles.actions}>
             <label className={styles.dateWrap}>
@@ -172,7 +173,7 @@ export default function TripsStatusPage() {
                     <h3>{item.dominio || "-"}</h3>
                     <p>{item.tipo || "Viaje"}</p>
                     <p className={styles.meta}>
-                      Asignados: {item.expectedCount} · Realizados: {item.completedCount} · Pendientes: {item.pendingCount} · Observados: {item.observedCount}
+                      Requeridos: {item.expectedCount} · Realizados: {item.completedCount} · Pendientes: {item.pendingCount} · Observados: {item.observedCount}
                     </p>
                   </div>
 
@@ -191,7 +192,7 @@ export default function TripsStatusPage() {
                               className={`${styles.checkLink} ${styles[`checkLink${c.state}`]}`}
                               title={`Ver checklist ${templateLabel(c.templateId)}`}
                             >
-                              {templateLabel(c.templateId)}
+                              {String(c.templateTitle || templateLabel(c.templateId))}
                             </Link>
                           ))
                       )}
@@ -214,3 +215,4 @@ export default function TripsStatusPage() {
     </ThemeShell>
   );
 }
+

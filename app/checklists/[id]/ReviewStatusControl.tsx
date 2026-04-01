@@ -79,10 +79,11 @@ export default function ReviewStatusControl({
           </button>
         </div>
       ) : (
-        <p className={styles.readOnly}>Solo admin y reviewer pueden cambiar este estado.</p>
+        <p className={styles.readOnly}>Solo admin, supervisor y manager pueden cambiar este estado.</p>
       )}
 
       {error ? <p className={styles.error}>{error}</p> : null}
     </section>
   );
 }
+

@@ -12,7 +12,7 @@ export interface IUser extends Document {
   role: string
   roles?: string[]
   assignedTemplateIds?: string[]
-  inspectorNumber?: string
+  userNumber?: string
 }
 
 const UserSchema = new Schema<IUser>(
@@ -49,19 +49,19 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['inspector', 'reviewer', 'supervisor', 'admin', 'client', 'auditor'],
+      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin'],
       default: 'inspector',
     },
     roles: {
       type: [String],
-      enum: ['inspector', 'reviewer', 'supervisor', 'admin', 'client', 'auditor'],
+      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin'],
       default: ['inspector'],
     },
     assignedTemplateIds: {
       type: [String],
       default: [],
     },
-    inspectorNumber: {
+    userNumber: {
       type: String,
       trim: true,
       unique: true,
@@ -76,3 +76,4 @@ const UserSchema = new Schema<IUser>(
 
 const User: Model<IUser> = (mongoose.models.User as Model<IUser>) || mongoose.model<IUser>('User', UserSchema)
 export default User
+

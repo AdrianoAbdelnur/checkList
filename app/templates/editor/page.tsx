@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -360,7 +360,7 @@ export default function TemplateEditorPage() {
   const isFileMode = editionMode === "file";
   const isJsonMode = editionMode === "json";
 
-  const canEditTemplates = hasAnyRole(me as any, ["admin", "reviewer"]);
+  const canEditTemplates = hasAnyRole(me as any, ["admin"]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -423,7 +423,7 @@ export default function TemplateEditorPage() {
           router.push("/login");
           return;
         }
-        if (!hasAnyRole(meJson.user as any, ["admin", "reviewer"])) {
+        if (!hasAnyRole(meJson.user as any, ["admin"])) {
           router.push("/dashboard");
           return;
         }
@@ -769,7 +769,7 @@ export default function TemplateEditorPage() {
       <main className={styles.page}>
         <section className={styles.hero}>
           <div>
-            <p className={styles.kicker}>Templates · Edition</p>
+            <p className={styles.kicker}>Templates Â· Edition</p>
             <h1>Templates de checklists</h1>
             <p className={styles.subtitle}>
               {isVisualMode
@@ -778,7 +778,7 @@ export default function TemplateEditorPage() {
                   ? "Importa un template desde un archivo JSON y luego ajustalo en el editor."
                   : "Pega un JSON de template y cargalo para seguir editando."}
               Acceso para{" "}
-              {ROLE_OPTIONS_ES.filter((r) => ["admin", "reviewer"].includes(r.value))
+              {ROLE_OPTIONS_ES.filter((r) => ["admin"].includes(r.value))
                 .map((r) => r.label)
                 .join(" y ")}
               .
@@ -944,8 +944,8 @@ export default function TemplateEditorPage() {
                       <div className={styles.sectionTitleWrap}>
                         <span className={styles.sectionIndex}>Seccion {sectionIndex + 1}</span>
                         <div className={styles.moveBtns}>
-                          <button type="button" onClick={() => moveSection(sectionIndex, -1)}>↑</button>
-                          <button type="button" onClick={() => moveSection(sectionIndex, 1)}>↓</button>
+                          <button type="button" onClick={() => moveSection(sectionIndex, -1)}>â†‘</button>
+                          <button type="button" onClick={() => moveSection(sectionIndex, 1)}>â†“</button>
                         </div>
                       </div>
                       <button type="button" className={styles.dangerBtn} onClick={() => removeSection(sectionIndex)}>
@@ -1001,8 +1001,8 @@ export default function TemplateEditorPage() {
                           <div className={styles.fieldCardHeader}>
                             <div className={styles.fieldChip}>{getFieldKindLabelEs(field.kind)}</div>
                             <div className={styles.moveBtns}>
-                              <button type="button" onClick={() => moveField(sectionIndex, fieldIndex, -1)}>↑</button>
-                              <button type="button" onClick={() => moveField(sectionIndex, fieldIndex, 1)}>↓</button>
+                              <button type="button" onClick={() => moveField(sectionIndex, fieldIndex, -1)}>â†‘</button>
+                              <button type="button" onClick={() => moveField(sectionIndex, fieldIndex, 1)}>â†“</button>
                             </div>
                             <button
                               type="button"
@@ -1216,4 +1216,5 @@ export default function TemplateEditorPage() {
     </ThemeShell>
   );
 }
+
 

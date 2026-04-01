@@ -1,9 +1,9 @@
-import ChecklistViewer from "./viewer";
+﻿import ChecklistViewer from "./viewer";
 import ReviewStatusControl from "./ReviewStatusControl";
 import { cookies } from "next/headers";
 import { getSessionData } from "@/lib/auth";
 import { getChecklistWithTemplateById } from "@/lib/checklists";
-import { hasAnyRole, hasPermission } from "@/lib/roles";
+import { hasPermission } from "@/lib/roles";
 import {
   formatChecklistDate,
   getChecklistDecisionLabel,
@@ -74,9 +74,7 @@ export default async function ChecklistDetailPage({
   const reviewLabel = getChecklistReviewStatusLabel(checklist);
   const status = String(checklist.status ?? "-");
   const checklistTitle = String(template?.title ?? checklist?.title ?? "Checklist");
-  const canManageReview =
-    hasAnyRole(session as Record<string, unknown>, ["admin", "reviewer"]) ||
-    hasPermission(session as Record<string, unknown>, "checklist.review");
+  const canManageReview = hasPermission(session as Record<string, unknown>, "checklist.review");
 
   return (
     <ThemeShellServer user={session}>
@@ -86,7 +84,7 @@ export default async function ChecklistDetailPage({
             <p className={styles.kicker}>Detalle de inspeccion</p>
             <h1>{checklistTitle}</h1>
             <p>
-              {template?.title ? String(template.title) : "Checklist"} · Vehiculo {String(getChecklistPlate(checklist) ?? "-")}
+              {template?.title ? String(template.title) : "Checklist"} Â· Vehiculo {String(getChecklistPlate(checklist) ?? "-")}
             </p>
           </div>
 
@@ -132,3 +130,4 @@ export default async function ChecklistDetailPage({
     </ThemeShellServer>
   );
 }
+
