@@ -1,61 +1,59 @@
 "use client";
 
 import * as React from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import { useMap } from "react-leaflet";
+import L from "leaflet";
 
 type Props = {
   lat: number;
   lng: number;
 };
 
-function EnsureMapLayout() {
-  const map = useMap();
-
-  React.useEffect(() => {
-    const timer = window.setTimeout(() => {
-      map.invalidateSize();
-    }, 40);
-    return () => window.clearTimeout(timer);
-  }, [map]);
-
-  return null;
-}
-
-function SetInitialView({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
-
-  React.useEffect(() => {
-    map.setView([lat, lng], 16);
-  }, [lat, lng, map]);
-
-  return null;
-}
-
 export default function LocationMapView({ lat, lng }: Props) {
-  return (
-    <MapContainer
-      scrollWheelZoom
-      dragging
-      touchZoom
-      doubleClickZoom
-      boxZoom
-      keyboard
-      style={{ width: "100%", height: "100%" }}
-    >
-      <EnsureMapLayout />
-      <SetInitialView lat={lat} lng={lng} />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <CircleMarker center={[lat, lng]} radius={8} pathOptions={{ color: "#2563eb", weight: 3 }}>
-        <Popup>
-          Ubicacion del checklist
-          <br />
-          {lat.toFixed(6)}, {lng.toFixed(6)}
-        </Popup>
-      </CircleMarker>
-    </MapContainer>
-  );
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const mapRef = React.useRef<L.Map | null>(null);
+
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!mapRef.current) {
+      const map = L.map(container, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+        dragging: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
+        keyboard: true,
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      L.circleMarker([lat, lng], {
+        radius: 8,
+        color: "#2563eb",
+        weight: 3,
+      })
+        .addTo(map)
+        .bindPopup(`Ubicacion del checklist<br/>${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+
+      map.setView([lat, lng], 16);
+      mapRef.current = map;
+    } else {
+      mapRef.current.setView([lat, lng], 16);
+    }
+
+    window.setTimeout(() => {
+      mapRef.current?.invalidateSize();
+    }, 60);
+
+    return () => {
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [lat, lng]);
+
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }
