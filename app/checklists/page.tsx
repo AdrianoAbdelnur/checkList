@@ -12,13 +12,15 @@ import {
   getChecklistPlate,
   getChecklistReviewStatus,
   getChecklistReviewStatusLabel,
+  getChecklistTemplateId,
   normalizeChecklistText,
 } from "@/lib/checklists-ui";
 import ThemeShellServer from "@/components/checklists/ThemeShellServer";
 import styles from "./page.module.css";
 
 type ChecklistItem = Record<string, unknown>;
-type ReviewFilter = "all" | "revisado" | "sin_revision";
+type DecisionFilter = "all" | "approved" | "rejected" | "pending";
+type ParamsShape = Record<string, string | string[] | undefined>;
 
 function getDecisionTone(decision: string | null) {
   if (decision === "APPROVED") return "good";
@@ -36,11 +38,23 @@ function getStatusTone(status: string) {
   return "neutral";
 }
 
-function normalizeReviewFilter(value: string | undefined): ReviewFilter {
-  const v = String(value || "").trim().toLowerCase();
-  if (v === "revisado") return "revisado";
-  if (v === "sin_revision") return "sin_revision";
+function readParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return String(value[0] ?? "").trim();
+  return String(value ?? "").trim();
+}
+
+function normalizeDecisionFilter(value: string): DecisionFilter {
+  const v = value.toLowerCase();
+  if (v === "approved") return "approved";
+  if (v === "rejected") return "rejected";
+  if (v === "pending") return "pending";
   return "all";
+}
+
+function normalizeDateInput(value: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!m) return "";
+  return `${m[1]}-${m[2]}-${m[3]}`;
 }
 
 function asText(value: unknown, fallback = "") {
@@ -52,13 +66,56 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
+function toDayStart(value: string): Date | null {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return null;
+  const date = new Date(`${normalized}T00:00:00.000`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function toDayEnd(value: string): Date | null {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return null;
+  const date = new Date(`${normalized}T23:59:59.999`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getChecklistDateForFilter(item: ChecklistItem): Date | null {
+  const raw = item?.submittedAt ?? item?.createdAt ?? null;
+  if (!raw) return null;
+  const date = new Date(String(raw));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function countActiveFilters(input: {
+  plate: string;
+  templateId: string;
+  decision: DecisionFilter;
+  dateFrom: string;
+  dateTo: string;
+}) {
+  let total = 0;
+  if (input.plate) total += 1;
+  if (input.templateId) total += 1;
+  if (input.decision !== "all") total += 1;
+  if (input.dateFrom) total += 1;
+  if (input.dateTo) total += 1;
+  return total;
+}
+
 export default async function ChecklistsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ review?: string }>;
+  searchParams?: Promise<ParamsShape>;
 }) {
   const sp = (await searchParams) ?? {};
-  const reviewFilter = normalizeReviewFilter(sp.review);
+  const plateFilter = readParam(sp.plate);
+  const templateFilter = readParam(sp.templateId);
+  const decisionFilter = normalizeDecisionFilter(readParam(sp.decision));
+  const dateFrom = normalizeDateInput(readParam(sp.dateFrom));
+  const dateTo = normalizeDateInput(readParam(sp.dateTo));
+  const dateFromBound = toDayStart(dateFrom);
+  const dateToBound = toDayEnd(dateTo);
 
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;
@@ -71,7 +128,16 @@ export default async function ChecklistsPage({
     includeAll: hasPermission(session as Record<string, unknown>, "checklist.view_all"),
   })) as ChecklistItem[];
 
-  const stats = {
+  const templateOptions = Array.from(
+    new Set(
+      items
+        .map((item) => asText(getChecklistTemplateId(item)))
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const baseStats = {
     total: items.length,
     approved: 0,
     rejected: 0,
@@ -86,33 +152,51 @@ export default async function ChecklistsPage({
     const status = normalizeChecklistText(item?.status);
     const reviewStatus = getChecklistReviewStatus(item);
 
-    if (decision === "APPROVED") stats.approved += 1;
-    else if (decision === "REJECTED") stats.rejected += 1;
-    else stats.pending += 1;
+    if (decision === "APPROVED") baseStats.approved += 1;
+    else if (decision === "REJECTED") baseStats.rejected += 1;
+    else baseStats.pending += 1;
 
-    if (status === "DRAFT") stats.drafts += 1;
-    if (reviewStatus === "REVISADO") stats.reviewed += 1;
-    else stats.unreviewed += 1;
+    if (status === "DRAFT") baseStats.drafts += 1;
+    if (reviewStatus === "REVISADO") baseStats.reviewed += 1;
+    else baseStats.unreviewed += 1;
   }
 
   const visibleItems = items.filter((item) => {
-    const reviewStatus = getChecklistReviewStatus(item);
-    if (reviewFilter === "revisado") return reviewStatus === "REVISADO";
-    if (reviewFilter === "sin_revision") return reviewStatus !== "REVISADO";
+    const decision = getChecklistDecision(item);
+    const templateId = asText(getChecklistTemplateId(item));
+    const plate = asText(getChecklistPlate(item));
+    const filterDate = getChecklistDateForFilter(item);
+
+    if (decisionFilter === "approved" && decision !== "APPROVED") return false;
+    if (decisionFilter === "rejected" && decision !== "REJECTED") return false;
+    if (decisionFilter === "pending" && decision !== "PENDING") return false;
+
+    if (templateFilter && templateId.toLowerCase() !== templateFilter.toLowerCase()) return false;
+    if (plateFilter && !plate.toLowerCase().includes(plateFilter.toLowerCase())) return false;
+
+    if (dateFromBound && (!filterDate || filterDate < dateFromBound)) return false;
+    if (dateToBound && (!filterDate || filterDate > dateToBound)) return false;
+
     return true;
+  });
+
+  const activeFilters = countActiveFilters({
+    plate: plateFilter,
+    templateId: templateFilter,
+    decision: decisionFilter,
+    dateFrom,
+    dateTo,
   });
 
   return (
     <ThemeShellServer user={session}>
       <main className={styles.page}>
-        <div className={styles.backdrop} aria-hidden />
-
         <section className={styles.hero}>
           <div>
             <p className={styles.kicker}>Panel de inspecciones</p>
             <h1 className={styles.title}>Checklists</h1>
             <p className={styles.subtitle}>
-              Resumen de formularios enviados, su estado operativo y estado de revision.
+              Seguimiento de checklists enviados con filtros por patente, fecha, template, estado y decision.
             </p>
           </div>
         </section>
@@ -120,56 +204,89 @@ export default async function ChecklistsPage({
         <section className={styles.statsGrid} aria-label="Resumen">
           <article className={styles.statCard}>
             <span>Total</span>
-            <strong>{stats.total}</strong>
+            <strong>{baseStats.total}</strong>
             <small>checklists</small>
           </article>
           <article className={cx(styles.statCard, styles.good)}>
             <span>Aprobados</span>
-            <strong>{stats.approved}</strong>
+            <strong>{baseStats.approved}</strong>
             <small>con decision positiva</small>
           </article>
           <article className={cx(styles.statCard, styles.bad)}>
             <span>Rechazados</span>
-            <strong>{stats.rejected}</strong>
+            <strong>{baseStats.rejected}</strong>
             <small>requieren correccion</small>
           </article>
           <article className={cx(styles.statCard, styles.warn)}>
             <span>Pendientes</span>
-            <strong>{stats.pending}</strong>
+            <strong>{baseStats.pending}</strong>
             <small>sin decision final</small>
           </article>
         </section>
 
         <section className={styles.listSection}>
+          <form method="get" className={styles.filterPanel}>
+            <div className={styles.filterGrid}>
+              <label className={styles.field}>
+                <span>Patente</span>
+                <input name="plate" defaultValue={plateFilter} placeholder="Ej: AB123CD" />
+              </label>
+
+              <label className={styles.field}>
+                <span>Template</span>
+                <select name="templateId" defaultValue={templateFilter}>
+                  <option value="">Todos</option>
+                  {templateOptions.map((templateId) => (
+                    <option key={templateId} value={templateId}>
+                      {templateId}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Decision</span>
+                <select name="decision" defaultValue={decisionFilter}>
+                  <option value="all">Todas</option>
+                  <option value="approved">Aprobado</option>
+                  <option value="rejected">Rechazado</option>
+                  <option value="pending">Pendiente</option>
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Fecha desde</span>
+                <input type="date" name="dateFrom" defaultValue={dateFrom} />
+              </label>
+
+              <label className={styles.field}>
+                <span>Fecha hasta</span>
+                <input type="date" name="dateTo" defaultValue={dateTo} />
+              </label>
+            </div>
+
+            <div className={styles.filterActions}>
+              <button type="submit" className={styles.applyButton}>
+                Aplicar filtros
+              </button>
+              <Link href="/checklists" className={styles.clearButton}>
+                Limpiar
+              </Link>
+            </div>
+          </form>
+
           <div className={styles.listHeader}>
             <h2>Actividad reciente</h2>
             <p>
-              {stats.drafts} borrador(es) y {stats.total - stats.drafts} enviados
+              {visibleItems.length} resultado(s)
+              {activeFilters > 0 ? ` con ${activeFilters} filtro(s) activo(s)` : ""}
             </p>
-          </div>
-
-          <div className={styles.filters}>
-            <Link href="/checklists" className={cx(styles.filterChip, reviewFilter === "all" && styles.filterChipActive)}>
-              Todos ({stats.total})
-            </Link>
-            <Link
-              href="/checklists?review=revisado"
-              className={cx(styles.filterChip, reviewFilter === "revisado" && styles.filterChipActive)}
-            >
-              Revisados ({stats.reviewed})
-            </Link>
-            <Link
-              href="/checklists?review=sin_revision"
-              className={cx(styles.filterChip, reviewFilter === "sin_revision" && styles.filterChipActive)}
-            >
-              Sin revision ({stats.unreviewed})
-            </Link>
           </div>
 
           {visibleItems.length === 0 ? (
             <div className={styles.emptyState}>
               <h3>No hay checklists para este filtro</h3>
-              <p>Cambia el filtro o vuelve a &quot;Todos&quot; para ver mas resultados.</p>
+              <p>Ajusta los filtros o usa "Limpiar" para volver a ver todo.</p>
             </div>
           ) : (
             <ul className={styles.cards}>
@@ -178,7 +295,7 @@ export default async function ChecklistsPage({
                 const reviewStatus = getChecklistReviewStatus(item);
                 const plate = getChecklistPlate(item);
                 const statusLabel = asText(item?.status, "Sin estado");
-                const templateLabel = `${asText(item?.templateId, "template")} v${asText(item?.templateVersion, "?")}`;
+                const templateLabel = `${asText(getChecklistTemplateId(item), "template")} v${asText(item?.templateVersion, "?")}`;
                 const createdAt = formatChecklistDate(item?.createdAt);
                 const submittedAt = formatChecklistDate(item?.submittedAt);
                 const inspectorLabel = getChecklistInspectorLabel(item);
@@ -192,7 +309,7 @@ export default async function ChecklistsPage({
                           <span className={styles.templateEyebrow}>Template</span>
                           <h3>{templateLabel}</h3>
                           <p>
-                            {plate ? `Vehiculo ${String(plate)}` : "Sin patente registrada"} · ID {id.slice(-6)}
+                            {plate ? `Vehiculo ${String(plate)}` : "Sin patente registrada"} - ID {id.slice(-6)}
                           </p>
                         </div>
                         <div className={styles.badges}>
@@ -227,7 +344,7 @@ export default async function ChecklistsPage({
 
                       <div className={styles.cardFooter}>
                         <span>Ver detalle completo</span>
-                        <span aria-hidden>↗</span>
+                        <span aria-hidden>-&gt;</span>
                       </div>
                     </Link>
                   </li>

@@ -22,6 +22,8 @@ type TripStatusItem = {
   tripDateKey: string;
   expectedCount: number;
   completedCount: number;
+  approvedCount: number;
+  pendingApprovalCount: number;
   observedCount: number;
   pendingCount: number;
   status: "RED" | "YELLOW" | "GREEN" | "NONE";
@@ -31,6 +33,7 @@ type TripStatusItem = {
     state: "PENDING" | "OBSERVED" | "OK";
     badCount: number;
     checklistId?: string;
+    approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
   }>;
 };
 
@@ -71,6 +74,12 @@ function templateLabel(templateId: string) {
     .trim();
 }
 
+function approvalDotClass(status: "PENDING" | "APPROVED" | "REJECTED") {
+  if (status === "APPROVED") return styles.dotApproved;
+  if (status === "REJECTED") return styles.dotRejected;
+  return styles.dotPending;
+}
+
 export default function TripsStatusPage() {
   const router = useRouter();
   const [me, setMe] = React.useState<SessionUser | null>(null);
@@ -85,6 +94,14 @@ export default function TripsStatusPage() {
     green: 0,
     none: 0,
   });
+
+  const totals = React.useMemo(() => {
+    const expected = items.reduce((acc, item) => acc + (item.expectedCount || 0), 0);
+    const completed = items.reduce((acc, item) => acc + (item.completedCount || 0), 0);
+    const approved = items.reduce((acc, item) => acc + (item.approvedCount || 0), 0);
+    const pending = Math.max(expected - approved, 0);
+    return { expected, completed, approved, pending };
+  }, [items]);
 
   const load = React.useCallback(async (date: string) => {
     setError(null);
@@ -193,6 +210,24 @@ export default function TripsStatusPage() {
           <article><span>Amarillo</span><strong className={styles.yellow}>{summary.yellow}</strong></article>
           <article><span>Verde</span><strong className={styles.green}>{summary.green}</strong></article>
         </section>
+        <section className={styles.miniSummary} aria-label="Resumen de checks">
+          <article className={styles.miniCard}>
+            <span>Esperados</span>
+            <strong>{totals.expected}</strong>
+          </article>
+          <article className={styles.miniCard}>
+            <span>Realizados</span>
+            <strong>{totals.completed}</strong>
+          </article>
+          <article className={styles.miniCard}>
+            <span>Aprobados</span>
+            <strong>{totals.approved}</strong>
+          </article>
+          <article className={styles.miniCard}>
+            <span>Pendientes</span>
+            <strong>{totals.pending}</strong>
+          </article>
+        </section>
 
         <section className={styles.list}>
           {items.length === 0 ? (
@@ -205,7 +240,7 @@ export default function TripsStatusPage() {
                     <h3>{item.dominio || "-"}</h3>
                     <p>{item.tipo || "Viaje"}</p>
                     <p className={styles.meta}>
-                      Requeridos: {item.expectedCount} · Realizados: {item.completedCount} · Pendientes: {item.pendingCount} · Observados: {item.observedCount}
+                      Requeridos: {item.expectedCount} · Realizados: {item.completedCount} · Pend. aprobacion: {item.pendingApprovalCount}
                     </p>
                   </div>
 
@@ -224,7 +259,8 @@ export default function TripsStatusPage() {
                               className={`${styles.checkLink} ${styles[`checkLink${c.state}`]}`}
                               title={`Ver checklist ${templateLabel(c.templateId)}`}
                             >
-                              {String(c.templateTitle || templateLabel(c.templateId))}
+                              <span className={`${styles.checkDot} ${approvalDotClass(c.approvalStatus)}`} aria-hidden />
+                              <span>{String(c.templateTitle || templateLabel(c.templateId))}</span>
                             </Link>
                           ))
                       )}

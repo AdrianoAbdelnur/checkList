@@ -33,6 +33,14 @@ function normalizePlate(value: unknown) {
     .replace(/[^A-Z0-9]/g, "");
 }
 
+function readFieldValue(value: unknown): string {
+  if (value && typeof value === "object" && "value" in (value as Record<string, unknown>)) {
+    const nested = (value as Record<string, unknown>).value;
+    return typeof nested === "string" || typeof nested === "number" ? String(nested) : "";
+  }
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
 function checklistPlate(row: any): string {
   const fromSubject =
     row?.data?.subject?.vehicle_domain ??
@@ -54,7 +62,7 @@ function checklistPlate(row: any): string {
     row?.data?.meta?.plate ??
     row?.data?.meta?.patente ??
     row?.data?.meta?.dominio;
-  return normalizePlate(fromSubject ?? fromValues ?? fromMeta ?? "");
+  return normalizePlate(readFieldValue(fromSubject ?? fromValues ?? fromMeta ?? ""));
 }
 
 function isAllowed(user: any) {
@@ -70,7 +78,17 @@ type ChecklistRow = {
   templateId: string;
   submittedAt: string;
   badCount: number;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
 };
+
+function normalizeApprovalStatus(value: unknown): "PENDING" | "APPROVED" | "REJECTED" {
+  const text = String(value ?? "").trim().toUpperCase();
+  if (["APPROVED", "APROBADO", "OK", "PASS"].includes(text)) return "APPROVED";
+  if (["REJECTED", "RECHAZADO", "NO_APROBADO", "NO APROBADO", "DENIED", "FAIL"].includes(text)) {
+    return "REJECTED";
+  }
+  return "PENDING";
+}
 
 export async function GET(req: Request) {
   await connectToDatabase();
@@ -143,6 +161,14 @@ export async function GET(req: Request) {
       templateId,
       submittedAt: String(c.submittedAt || ""),
       badCount: Number(c?.data?.meta?.badCount || 0),
+      approvalStatus: normalizeApprovalStatus(
+        c?.approvalStatus ??
+          c?.data?.approvalStatus ??
+          c?.data?.approval?.status ??
+          c?.reviewStatus ??
+          c?.data?.reviewStatus ??
+          c?.data?.review?.status,
+      ),
     });
   }
 
@@ -150,6 +176,8 @@ export async function GET(req: Request) {
     let completed = 0;
     let observed = 0;
     let pending = 0;
+    let unapproved = 0;
+    let approved = 0;
 
     const checks = expectedTemplateIds.map((templateId) => {
       const row = latestByTripTemplate.get(`${String(trip._id)}::${templateId}`);
@@ -160,24 +188,29 @@ export async function GET(req: Request) {
           templateTitle: templateMap.get(templateId)?.title || templateId,
           state: "PENDING",
           badCount: 0,
+          approvalStatus: "PENDING",
         };
       }
 
       completed += 1;
       const hasObs = row.badCount > 0;
       if (hasObs) observed += 1;
+      const isApproved = row.approvalStatus === "APPROVED";
+      if (!isApproved) unapproved += 1;
+      else approved += 1;
       return {
         templateId,
         templateTitle: templateMap.get(templateId)?.title || templateId,
         state: hasObs ? "OBSERVED" : "OK",
         badCount: row.badCount,
         checklistId: row._id,
+        approvalStatus: row.approvalStatus,
       };
     });
 
     let status: "RED" | "YELLOW" | "GREEN" | "NONE" = "NONE";
     if (expectedTemplateIds.length > 0) {
-      status = pending > 0 ? "RED" : observed > 0 ? "YELLOW" : "GREEN";
+      status = pending > 0 || unapproved > 0 ? "RED" : "GREEN";
     }
 
     return {
@@ -187,6 +220,8 @@ export async function GET(req: Request) {
       tripDateKey: String(trip.tripDateKey || ""),
       expectedCount: expectedTemplateIds.length,
       completedCount: completed,
+      approvedCount: approved,
+      pendingApprovalCount: unapproved,
       observedCount: observed,
       pendingCount: pending,
       status,
@@ -197,7 +232,7 @@ export async function GET(req: Request) {
   const summary = {
     totalTrips: items.length,
     red: items.filter((x) => x.status === "RED").length,
-    yellow: items.filter((x) => x.status === "YELLOW").length,
+    yellow: 0,
     green: items.filter((x) => x.status === "GREEN").length,
     none: items.filter((x) => x.status === "NONE").length,
   };

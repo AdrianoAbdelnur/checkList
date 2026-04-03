@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
 import Trip from "@/models/Trip";
+import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 type IncomingTrip = {
   solicitudRaw?: string;
@@ -79,6 +80,26 @@ function isAllowed(user: any) {
     hasPermission(user as any, "checklist.view_all") ||
     hasAnyRole(user as any, ["admin", "manager", "supervisor"])
   );
+}
+
+function toTripAuditSnapshot(doc: any) {
+  if (!doc) return null;
+  return cloneForAudit({
+    id: String(doc._id),
+    uniqueKey: String(doc.uniqueKey ?? ""),
+    tripDateKey: String(doc.tripDateKey ?? ""),
+    tripDate: doc.tripDate ?? null,
+    solicitudRaw: String(doc.solicitudRaw ?? ""),
+    solicitudAt: doc.solicitudAt ?? null,
+    tipo: String(doc.tipo ?? ""),
+    dominio: String(doc.dominio ?? ""),
+    viajeRaw: String(doc.viajeRaw ?? ""),
+    sourceFile: String(doc.sourceFile ?? ""),
+    importBatchId: String(doc.importBatchId ?? ""),
+    uploadedBy: doc.uploadedBy ?? null,
+    createdAt: doc.createdAt ?? null,
+    updatedAt: doc.updatedAt ?? null,
+  });
 }
 
 export async function GET(req: Request) {
@@ -163,9 +184,90 @@ export async function POST(req: Request) {
     },
   }));
 
+  const uniqueKeys = normalized.map((row) => row!.uniqueKey);
+  const existingTrips = await Trip.find({ uniqueKey: { $in: uniqueKeys } }).lean();
+  const beforeByUniqueKey = new Map(existingTrips.map((trip) => [String((trip as any).uniqueKey), trip]));
+
   const result = await Trip.bulkWrite(ops, { ordered: false });
   const upserted = result.upsertedCount ?? 0;
   const modified = result.modifiedCount ?? 0;
+  const actor = actorFromUser(auth.user);
+
+  const savedTrips = await Trip.find({ uniqueKey: { $in: uniqueKeys } }).lean();
+  const afterByUniqueKey = new Map(savedTrips.map((trip) => [String((trip as any).uniqueKey), trip]));
+
+  const createdTripIds: string[] = [];
+  const updatedTripIds: string[] = [];
+  const unchangedTripIds: string[] = [];
+
+  for (const row of normalized) {
+    const uniqueKey = row!.uniqueKey;
+    const beforeDoc = beforeByUniqueKey.get(uniqueKey);
+    const afterDoc = afterByUniqueKey.get(uniqueKey);
+    if (!afterDoc) continue;
+
+    const beforeSnapshot = toTripAuditSnapshot(beforeDoc);
+    const afterSnapshot = toTripAuditSnapshot(afterDoc);
+    const isCreated = !beforeDoc;
+    const hasChanges = JSON.stringify(beforeSnapshot) !== JSON.stringify(afterSnapshot);
+
+    const tripId = String((afterDoc as any)._id);
+    if (isCreated) {
+      createdTripIds.push(tripId);
+      await logAuditEvent({
+        req,
+        action: "trip.created",
+        entityType: "trip",
+        entityId: tripId,
+        actor,
+        before: null,
+        after: afterSnapshot,
+        meta: { importBatchId, uniqueKey, sourceFile },
+      });
+      continue;
+    }
+
+    if (hasChanges) {
+      updatedTripIds.push(tripId);
+      await logAuditEvent({
+        req,
+        action: "trip.updated",
+        entityType: "trip",
+        entityId: tripId,
+        actor,
+        before: beforeSnapshot,
+        after: afterSnapshot,
+        meta: { importBatchId, uniqueKey, sourceFile, reason: "bulk_upload" },
+      });
+      continue;
+    }
+
+    unchangedTripIds.push(tripId);
+  }
+
+  await logAuditEvent({
+    req,
+    action: "trip.bulk_uploaded",
+    entityType: "trip_batch",
+    entityId: importBatchId,
+    actor,
+    before: null,
+    after: {
+      importBatchId,
+      sourceFile,
+      rowsReceived: rows.length,
+      rowsNormalized: normalized.length,
+      saved: normalized.length,
+      upserted,
+      modified,
+      createdTripIds,
+      updatedTripIds,
+      unchangedTripIds,
+    },
+    meta: {
+      uniqueKeys,
+    },
+  });
 
   return Response.json({
     ok: true,

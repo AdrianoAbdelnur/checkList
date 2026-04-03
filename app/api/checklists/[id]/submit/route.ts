@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasPermission } from "@/lib/roles";
+import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -23,9 +24,27 @@ export async function POST(req: Request, ctx: Ctx) {
   }
   if (doc.status !== "DRAFT") return Response.json({ ok: false, message: "Ya enviado" }, { status: 409 });
 
+  const before = cloneForAudit({
+    status: doc.status,
+    submittedAt: doc.submittedAt,
+  });
   doc.status = "SUBMITTED";
   doc.submittedAt = new Date();
   await doc.save();
+  const after = cloneForAudit({
+    status: doc.status,
+    submittedAt: doc.submittedAt,
+  });
+
+  await logAuditEvent({
+    req,
+    action: "check.submitted",
+    entityType: "checklist",
+    entityId: String(doc._id),
+    actor: actorFromUser(auth.user),
+    before,
+    after,
+  });
 
   return Response.json({ ok: true, item: doc.toObject() });
 }

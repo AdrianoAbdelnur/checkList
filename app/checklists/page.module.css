@@ -1,5 +1,4 @@
 .page {
-  --bg: var(--ck-bg);
   --ink: var(--ck-text);
   --muted: var(--ck-text-soft);
   --line: var(--ck-line);
@@ -19,18 +18,6 @@
   background: transparent;
   color: var(--ink);
   padding: 18px 18px 56px;
-  position: relative;
-}
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in oklab, var(--ink) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--ink) 8%, transparent) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
 }
 
 .hero {
@@ -41,10 +28,6 @@
   border-radius: 24px;
   background: linear-gradient(160deg, var(--ck-surface), var(--ck-surface-2));
   box-shadow: var(--shadow);
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 18px;
-  align-items: end;
 }
 
 .kicker {
@@ -66,11 +49,10 @@
 
 .subtitle {
   margin: 12px 0 0;
-  max-width: 62ch;
+  max-width: 66ch;
   color: var(--muted);
   line-height: 1.45;
 }
-
 
 .statsGrid {
   max-width: 1180px;
@@ -85,7 +67,6 @@
   background: var(--card);
   border-radius: 18px;
   padding: 14px 16px;
-  box-shadow: 0 8px 20px rgba(42, 33, 18, 0.05);
   box-shadow: 0 8px 20px color-mix(in oklab, var(--ink) 10%, transparent);
   display: grid;
   gap: 2px;
@@ -125,27 +106,83 @@
   margin: 20px auto 0;
 }
 
-.filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+.filterPanel {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--ck-surface), color-mix(in oklab, var(--ck-surface) 78%, var(--ck-surface-2)));
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--ink) 8%, transparent);
 }
 
-.filterChip {
-  text-decoration: none;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
-  padding: 6px 11px;
-  font-size: 12px;
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field > span {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-weight: 700;
 }
 
-.filterChipActive {
-  border-color: color-mix(in oklab, var(--ink) 22%, var(--line));
-  background: color-mix(in oklab, var(--card) 70%, var(--ck-surface-2));
+.field input,
+.field select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid color-mix(in oklab, var(--line) 80%, var(--ink) 20%);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--ck-surface) 85%, white 15%);
+  color: var(--ink);
+  padding: 0 11px;
+  font-size: 14px;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: color-mix(in oklab, var(--ck-accent) 40%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ck-accent) 16%, transparent);
+}
+
+.filterActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.applyButton,
+.clearButton {
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.applyButton {
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--ck-accent) 75%, white), var(--ck-accent));
+  border-color: color-mix(in oklab, var(--ck-accent) 78%, black 22%);
+}
+
+.clearButton {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--ck-surface) 85%, var(--ck-surface-2));
+  border-color: var(--line);
 }
 
 .listHeader {
@@ -153,7 +190,7 @@
   justify-content: space-between;
   align-items: end;
   gap: 12px;
-  margin-bottom: 14px;
+  margin: 16px 0 14px;
 }
 
 .listHeader h2 {
@@ -169,7 +206,7 @@
 
 .emptyState {
   border: 1px dashed var(--line);
-  background: rgba(255, 255, 255, 0.5);
+  background: color-mix(in oklab, var(--ck-surface) 84%, var(--ck-surface-2));
   border-radius: 18px;
   padding: 26px;
 }
@@ -200,7 +237,6 @@
   gap: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(253, 249, 241, 0.92));
   background: linear-gradient(180deg, var(--ck-surface), color-mix(in oklab, var(--ck-surface) 70%, var(--ck-surface-2)));
   box-shadow: 0 10px 28px color-mix(in oklab, var(--ink) 10%, transparent);
   padding: 16px;
@@ -211,9 +247,8 @@
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(42, 33, 18, 0.09);
   box-shadow: 0 14px 34px color-mix(in oklab, var(--ink) 14%, transparent);
-  border-color: rgba(26, 25, 22, 0.22);
+  border-color: color-mix(in oklab, var(--ink) 20%, var(--line));
 }
 
 .cardTop {
@@ -280,20 +315,20 @@
 .muted {
   background: var(--muted-bg);
   color: var(--muted-ink);
-  border-color: rgba(96, 90, 82, 0.16);
+  border-color: color-mix(in oklab, var(--muted-ink) 18%, transparent);
 }
 
 .neutral {
   background: var(--neutral-bg);
   color: var(--neutral-ink);
-  border-color: rgba(47, 76, 121, 0.16);
+  border-color: color-mix(in oklab, var(--neutral-ink) 16%, transparent);
 }
 
 .metaGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  border-top: 1px solid rgba(26, 25, 22, 0.08);
+  border-top: 1px solid color-mix(in oklab, var(--line) 70%, var(--ink) 30%);
   padding-top: 12px;
 }
 
@@ -319,10 +354,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px dashed rgba(26, 25, 22, 0.14);
+  border-top: 1px dashed color-mix(in oklab, var(--line) 65%, var(--ink) 35%);
   padding-top: 10px;
   color: var(--muted);
   font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .filterGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 980px) {
@@ -333,6 +374,10 @@
   .metaGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .filterGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -341,7 +386,6 @@
   }
 
   .hero {
-    grid-template-columns: 1fr;
     border-radius: 18px;
     padding: 16px;
   }
@@ -369,6 +413,14 @@
 
   .metaGrid {
     grid-template-columns: 1fr;
+  }
+
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterActions {
+    flex-direction: column;
   }
 }
 

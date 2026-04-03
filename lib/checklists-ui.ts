@@ -47,6 +47,15 @@ export function getChecklistPlate(item: AnyObj) {
   );
 }
 
+export function getChecklistTemplateId(item: AnyObj) {
+  return (
+    getIn(item, ["templateId"]) ??
+    getIn(item, ["template", "templateId"]) ??
+    getIn(item, ["data", "templateId"]) ??
+    null
+  );
+}
+
 export function getChecklistVisibility(item: AnyObj) {
   const raw =
     getIn(item, ["visibility"]) ??
