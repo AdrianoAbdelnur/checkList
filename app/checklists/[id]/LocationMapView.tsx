@@ -22,11 +22,19 @@ function EnsureMapLayout() {
   return null;
 }
 
+function SetInitialView({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+
+  React.useEffect(() => {
+    map.setView([lat, lng], 16);
+  }, [lat, lng, map]);
+
+  return null;
+}
+
 export default function LocationMapView({ lat, lng }: Props) {
   return (
     <MapContainer
-      center={[lat, lng]}
-      zoom={16}
       scrollWheelZoom
       dragging
       touchZoom
@@ -36,6 +44,7 @@ export default function LocationMapView({ lat, lng }: Props) {
       style={{ width: "100%", height: "100%" }}
     >
       <EnsureMapLayout />
+      <SetInitialView lat={lat} lng={lng} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
