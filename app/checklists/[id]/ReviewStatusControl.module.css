@@ -29,13 +29,19 @@
   border: 1px solid transparent;
 }
 
-.reviewed {
+.approved {
   background: var(--ck-good-bg);
   color: var(--ck-good-ink);
   border-color: color-mix(in oklab, var(--ck-good-ink) 16%, transparent);
 }
 
-.unreviewed {
+.rejected {
+  background: var(--ck-bad-bg);
+  color: var(--ck-bad-ink);
+  border-color: color-mix(in oklab, var(--ck-bad-ink) 16%, transparent);
+}
+
+.pending {
   background: var(--ck-muted-bg);
   color: var(--ck-muted-ink);
   border-color: color-mix(in oklab, var(--ck-muted-ink) 16%, transparent);
@@ -47,6 +53,89 @@
   margin: 0;
   color: var(--ck-text-soft);
   font-size: 13px;
+}
+
+.formArea {
+  display: grid;
+  gap: 10px;
+}
+
+.lockedArea {
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field > span {
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.textarea {
+  min-height: 86px;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
+  background: color-mix(in oklab, var(--ck-surface) 75%, var(--ck-surface-2));
+  color: var(--ck-text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.uploadRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.dropzone {
+  border-radius: 10px;
+  border: 1px dashed color-mix(in oklab, var(--ck-line) 86%, transparent);
+  background: color-mix(in oklab, var(--ck-surface) 72%, var(--ck-surface-2));
+  color: var(--ck-text);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 10px;
+  cursor: pointer;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone input {
+  display: none;
+}
+
+.dropzoneActive {
+  border-color: color-mix(in oklab, var(--ck-accent, #3b82f6) 55%, var(--ck-line));
+  background: color-mix(in oklab, var(--ck-accent, #3b82f6) 10%, var(--ck-surface));
+}
+
+.dropzoneDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.imagePreviewLink {
+  display: inline-block;
+  width: fit-content;
+}
+
+.imagePreview {
+  width: min(280px, 100%);
+  border-radius: 12px;
+  border: 1px solid var(--ck-line);
+  display: block;
 }
 
 .actions {
@@ -71,10 +160,63 @@
   cursor: not-allowed;
 }
 
+.btnApprove {
+  border-color: color-mix(in oklab, var(--ck-good-ink) 25%, var(--ck-line));
+}
+
+.btnReject {
+  border-color: color-mix(in oklab, var(--ck-bad-ink) 25%, var(--ck-line));
+}
+
+.btnChange {
+  border-color: color-mix(in oklab, var(--ck-accent, #3b82f6) 35%, var(--ck-line));
+  background: color-mix(in oklab, var(--ck-accent, #3b82f6) 12%, var(--ck-surface));
+}
+
 .active {
   border-color: color-mix(in oklab, var(--ck-accent, #3b82f6) 40%, var(--ck-line));
 }
 
 .error {
   color: var(--ck-bad-ink);
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.confirmModal {
+  width: min(460px, 100%);
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: var(--ck-surface);
+  box-shadow: var(--ck-shadow);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.confirmModal h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.confirmModal p {
+  margin: 0;
+  color: var(--ck-text-soft);
+  font-size: 13px;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
 }

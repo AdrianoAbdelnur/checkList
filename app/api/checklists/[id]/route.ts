@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasPermission } from "@/lib/roles";
+import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -42,9 +43,27 @@ export async function PATCH(req: Request, ctx: Ctx) {
   if (doc.status !== "DRAFT") return Response.json({ ok: false, message: "Checklist bloqueado" }, { status: 409 });
 
   const patch = await req.json();
+  const before = cloneForAudit({
+    status: doc.status,
+    data: doc.data,
+  });
 
   if (patch?.data !== undefined) doc.data = patch.data;
   await doc.save();
+  const after = cloneForAudit({
+    status: doc.status,
+    data: doc.data,
+  });
+
+  await logAuditEvent({
+    req,
+    action: "check.updated",
+    entityType: "checklist",
+    entityId: String(doc._id),
+    actor: actorFromUser(auth.user),
+    before,
+    after,
+  });
 
   return Response.json({ ok: true, item: doc.toObject() });
 }

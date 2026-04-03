@@ -2,6 +2,7 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
 import Trip from "@/models/Trip";
+import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -25,6 +26,26 @@ function parseDateKeyToDate(value: string): Date | null {
   const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   if (Number.isNaN(date.getTime())) return null;
   return date;
+}
+
+function toTripAuditSnapshot(doc: any) {
+  if (!doc) return null;
+  return cloneForAudit({
+    id: String(doc._id),
+    uniqueKey: String(doc.uniqueKey ?? ""),
+    tripDateKey: String(doc.tripDateKey ?? ""),
+    tripDate: doc.tripDate ?? null,
+    solicitudRaw: String(doc.solicitudRaw ?? ""),
+    solicitudAt: doc.solicitudAt ?? null,
+    tipo: String(doc.tipo ?? ""),
+    dominio: String(doc.dominio ?? ""),
+    viajeRaw: String(doc.viajeRaw ?? ""),
+    sourceFile: String(doc.sourceFile ?? ""),
+    importBatchId: String(doc.importBatchId ?? ""),
+    uploadedBy: doc.uploadedBy ?? null,
+    createdAt: doc.createdAt ?? null,
+    updatedAt: doc.updatedAt ?? null,
+  });
 }
 
 export async function PATCH(req: Request, ctx: Ctx) {
@@ -63,8 +84,26 @@ export async function PATCH(req: Request, ctx: Ctx) {
     return Response.json({ ok: false, message: "Nada para actualizar" }, { status: 400 });
   }
 
-  const item = await Trip.findByIdAndUpdate(id, { $set: update }, { new: true }).lean();
-  if (!item) return Response.json({ ok: false, message: "Viaje no encontrado" }, { status: 404 });
+  const doc = await Trip.findById(id);
+  if (!doc) return Response.json({ ok: false, message: "Viaje no encontrado" }, { status: 404 });
+
+  const before = toTripAuditSnapshot(doc.toObject());
+  doc.set(update);
+  await doc.save();
+  const after = toTripAuditSnapshot(doc.toObject());
+
+  await logAuditEvent({
+    req,
+    action: "trip.updated",
+    entityType: "trip",
+    entityId: String(doc._id),
+    actor: actorFromUser(auth.user),
+    before,
+    after,
+    meta: { reason: "manual_patch" },
+  });
+
+  const item = doc.toObject();
 
   return Response.json({ ok: true, item });
 }
@@ -85,6 +124,16 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   const deleted = await Trip.findByIdAndDelete(id).lean();
   if (!deleted) return Response.json({ ok: false, message: "Viaje no encontrado" }, { status: 404 });
+
+  await logAuditEvent({
+    req,
+    action: "trip.deleted",
+    entityType: "trip",
+    entityId: String((deleted as any)._id),
+    actor: actorFromUser(auth.user),
+    before: toTripAuditSnapshot(deleted),
+    after: null,
+  });
 
   return Response.json({ ok: true });
 }

@@ -3,19 +3,18 @@ import ReviewStatusControl from "./ReviewStatusControl";
 import { cookies } from "next/headers";
 import { getSessionData } from "@/lib/auth";
 import { getChecklistWithTemplateById } from "@/lib/checklists";
-import { hasPermission } from "@/lib/roles";
+import { hasAnyRole, hasPermission } from "@/lib/roles";
 import {
   formatChecklistDate,
+  getChecklistDecision,
   getChecklistDecisionLabel,
   getChecklistInspectorLabel,
   getChecklistInspectorRole,
   getChecklistPlate,
-  getChecklistReviewStatus,
-  getChecklistReviewStatusLabel,
-  getChecklistVisibility,
   normalizeChecklistText,
 } from "@/lib/checklists-ui";
 import ThemeShellServer from "@/components/checklists/ThemeShellServer";
+import LocationMapBadge from "./LocationMapBadge";
 import styles from "./page.module.css";
 
 function toPlain<T>(value: T): T {
@@ -23,6 +22,15 @@ function toPlain<T>(value: T): T {
 }
 
 type AnyObj = Record<string, unknown>;
+
+function asObj(value: unknown): AnyObj {
+  return value && typeof value === "object" ? (value as AnyObj) : {};
+}
+
+function asNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
 
 function getToneByStatus(status: string) {
   const t = normalizeChecklistText(status);
@@ -33,8 +41,11 @@ function getToneByStatus(status: string) {
   return styles.neutral;
 }
 
-function getToneByReview(reviewStatus: "REVISADO" | "SIN_REVISION") {
-  return reviewStatus === "REVISADO" ? styles.good : styles.muted;
+function getToneByDecision(decision: "APPROVED" | "REJECTED" | "PENDING" | null) {
+  if (decision === "APPROVED") return styles.good;
+  if (decision === "REJECTED") return styles.bad;
+  if (decision === "PENDING") return styles.warn;
+  return styles.muted;
 }
 
 export default async function ChecklistDetailPage({
@@ -68,13 +79,17 @@ export default async function ChecklistDetailPage({
 
   const inspector = getChecklistInspectorLabel(checklist);
   const inspectorRole = getChecklistInspectorRole(checklist);
-  const visibility = getChecklistVisibility(checklist);
+  const decisionStatus = getChecklistDecision(checklist);
   const decision = getChecklistDecisionLabel(checklist);
-  const reviewStatus = getChecklistReviewStatus(checklist);
-  const reviewLabel = getChecklistReviewStatusLabel(checklist);
   const status = String(checklist.status ?? "-");
+  const approvalData = asObj(asObj(checklist.data).approval);
+  const locationStamp = asObj(asObj(asObj(checklist.data).meta).locationStamp);
+  const locationLat = asNumber(locationStamp.lat);
+  const locationLng = asNumber(locationStamp.lng);
+  const approvalNote = String(approvalData.note ?? "").trim();
+  const approvalImageUrl = String(approvalData.imageUrl ?? "").trim();
   const checklistTitle = String(template?.title ?? checklist?.title ?? "Checklist");
-  const canManageReview = hasPermission(session as Record<string, unknown>, "checklist.review");
+  const canManageReview = hasAnyRole(session as Record<string, unknown>, ["admin", "manager", "supervisor"]);
 
   return (
     <ThemeShellServer user={session}>
@@ -90,7 +105,7 @@ export default async function ChecklistDetailPage({
 
           <div className={styles.heroBadges}>
             <span className={`${styles.badge} ${getToneByStatus(status)}`}>{status}</span>
-            <span className={`${styles.badge} ${getToneByReview(reviewStatus)}`}>{reviewLabel}</span>
+            <span className={`${styles.badge} ${getToneByDecision(decisionStatus)}`}>{decision}</span>
           </div>
         </section>
 
@@ -99,11 +114,6 @@ export default async function ChecklistDetailPage({
             <span>Inspector</span>
             <strong>{inspector}</strong>
             <small>{inspectorRole}</small>
-          </div>
-          <div className={styles.metaCard}>
-            <span>Visibilidad</span>
-            <strong>{visibility}</strong>
-            <small>{String(checklist._id)}</small>
           </div>
           <div className={styles.metaCard}>
             <span>Creado</span>
@@ -115,6 +125,11 @@ export default async function ChecklistDetailPage({
             <strong>{formatChecklistDate(checklist.submittedAt)}</strong>
             <small>Resultado: {decision}</small>
           </div>
+          <div className={styles.metaCard}>
+            <span>Ubicacion</span>
+            <LocationMapBadge lat={locationLat} lng={locationLng} />
+            <small>{locationLat !== null && locationLng !== null ? "Click en la badge para abrir mapa" : "Sin coordenadas registradas"}</small>
+          </div>
         </section>
 
         <section className={styles.viewerFrame}>
@@ -123,7 +138,9 @@ export default async function ChecklistDetailPage({
 
         <ReviewStatusControl
           checklistId={String(checklist?._id ?? "")}
-          initialStatus={reviewStatus}
+          initialStatus={decisionStatus ?? "PENDING"}
+          initialNote={approvalNote}
+          initialImageUrl={approvalImageUrl}
           canEdit={canManageReview}
         />
       </main>

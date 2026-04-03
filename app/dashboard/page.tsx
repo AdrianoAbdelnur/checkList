@@ -158,9 +158,6 @@ export default function DashboardPage() {
                   <a href="/dashboard/trips" className={styles.quickBtn}>
                     Viajes
                   </a>
-                  <a href="/checklists" className={styles.quickBtnGhost}>
-                    Ir por enlace directo
-                  </a>
                 </>
               )}
             </div>

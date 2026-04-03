@@ -4,6 +4,7 @@ import ChecklistTemplate from "@/models/ChecklistTemplate";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listChecklistsForInspector } from "@/lib/checklists";
 import { hasPermission } from "@/lib/roles";
+import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 function normalizePlate(value: unknown) {
   return String(value ?? "")
@@ -162,6 +163,23 @@ export async function POST(req: Request) {
     data: body?.data ?? {},
     status: "SUBMITTED",
     submittedAt: new Date(),
+  });
+
+  await logAuditEvent({
+    req,
+    action: "check.created",
+    entityType: "checklist",
+    entityId: String(created._id),
+    actor: actorFromUser(auth.user),
+    before: null,
+    after: cloneForAudit({
+      templateId: created.templateId,
+      templateVersion: created.templateVersion,
+      inspectorId: created.inspectorId,
+      status: created.status,
+      submittedAt: created.submittedAt,
+      data: created.data,
+    }),
   });
 
   return Response.json({ ok: true, item: created }, { status: 201 });
