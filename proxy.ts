@@ -3,13 +3,14 @@ import { NextResponse } from "next/server";
 
 const PUBLIC_PATHS = new Set(["/login", "/register"]);
 const DEFAULT_AUTHENTICATED_REDIRECT = "/dashboard";
+const INTERNAL_APP_URL = process.env.INTERNAL_APP_URL || "http://127.0.0.1:3004";
 
 async function hasValidSession(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get("session")?.value;
   if (!token) return false;
 
   try {
-    const verifyUrl = new URL("/api/auth/me", req.url);
+    const verifyUrl = new URL("/api/auth/me", INTERNAL_APP_URL);
     const res = await fetch(verifyUrl, {
       headers: {
         cookie: req.headers.get("cookie") ?? "",
