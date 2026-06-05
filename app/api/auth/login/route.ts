@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    const user = await User.findOne({ email: body.email }).select("+password +salt");
+    const user = await User.findOne({
+      email: body.email,
+      isDelete: { $ne: true },
+    }).select("+password +salt");
     if (!user || !user.salt || !user.password) {
       return NextResponse.json(
         { ok: false, message: "Credenciales incorrectas" },

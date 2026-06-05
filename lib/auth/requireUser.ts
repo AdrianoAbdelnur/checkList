@@ -28,11 +28,11 @@ export async function requireUser(
 
   const session = await Session.findOne({ token }).lean();
   if (!session) {
-    return { ok: false as const, status: 401 as const, message: "Sesión inválida" };
+    return { ok: false as const, status: 401 as const, message: "Sesion invalida" };
   }
 
   if (new Date(session.expiresAt).getTime() <= Date.now()) {
-    return { ok: false as const, status: 401 as const, message: "Sesión expirada" };
+    return { ok: false as const, status: 401 as const, message: "Sesion expirada" };
   }
 
   const user = await User.findById(session.userId).lean();
@@ -40,8 +40,12 @@ export async function requireUser(
     return { ok: false as const, status: 401 as const, message: "Usuario no existe" };
   }
 
+  if (Boolean((user as any).isDelete)) {
+    return { ok: false as const, status: 401 as const, message: "Usuario eliminado" };
+  }
+
   if (Boolean((user as any).mustChangePassword) && !options?.allowMustChangePassword) {
-    return { ok: false as const, status: 403 as const, message: "Debe actualizar su contraseña" };
+    return { ok: false as const, status: 403 as const, message: "Debe actualizar su contrasena" };
   }
 
   return { ok: true as const, user };
