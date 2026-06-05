@@ -14,6 +14,9 @@ export interface IUser extends Document {
   userNumber?: string
   mustChangePassword?: boolean
   passwordChangedAt?: Date | null
+  deletionRequestedAt?: Date | null
+  deletionRequestedByUser?: boolean
+  deletionRequestSource?: string | null
 }
 
 const UserSchema = new Schema<IUser>(
@@ -72,6 +75,19 @@ const UserSchema = new Schema<IUser>(
     },
     passwordChangedAt: {
       type: Date,
+      default: null,
+    },
+    deletionRequestedAt: {
+      type: Date,
+      default: null,
+    },
+    deletionRequestedByUser: {
+      type: Boolean,
+      default: false,
+    },
+    deletionRequestSource: {
+      type: String,
+      enum: ['mobile', 'web', 'admin'],
       default: null,
     },
   },

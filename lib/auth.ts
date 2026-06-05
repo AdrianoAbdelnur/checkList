@@ -17,7 +17,7 @@ export type SessionData = {
 export async function getUserById(userId: string): Promise<(Omit<IUser, 'password' | 'salt'> & { _id: any }) | null> {
   try {
     await connectToDatabase()
-    const user = await User.findById(userId).select('-password -salt').lean()
+    const user = await User.findOne({ _id: userId, isDelete: { $ne: true } }).select('-password -salt').lean()
     return user
   } catch (e) {
     return null
