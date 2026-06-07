@@ -62,59 +62,18 @@ function normalizePlate(value: unknown) {
     .replace(/[^A-Z0-9]/g, "");
 }
 
-export async function GET(req: Request) {
-  await connectToDatabase();
-
-  const auth = await requireUser(req);
-  if (!auth.ok) {
-    return Response.json({ ok: false, message: auth.message }, { status: auth.status });
-  }
-
-  const url = new URL(req.url);
-  const templateId = String(url.searchParams.get("templateId") || "").trim();
-  const plate = normalizePlate(url.searchParams.get("plate"));
-  const date = normalizeDateKey(url.searchParams.get("date")) || todayKey();
-
-  if (!templateId) {
-    return Response.json({ ok: false, message: "templateId requerido" }, { status: 400 });
-  }
-  if (!plate) {
-    return Response.json({ ok: false, message: "plate requerido" }, { status: 400 });
-  }
-
-  const template = await getActiveTemplateByTemplateIdForUser(auth.user as any, templateId);
-  if (template === false) {
-    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
-  }
-  if (!template) {
-    return Response.json({ ok: false, message: "Template no encontrado" }, { status: 404 });
-  }
-
-  const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
-  const candidateDateKeys = [date, addDaysToKey(date, 1), addDaysToKey(date, 2)];
-  const trips = await Trip.find({ tripDateKey: { $in: candidateDateKeys } })
-    .sort({ tripDateKey: 1, solicitudAt: 1, createdAt: 1 })
-    .select("_id dominio tipo tripDateKey solicitudAt createdAt")
-    .lean();
-  const matchingTrips = (trips as any[]).filter(
-    (t) => normalizePlate(t?.dominio) === plate,
-  );
-  const selectedTrip = matchingTrips[0] ?? null;
-  const plateFound = !!selectedTrip;
-  const checklistTripDateKey = String(selectedTrip?.tripDateKey || date);
-
-  if (!plateFound) {
-    return Response.json({
-      ok: true,
-      exists: false,
-      plateFound: false,
-      message: "No hay viaje cargado para ese vehiculo en esa fecha.",
-      item: null,
-      assignment: null,
-    });
-  }
-
-  const existing = await Checklist.findOne({
+async function findExistingChecklist({
+  templateId,
+  plate,
+  tenantId,
+  dateKey,
+}: {
+  templateId: string;
+  plate: string;
+  tenantId: string;
+  dateKey: string;
+}) {
+  return Checklist.findOne({
     templateId,
     $and: [
       {
@@ -137,35 +96,114 @@ export async function GET(req: Request) {
           { "data.meta.vehicleDomain": plate },
         ],
       },
-      buildTripDateFilter(checklistTripDateKey),
-      {
-        $or: tenantScopeConditions(tenantId),
-      },
+      buildTripDateFilter(dateKey),
+      { $or: tenantScopeConditions(tenantId) },
     ],
   })
     .sort({ submittedAt: -1, createdAt: -1 })
     .select("_id submittedAt")
     .lean();
+}
+
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  const auth = await requireUser(req);
+  if (!auth.ok) {
+    return Response.json({ ok: false, message: auth.message }, { status: auth.status });
+  }
+
+  const url = new URL(req.url);
+  const templateId = String(url.searchParams.get("templateId") || "").trim();
+  const plate = normalizePlate(url.searchParams.get("plate"));
+  const date = normalizeDateKey(url.searchParams.get("date")) || todayKey();
+  const scope = String(url.searchParams.get("scope") || "window").trim().toLowerCase();
+
+  if (!templateId) {
+    return Response.json({ ok: false, message: "templateId requerido" }, { status: 400 });
+  }
+  if (!plate) {
+    return Response.json({ ok: false, message: "plate requerido" }, { status: 400 });
+  }
+
+  const template = await getActiveTemplateByTemplateIdForUser(auth.user as any, templateId);
+  if (template === false) {
+    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+  }
+  if (!template) {
+    return Response.json({ ok: false, message: "Template no encontrado" }, { status: 404 });
+  }
+
+  const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
+  const candidateDateKeys =
+    scope === "exact" ? [date] : [date, addDaysToKey(date, 1), addDaysToKey(date, 2)];
+
+  const trips = await Trip.find({ tripDateKey: { $in: candidateDateKeys } })
+    .sort({ tripDateKey: 1, solicitudAt: 1, createdAt: 1 })
+    .select("_id dominio tipo tripDateKey solicitudAt createdAt")
+    .lean();
+
+  const matchingTrips = (trips as any[]).filter((t) => normalizePlate(t?.dominio) === plate);
+
+  for (const trip of matchingTrips) {
+    const tripDateKey = String(trip?.tripDateKey || "").trim();
+    if (!tripDateKey) continue;
+    const existing = await findExistingChecklist({
+      templateId,
+      plate,
+      tenantId,
+      dateKey: tripDateKey,
+    });
+    if (!existing) continue;
+
+    return Response.json({
+      ok: true,
+      status: "check_exists",
+      exists: true,
+      plateFound: true,
+      matchedDateKey: tripDateKey,
+      message: "Ya existe un checklist para ese vehiculo en esa fecha.",
+      assignment: {
+        tripId: String((trip as any)._id || ""),
+        tripDateKey,
+        tripType: String((trip as any).tipo || ""),
+      },
+      item: {
+        id: String((existing as any)._id),
+        submittedAt: String((existing as any).submittedAt || ""),
+      },
+    });
+  }
+
+  if (matchingTrips.length > 0) {
+    const trip = matchingTrips[0] as any;
+    return Response.json({
+      ok: true,
+      status: "trip_available",
+      exists: false,
+      plateFound: true,
+      matchedDateKey: String(trip.tripDateKey || ""),
+      message: null,
+      assignment: {
+        tripId: String(trip._id || ""),
+        tripDateKey: String(trip.tripDateKey || ""),
+        tripType: String(trip.tipo || ""),
+      },
+      item: null,
+    });
+  }
 
   return Response.json({
     ok: true,
-    exists: !!existing,
-    plateFound: true,
-    message: existing
-      ? "Este check ya esta realizado para este vehiculo en la fecha de viaje seleccionada."
-      : null,
-    assignment: selectedTrip
-      ? {
-          tripId: String(selectedTrip._id),
-          tripDateKey: String(selectedTrip.tripDateKey || ""),
-          tripType: String(selectedTrip.tipo || ""),
-        }
-      : null,
-    item: existing
-      ? {
-          id: String(existing._id),
-          submittedAt: String((existing as any).submittedAt || ""),
-        }
-      : null,
+    status: "no_trip",
+    exists: false,
+    plateFound: false,
+    matchedDateKey: "",
+    message:
+      scope === "exact"
+        ? "No hay viaje cargado para ese vehiculo en esa fecha."
+        : "No hay viaje cargado para ese vehiculo para hoy ni en los proximos 2 dias.",
+    assignment: null,
+    item: null,
   });
 }
