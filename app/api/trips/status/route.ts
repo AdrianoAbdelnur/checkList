@@ -65,6 +65,13 @@ function checklistPlate(row: any): string {
   return normalizePlate(readFieldValue(fromSubject ?? fromValues ?? fromMeta ?? ""));
 }
 
+function checklistTripDateKey(row: any): string {
+  const assignment = row?.data?.assignment?.tripDateKey;
+  const values = row?.data?.values?.trip_date;
+  const meta = row?.data?.meta?.tripDateKey;
+  return normalizeDateKey(readFieldValue(assignment ?? values ?? meta ?? ""));
+}
+
 function isAllowed(user: any) {
   return (
     hasPermission(user as any, "checklist.view_all") ||
@@ -122,7 +129,6 @@ export async function GET(req: Request) {
   }
   const expectedTemplateIds = Array.from(templateMap.keys());
 
-  const tripIdSet = new Set((trips as any[]).map((t) => String(t._id)));
   const tripByPlate = new Map<string, string>();
   for (const trip of trips as any[]) {
     const plate = normalizePlate(trip.dominio);
@@ -133,14 +139,39 @@ export async function GET(req: Request) {
   const { start, end } = dateRangeForKey(date);
   const checklistRows = expectedTemplateIds.length
     ? ((await Checklist.find({
-        submittedAt: { $gte: start, $lte: end },
         templateId: { $in: expectedTemplateIds },
+        $or: [
+          { "data.assignment.tripDateKey": date },
+          { "data.values.trip_date.value": date },
+          { "data.meta.tripDateKey": date },
+          { submittedAt: { $gte: start, $lte: end } },
+        ],
       })
         .sort({ submittedAt: -1, createdAt: -1 })
         .select("_id templateId submittedAt data")
         .lean()) as any[])
     : [];
 
+  const orphanTripsByPlate = new Map<
+    string,
+    { _id: string; dominio: string; tipo: string; tripDateKey: string }
+  >();
+  for (const c of checklistRows) {
+    const plate = checklistPlate(c);
+    const tripDateKey = checklistTripDateKey(c) || date;
+    if (!plate || tripDateKey !== date || tripByPlate.has(plate) || orphanTripsByPlate.has(plate)) continue;
+    orphanTripsByPlate.set(plate, {
+      _id: `orphan:${plate}:${tripDateKey}`,
+      dominio: plate,
+      tipo: String(c?.data?.assignment?.tripType || "Viaje auto-generado").trim(),
+      tripDateKey,
+    });
+    tripByPlate.set(plate, `orphan:${plate}:${tripDateKey}`);
+  }
+
+  const allTrips = [...(trips as any[]), ...Array.from(orphanTripsByPlate.values())];
+
+  const tripIdSet = new Set(allTrips.map((t) => String(t._id)));
   const latestByTripTemplate = new Map<string, ChecklistRow>();
   for (const c of checklistRows) {
     const templateId = String(c?.templateId || c?.data?.assignment?.assignedTemplateId || "").trim();
@@ -172,7 +203,7 @@ export async function GET(req: Request) {
     });
   }
 
-  const items = (trips as any[]).map((trip) => {
+  const items = allTrips.map((trip) => {
     let completed = 0;
     let observed = 0;
     let pending = 0;

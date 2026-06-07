@@ -136,7 +136,7 @@ async function resolveTripForChecklist({
     .update(`${tripDateKey}|${plate}|AUTO_CHECKLIST`)
     .digest("hex");
 
-  return Trip.findOneAndUpdate(
+  const trip = await Trip.findOneAndUpdate(
     { uniqueKey },
     {
       $setOnInsert: {
@@ -164,6 +164,12 @@ async function resolveTripForChecklist({
       setDefaultsOnInsert: true,
     },
   ).lean();
+
+  if (trip) return trip;
+
+  return Trip.findOne({
+    $or: [{ uniqueKey }, { tripDateKey, dominio: plate }],
+  }).lean();
 }
 
 export async function GET(req: Request) {
@@ -340,6 +346,28 @@ export async function POST(req: Request) {
     status: "SUBMITTED",
     submittedAt: new Date(),
   });
+
+  if (plate && tripDateKey && !String(created?.data?.assignment?.tripId || "").trim()) {
+    const trip = await resolveTripForChecklist({
+      plate,
+      tripDateKey,
+      assignment: created?.data?.assignment ?? resolvedAssignment,
+      authUser: auth.user,
+    });
+
+    if (trip) {
+      created.data = created.data ?? {};
+      created.data.assignment = {
+        ...(created.data.assignment ?? {}),
+        tripId: String((trip as any)._id || ""),
+        tripDateKey,
+        tripType: String(
+          created?.data?.assignment?.tripType || (trip as any).tipo || "",
+        ).trim(),
+      };
+      await created.save();
+    }
+  }
 
   await logAuditEvent({
     req,
