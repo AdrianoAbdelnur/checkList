@@ -6,7 +6,8 @@
     "dev": "next dev -p 3004",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backfill:tenant-general": "node scripts/backfill-tenant-general.js"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.3",

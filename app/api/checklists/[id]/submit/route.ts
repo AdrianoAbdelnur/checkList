@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
+import { canAccessChecklist } from "@/lib/checklists";
 import Checklist from "@/models/Checklist";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasPermission } from "@/lib/roles";
@@ -17,9 +18,9 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const doc = await Checklist.findById(id);
   if (!doc) return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
-  const isOwner = String(doc.inspectorId) === String(auth.user._id);
   const canApproveReject = hasPermission(auth.user as any, "checklist.approve_reject");
-  if (!isOwner && !canApproveReject) {
+  const isAllowed = canAccessChecklist(auth.user as any, doc.toObject(), canApproveReject);
+  if (!isAllowed) {
     return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
   if (doc.status !== "DRAFT") return Response.json({ ok: false, message: "Ya enviado" }, { status: 409 });

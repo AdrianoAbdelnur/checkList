@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import Trip from "@/models/Trip";
 import { requireUser } from "@/lib/auth/requireUser";
+import { getActiveTemplateByTemplateIdForUser } from "@/lib/templates";
 
 function normalizeDateKey(value: unknown): string {
   const raw = String(value ?? "").trim();
@@ -22,6 +23,15 @@ function dateRangeForKey(key: string) {
   const start = new Date(`${key}T00:00:00.000Z`);
   const end = new Date(`${key}T23:59:59.999Z`);
   return { start, end };
+}
+
+function tenantScopeConditions(tenantId: string) {
+  return [
+    { tenantId },
+    { tenantId: { $exists: false } },
+    { tenantId: null },
+    { tenantId: "" },
+  ];
 }
 
 function normalizePlate(value: unknown) {
@@ -51,13 +61,20 @@ export async function GET(req: Request) {
     return Response.json({ ok: false, message: "plate requerido" }, { status: 400 });
   }
 
+  const template = await getActiveTemplateByTemplateIdForUser(auth.user as any, templateId);
+  if (template === false) {
+    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+  }
+  if (!template) {
+    return Response.json({ ok: false, message: "Template no encontrado" }, { status: 404 });
+  }
+
   const { start, end } = dateRangeForKey(date);
+  const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
   const trips = await Trip.find({ tripDateKey: date })
     .select("dominio")
     .lean();
-  const plateFound = (trips as any[]).some(
-    (t) => normalizePlate(t?.dominio) === plate,
-  );
+  const plateFound = (trips as any[]).some((t) => normalizePlate(t?.dominio) === plate);
 
   if (!plateFound) {
     return Response.json({
@@ -72,23 +89,30 @@ export async function GET(req: Request) {
   const existing = await Checklist.findOne({
     templateId,
     submittedAt: { $gte: start, $lte: end },
-    $or: [
-      { "data.subject.plate": plate },
-      { "data.subject.patente": plate },
-      { "data.subject.dominio": plate },
-      { "data.subject.vehicle_domain": plate },
-      { "data.subject.vehicleDomain": plate },
-      { "data.values.pre_plate": plate },
-      { "data.values.plate": plate },
-      { "data.values.patente": plate },
-      { "data.values.dominio": plate },
-      { "data.values.vehicle_domain": plate },
-      { "data.values.vehicleDomain": plate },
-      { "data.meta.plate": plate },
-      { "data.meta.patente": plate },
-      { "data.meta.dominio": plate },
-      { "data.meta.vehicle_domain": plate },
-      { "data.meta.vehicleDomain": plate },
+    $and: [
+      {
+        $or: [
+          { "data.subject.plate": plate },
+          { "data.subject.patente": plate },
+          { "data.subject.dominio": plate },
+          { "data.subject.vehicle_domain": plate },
+          { "data.subject.vehicleDomain": plate },
+          { "data.values.pre_plate": plate },
+          { "data.values.plate": plate },
+          { "data.values.patente": plate },
+          { "data.values.dominio": plate },
+          { "data.values.vehicle_domain": plate },
+          { "data.values.vehicleDomain": plate },
+          { "data.meta.plate": plate },
+          { "data.meta.patente": plate },
+          { "data.meta.dominio": plate },
+          { "data.meta.vehicle_domain": plate },
+          { "data.meta.vehicleDomain": plate },
+        ],
+      },
+      {
+        $or: tenantScopeConditions(tenantId),
+      },
     ],
   })
     .sort({ submittedAt: -1, createdAt: -1 })
@@ -99,9 +123,7 @@ export async function GET(req: Request) {
     ok: true,
     exists: !!existing,
     plateFound: true,
-    message: existing
-      ? "Este check ya está realizado para este vehículo el día de hoy."
-      : null,
+    message: existing ? "Este check ya está realizado para este vehículo el día de hoy." : null,
     item: existing
       ? {
           id: String(existing._id),

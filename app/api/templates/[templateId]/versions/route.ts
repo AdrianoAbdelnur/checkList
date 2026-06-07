@@ -25,6 +25,10 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const metrics = body?.metrics;
   const rules = body?.rules;
   const isActive = body?.isActive !== undefined ? Boolean(body.isActive) : true;
+  const accessMode = String(body?.accessMode ?? "all").trim() === "selected" ? "selected" : "all";
+  const allowedTenantIds = Array.isArray(body?.allowedTenantIds)
+    ? body.allowedTenantIds.map((item: unknown) => String(item ?? "").trim()).filter(Boolean)
+    : [];
 
   if (!title) return Response.json({ ok: false, message: "title requerido" }, { status: 400 });
   if (!Array.isArray(sections) || sections.length === 0) {
@@ -47,6 +51,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     metrics,
     rules,
     isActive,
+    accessMode,
+    allowedTenantIds,
   });
 
   return Response.json({ ok: true, item: created }, { status: 201 });

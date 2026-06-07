@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
-import { hasAnyRole, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
+import { hasAnyRole, isSuperAdmin, ROLE_OPTIONS_ES, roleLabelEs } from "@/lib/roles";
 import styles from "./page.module.css";
 
 type SessionUser = {
@@ -11,6 +11,15 @@ type SessionUser = {
   firstName?: string;
   lastName?: string;
   role: string;
+  roles?: string[];
+  tenantId?: string;
+};
+
+type TenantOption = {
+  _id: string;
+  name: string;
+  code: string;
+  isActive: boolean;
 };
 
 type FieldOption = {
@@ -61,6 +70,8 @@ type TemplateListItem = {
   rules?: AnyObj[];
   createdAt?: string;
   updatedAt?: string;
+  accessMode?: "all" | "selected";
+  allowedTenantIds?: string[];
 };
 
 type EditorTemplate = {
@@ -70,6 +81,8 @@ type EditorTemplate = {
   title: string;
   shortTitle?: string;
   isActive: boolean;
+  accessMode: "all" | "selected";
+  allowedTenantIds: string[];
   sections: TemplateSection[];
   metrics: AnyObj[];
   rules: AnyObj[];
@@ -142,6 +155,8 @@ function createEmptyTemplate(): EditorTemplate {
     title: "",
     shortTitle: "",
     isActive: true,
+    accessMode: "all",
+    allowedTenantIds: [],
     sections: [createEmptySection()],
     metrics: [],
     rules: [],
@@ -329,6 +344,10 @@ function normalizeImportedTemplate(raw: unknown): EditorTemplate {
     title,
     shortTitle,
     isActive: source.isActive !== undefined ? Boolean(source.isActive) : true,
+    accessMode: String(source.accessMode || "all").trim() === "selected" ? "selected" : "all",
+    allowedTenantIds: Array.isArray(source.allowedTenantIds)
+      ? source.allowedTenantIds.map((item: unknown) => String(item ?? "").trim()).filter(Boolean)
+      : [],
     sections,
     metrics: Array.isArray(source.metrics) ? deepClone(source.metrics) : [],
     rules: Array.isArray(source.rules) ? deepClone(source.rules) : [],
@@ -352,6 +371,7 @@ export default function TemplateEditorPage() {
   const [success, setSuccess] = React.useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = React.useState(false);
   const [editor, setEditor] = React.useState<EditorTemplate>(createEmptyTemplate());
+  const [tenants, setTenants] = React.useState<TenantOption[]>([]);
   const [jsonTextToImport, setJsonTextToImport] = React.useState("");
   const [importModalOpen, setImportModalOpen] = React.useState(false);
   const [editionMode, setEditionMode] = React.useState<EditionMode>("visual");
@@ -361,6 +381,7 @@ export default function TemplateEditorPage() {
   const isJsonMode = editionMode === "json";
 
   const canEditTemplates = hasAnyRole(me as any, ["admin"]);
+  const canConfigureTenantScope = isSuperAdmin(me as any);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -373,6 +394,14 @@ export default function TemplateEditorPage() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data?.ok === false) throw new Error(data?.message || "Error al listar templates");
     setTemplates(Array.isArray(data.items) ? data.items : []);
+  }, []);
+
+  const loadTenants = React.useCallback(async () => {
+    const res = await fetch("/api/admin/tenants", { credentials: "include" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Error al cargar tenants");
+    const items = Array.isArray(data.tenants) ? data.tenants : [];
+    setTenants(items.filter((item: TenantOption) => item.isActive));
   }, []);
 
   const loadVersions = React.useCallback(async (templateId: string) => {
@@ -398,6 +427,10 @@ export default function TemplateEditorPage() {
       title: item.title || "",
       shortTitle: String((item as any).shortTitle || ""),
       isActive: item.isActive ?? true,
+      accessMode: String((item as any).accessMode || "all").trim() === "selected" ? "selected" : "all",
+      allowedTenantIds: Array.isArray((item as any).allowedTenantIds)
+        ? (item as any).allowedTenantIds.map((tenantId: unknown) => String(tenantId ?? "").trim()).filter(Boolean)
+        : [],
       sections:
         Array.isArray(item.sections) && item.sections.length
           ? deepClone(item.sections)
@@ -429,7 +462,9 @@ export default function TemplateEditorPage() {
         }
         if (cancelled) return;
         setMe(meJson.user);
-        await loadLatestTemplates();
+        const tasks = [loadLatestTemplates()];
+        if (isSuperAdmin(meJson.user as any)) tasks.push(loadTenants());
+        await Promise.all(tasks);
       } catch (e: any) {
         if (!cancelled) setError(e.message || "Error al iniciar editor");
       } finally {
@@ -441,7 +476,7 @@ export default function TemplateEditorPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadLatestTemplates, router]);
+  }, [loadLatestTemplates, loadTenants, router]);
 
   function updateEditor<K extends keyof EditorTemplate>(key: K, value: EditorTemplate[K]) {
     setEditor((prev) => {
@@ -621,6 +656,11 @@ export default function TemplateEditorPage() {
       title: imported.title.trim(),
       shortTitle: String(imported.shortTitle || "").trim() || undefined,
       isActive: imported.isActive,
+      accessMode: imported.accessMode === "selected" ? "selected" : "all",
+      allowedTenantIds:
+        imported.accessMode === "selected"
+          ? Array.from(new Set((imported.allowedTenantIds || []).map((item) => String(item).trim()).filter(Boolean)))
+          : [],
       sections: buildGeneratedSections(imported.sections, "create"),
       metrics: Array.isArray(imported.metrics) ? imported.metrics : [],
       rules: Array.isArray(imported.rules) ? imported.rules : [],
@@ -711,6 +751,11 @@ export default function TemplateEditorPage() {
       title: editor.title.trim(),
       shortTitle: String(editor.shortTitle || "").trim() || undefined,
       isActive: editor.isActive,
+      accessMode: canConfigureTenantScope && editor.accessMode === "selected" ? "selected" : "all",
+      allowedTenantIds:
+        canConfigureTenantScope && editor.accessMode === "selected"
+          ? Array.from(new Set((editor.allowedTenantIds || []).map((item) => String(item).trim()).filter(Boolean)))
+          : [],
       sections: buildGeneratedSections(editor.sections, mode),
       metrics: Array.isArray(editor.metrics) ? editor.metrics : [],
       rules: Array.isArray(editor.rules) ? editor.rules : [],
@@ -929,6 +974,63 @@ export default function TemplateEditorPage() {
                   <span>Version activa</span>
                 </label>
               </div>
+
+              {canConfigureTenantScope ? (
+                <div className={styles.tenantScopeCard}>
+                  <div className={styles.cardHeader}>
+                    <h3>Alcance por tenant</h3>
+                    <span>
+                      {editor.accessMode === "all"
+                        ? "Todos los tenants"
+                        : `${editor.allowedTenantIds.length} seleccionados`}
+                    </span>
+                  </div>
+
+                  <label className={`${styles.field} ${styles.inlineCheck}`}>
+                    <input
+                      type="checkbox"
+                      checked={editor.accessMode === "all"}
+                      onChange={(e) =>
+                        updateEditor("accessMode", e.target.checked ? "all" : "selected")
+                      }
+                    />
+                    <span>Disponible para todos</span>
+                  </label>
+
+                  {editor.accessMode === "selected" ? (
+                    <div className={styles.tenantSelectorWrap}>
+                      <p className={styles.tenantScopeHelp}>
+                        Si no marcas ningún tenant, este template quedará disponible para todos.
+                      </p>
+                      <div className={styles.tenantChecks}>
+                        {tenants.map((tenant) => {
+                          const checked = editor.allowedTenantIds.includes(tenant.code);
+                          return (
+                            <label key={tenant._id} className={styles.tenantCheck}>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  const next = e.target.checked
+                                    ? [...editor.allowedTenantIds, tenant.code]
+                                    : editor.allowedTenantIds.filter((item) => item !== tenant.code);
+                                  updateEditor("allowedTenantIds", Array.from(new Set(next)));
+                                }}
+                              />
+                              <span>{tenant.name}</span>
+                              <small>{tenant.code}</small>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={styles.tenantScopeHelp}>
+                      Este template quedará accesible para cualquier tenant activo.
+                    </p>
+                  )}
+                </div>
+              ) : null}
 
               <div className={styles.sectionsHeader}>
                 <h3>Secciones y campos</h3>

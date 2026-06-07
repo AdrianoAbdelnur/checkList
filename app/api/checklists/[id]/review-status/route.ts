@@ -1,5 +1,6 @@
-﻿import { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db";
+import { canAccessChecklist } from "@/lib/checklists";
 import Checklist from "@/models/Checklist";
 import { requireRolesSession } from "@/lib/server/auth-next";
 
@@ -101,6 +102,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   if (!doc) {
     return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   }
+  if (!canAccessChecklist(auth.session as any, doc.toObject(), true)) {
+    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+  }
 
   const currentData = doc.data && typeof doc.data === "object" ? doc.data : {};
   const currentReview = (currentData as Record<string, unknown>).review;
@@ -119,10 +123,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   const nowIso = new Date().toISOString();
 
   const approvalHistory: ApprovalHistoryItem[] = Array.isArray(currentApprovalHistoryRaw)
-    ? currentApprovalHistoryRaw.map((item) => normalizeHistoryItem(item)).filter(Boolean) as ApprovalHistoryItem[]
+    ? (currentApprovalHistoryRaw.map((item) => normalizeHistoryItem(item)).filter(Boolean) as ApprovalHistoryItem[])
     : [];
 
-  // Preserve legacy single-decision shape if history was never initialized.
   if (approvalHistory.length === 0) {
     const legacyStatus = normalizeApprovalStatus(approvalObj.status);
     if (legacyStatus) {
@@ -163,7 +166,6 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   });
   doc.set("data.approvalHistory", approvalHistory);
 
-  // Backward compatibility for current review filters and dashboards.
   doc.set("reviewStatus", reviewStatus);
   doc.set("data.reviewStatus", reviewStatus);
   doc.set("data.review", {
@@ -187,4 +189,3 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     },
   });
 }
-

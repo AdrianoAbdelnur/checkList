@@ -17,6 +17,7 @@ It includes auth/session handling, role-based access, template/version managemen
 - Make minimal, clear, and easy-to-verify changes.
 - Do not refactor unrelated parts.
 - Move in stages, prioritizing small changes.
+- Respond concisely by default. Do not write long explanations unless the user explicitly asks for more detail.
 
 ## Rules
 
@@ -118,4 +119,11 @@ Mandatory flow:
 
 Never keep committing unrelated topics to the same long-lived branch.
 Never change branch while there are pending changes unless the user explicitly approves the action.
+
+## Clean State Rule
+
+- Do not begin any new task that is unrelated to the current pending changes unless the worktree is clean first.
+- Before starting a new topic, all current changes must already be committed and pushed, unless the user explicitly approves another path.
+- Only after the current work is committed/pushed may a new branch be created for the next topic.
+- If the worktree is dirty and the new request is unrelated, stop and warn the user before doing any implementation work.
 

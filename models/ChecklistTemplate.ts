@@ -148,6 +148,12 @@ const ChecklistTemplateSchema = new Schema(
     rules: { type: [RuleSchema], default: [] },
 
     isActive: { type: Boolean, default: true },
+    accessMode: {
+      type: String,
+      enum: ["all", "selected"],
+      default: "all",
+    },
+    allowedTenantIds: { type: [String], default: [] },
   },
   { timestamps: true, strict: false }
 );

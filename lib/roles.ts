@@ -1,9 +1,10 @@
-﻿export const ROLE_VALUES = [
+export const ROLE_VALUES = [
   "inspector",
   "reviewer",
   "supervisor",
   "manager",
   "admin",
+  "superAdmin",
 ] as const;
 
 export type AppRole = (typeof ROLE_VALUES)[number];
@@ -24,6 +25,8 @@ export function roleLabelEs(role?: string | null) {
       return "Manager";
     case "admin":
       return "Administrator";
+    case "superAdmin":
+      return "Super Admin";
     default:
       return role || "-";
   }
@@ -35,6 +38,7 @@ export const ROLE_OPTIONS_ES: Array<{ value: AppRole; label: string }> = [
   { value: "supervisor", label: "Supervisor" },
   { value: "manager", label: "Manager" },
   { value: "admin", label: "Administrator" },
+  { value: "superAdmin", label: "Super Admin" },
 ];
 
 export type RoleCarrier =
@@ -44,6 +48,7 @@ export type RoleCarrier =
   | {
       role?: string | null;
       roles?: string[] | null;
+      tenantId?: string | null;
     };
 
 export type AppPermission =
@@ -80,6 +85,17 @@ export const ROLE_PERMISSIONS: Record<AppRole, ReadonlyArray<AppPermission>> = {
     "dashboard.metrics",
     "special.authorize",
   ],
+  superAdmin: [
+    "checklist.create",
+    "checklist.view_all",
+    "checklist.review",
+    "checklist.approve_reject",
+    "checklist.reassign",
+    "template.manage",
+    "user.manage",
+    "dashboard.metrics",
+    "special.authorize",
+  ],
 };
 
 export function normalizeRoles(input: RoleCarrier): AppRole[] {
@@ -101,7 +117,7 @@ export function normalizeRoles(input: RoleCarrier): AppRole[] {
 
 export function getPrimaryRole(input: RoleCarrier): AppRole {
   const roles = normalizeRoles(input);
-  const priority: AppRole[] = ["admin", "manager", "supervisor", "reviewer", "inspector"];
+  const priority: AppRole[] = ["superAdmin", "admin", "manager", "supervisor", "reviewer", "inspector"];
   return priority.find((r) => roles.includes(r)) ?? "inspector";
 }
 
@@ -111,10 +127,26 @@ export function hasRole(input: RoleCarrier, role: AppRole) {
 
 export function hasAnyRole(input: RoleCarrier, roles: string[]) {
   const current = normalizeRoles(input);
+  if (current.includes("superAdmin")) return true;
   return roles.some((r) => isAppRole(r) && current.includes(r));
 }
 
 export function hasPermission(input: RoleCarrier, permission: AppPermission) {
   const roles = normalizeRoles(input);
+  if (roles.includes("superAdmin")) return true;
   return roles.some((role) => ROLE_PERMISSIONS[role].includes(permission));
+}
+
+export function isSuperAdmin(input: RoleCarrier) {
+  return normalizeRoles(input).includes("superAdmin");
+}
+
+export function canAccessTenant(input: RoleCarrier, tenantId: string | null | undefined) {
+  if (isSuperAdmin(input)) return true;
+
+  const currentTenantId = String(
+    input && typeof input === "object" && "tenantId" in input ? input.tenantId ?? "general" : "general",
+  ).trim() || "general";
+  const requestedTenantId = String(tenantId ?? "general").trim() || "general";
+  return !!currentTenantId && !!requestedTenantId && currentTenantId === requestedTenantId;
 }

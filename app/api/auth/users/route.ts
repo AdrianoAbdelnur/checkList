@@ -4,7 +4,19 @@ import User from "../../../../models/User";
 import Counter from "../../../../models/Counter";
 import crypto from "crypto";
 import { requireAdminSession } from "@/lib/server/auth-next";
-import { getPrimaryRole, isAppRole, normalizeRoles } from "@/lib/roles";
+import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
+import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
+
+function tenantScopeQuery(tenantId: string) {
+  return {
+    $or: [
+      { tenantId },
+      { tenantId: { $exists: false } },
+      { tenantId: null },
+      { tenantId: "" },
+    ],
+  };
+}
 
 async function getNextUserNumber(): Promise<string> {
   const counter = await Counter.findOneAndUpdate(
@@ -21,7 +33,12 @@ export async function GET(req: NextRequest) {
 
   await connectToDatabase();
   try {
-    const users = await User.find({ isDelete: { $ne: true } }).select("-password -salt").lean();
+    await ensureGeneralTenant();
+    const query: any = { isDelete: { $ne: true } };
+    if (!isSuperAdmin(auth.session)) {
+      Object.assign(query, tenantScopeQuery(String(auth.session.tenantId || "general").trim() || "general"));
+    }
+    const users = await User.find(query).select("-password -salt").lean();
     return NextResponse.json({ users });
   } catch {
     return NextResponse.json({ error: "Error al listar usuarios" }, { status: 500 });
@@ -33,7 +50,7 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, email, password, role, roles, telephone, userNumber, inspectorNumber } = body;
+  const { firstName, lastName, email, password, role, roles, telephone, userNumber, inspectorNumber, tenantId } = body;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email y password son requeridos" }, { status: 400 });
@@ -54,9 +71,13 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(roles) && roles.some((r) => !isAppRole(String(r)))) {
     return NextResponse.json({ error: "roles contiene valores invalidos" }, { status: 400 });
   }
+  if (isSuperAdmin(auth.session) && tenantId === undefined) {
+    return NextResponse.json({ error: "Debe seleccionar un tenant" }, { status: 400 });
+  }
 
   await connectToDatabase();
   try {
+    await ensureGeneralTenant();
     const existing = await User.findOne({ email }).lean();
     if (existing) return NextResponse.json({ error: "Email ya registrado" }, { status: 409 });
 
@@ -70,6 +91,15 @@ export async function POST(req: NextRequest) {
     });
     const primaryRole = getPrimaryRole({ role: role ?? undefined, roles: normalizedRoles });
     const persistedRoles = normalizedRoles.length > 0 ? normalizedRoles : [primaryRole];
+    const nextTenantId = String(tenantId ?? auth.session.tenantId ?? "general").trim() || "general";
+
+    if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, nextTenantId)) {
+      return NextResponse.json({ error: "No autorizado para ese tenant" }, { status: 403 });
+    }
+    const activeTenant = await getActiveTenantByCode(nextTenantId);
+    if (!activeTenant) {
+      return NextResponse.json({ error: "Debe seleccionar un tenant activo" }, { status: 400 });
+    }
 
     const user = new User({
       firstName: firstName || "",
@@ -79,6 +109,7 @@ export async function POST(req: NextRequest) {
       salt,
       role: primaryRole,
       roles: persistedRoles,
+      tenantId: nextTenantId,
       telephone: telephone || "",
       userNumber: nextUserNumber,
       mustChangePassword: true,

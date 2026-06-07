@@ -370,6 +370,60 @@
   background: var(--te-panel-soft);
 }
 
+.tenantScopeCard {
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklab, var(--ck-line) 80%, var(--ck-accent) 8%);
+  background: var(--te-panel-soft);
+  display: grid;
+  gap: 12px;
+}
+
+.tenantSelectorWrap {
+  display: grid;
+  gap: 10px;
+}
+
+.tenantScopeHelp {
+  margin: 0;
+  color: var(--ck-text-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tenantChecks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tenantCheck {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--te-field-line);
+  border-radius: 12px;
+  background: var(--te-field-bg);
+  padding: 10px 12px;
+}
+
+.tenantCheck input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.tenantCheck span {
+  color: var(--ck-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tenantCheck small {
+  color: var(--ck-text-soft);
+  font-size: 11px;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -681,6 +735,9 @@
   .topGrid {
     grid-template-columns: 1fr;
   }
+  .tenantChecks {
+    grid-template-columns: 1fr 1fr;
+  }
   .sectionFields,
   .fieldGrid {
     grid-template-columns: 1fr;
@@ -708,6 +765,9 @@
   }
   .fieldCards {
     padding: 6px;
+  }
+  .tenantChecks {
+    grid-template-columns: 1fr;
   }
   .sectionsHeader,
   .fieldsToolbar,
