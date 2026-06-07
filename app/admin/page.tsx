@@ -74,6 +74,8 @@ const defaultTenantForm: TenantFormState = {
   isActive: true,
 };
 
+const MANAGEABLE_ROLE_OPTIONS = ROLE_OPTIONS_ES.filter((role) => role.value !== "superAdmin");
+
 function fullName(user: Partial<User> | null | undefined) {
   if (!user) return "-";
   const full = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
@@ -943,7 +945,7 @@ export default function AdminPage() {
                   <div className={styles.field}>
                     <span>Roles</span>
                     <div className={styles.rolesGrid}>
-                      {ROLE_OPTIONS_ES.map((r) => {
+                      {MANAGEABLE_ROLE_OPTIONS.map((r) => {
                         const checked = form.roles.includes(r.value);
                         return (
                           <label key={r.value} className={styles.roleOption}>
