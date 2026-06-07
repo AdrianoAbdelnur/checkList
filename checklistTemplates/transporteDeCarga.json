@@ -1,0 +1,1077 @@
+{
+  "id": "cargo_transport_checklist",
+  "templateId": "cargo_transport_checklist",
+  "version": 1,
+  "title": "Checklist Transporte de Carga",
+  "shortTitle": "Transp. de carga",
+  "sections": [
+    {
+      "id": "main",
+      "title": "Datos iniciales",
+      "description": "Datos generales del control y de la unidad",
+      "isMain": true,
+      "fields": [
+        {
+          "id": "vehicle_domain",
+          "kind": "text",
+          "label": "Patente",
+          "required": true,
+          "uppercase": true,
+          "placeholder": "AA123BB",
+          "showCamera": true
+        },
+        {
+          "id": "trip_date",
+          "kind": "date",
+          "label": "Fecha de viaje",
+          "required": true,
+          "defaultToday": true,
+          "editable": true,
+          "futureOnly": true
+        },
+        {
+          "id": "check_date",
+          "kind": "date",
+          "label": "Fecha",
+          "required": true,
+          "editable": false,
+          "defaultToday": true
+        },
+        {
+          "id": "check_place",
+          "kind": "text",
+          "label": "Lugar",
+          "required": false,
+          "multiline": false,
+          "placeholder": "Escribi aqui..."
+        }
+      ]
+    },
+    {
+      "id": "driver_vehicle_docs",
+      "title": "Documentación del chofer y vehículo",
+      "description": "¡Asegúrese de llevar la documentación obligatoria según la carga, y planifique la ruta antes de emprender el viaje!",
+      "fields": [
+        {
+          "id": "pre_name",
+          "kind": "text",
+          "label": "Nombre y Apellido",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "pre_company",
+          "kind": "text",
+          "label": "Empresa",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "pre_lnc_lnh",
+          "kind": "text",
+          "label": "LNC-LNH",
+          "required": false,
+          "uppercase": true,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "pre_tractor_year",
+          "kind": "number",
+          "label": "Tractor / Chasis: Año de Fabricación",
+          "required": false,
+          "min": 1900,
+          "max": 2100
+        },
+        {
+          "id": "pre_trailer_year",
+          "kind": "number",
+          "label": "Remolque: Año de Fabricación",
+          "required": false,
+          "min": 1900,
+          "max": 2100
+        },
+        {
+          "id": "pre_trailer_domain",
+          "kind": "text",
+          "label": "Remolque: Dominio",
+          "required": false,
+          "uppercase": true,
+          "placeholder": "AA123BB"
+        },
+        {
+          "id": "pre_tractor_green_card",
+          "kind": "yesNo",
+          "label": "Tractor / Chasis: Posee cédula verde",
+          "required": false
+        },
+        {
+          "id": "pre_trailer_green_card",
+          "kind": "yesNo",
+          "label": "Remolque: Posee cédula verde",
+          "required": false
+        },
+        {
+          "id": "pre_tractor_insurance_exp",
+          "kind": "date",
+          "label": "Tractor / Chasis: Vencimiento de Seguro",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        },
+        {
+          "id": "pre_trailer_insurance_exp",
+          "kind": "date",
+          "label": "Remolque: Vencimiento de Seguro",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        },
+        {
+          "id": "pre_tractor_rto_exp",
+          "kind": "date",
+          "label": "Tractor / Chasis: Vencimiento de RTO",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        },
+        {
+          "id": "pre_trailer_rto_exp",
+          "kind": "date",
+          "label": "Remolque: Vencimiento de RTO",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        }
+      ]
+    },
+    {
+      "id": "cargo_docs",
+      "title": "Documentación de la carga transportada",
+      "fields": [
+        {
+          "id": "cargo_invoice_waybill",
+          "kind": "yesNo",
+          "label": "Remito / Factura / Carta de porte",
+          "required": false
+        },
+        {
+          "id": "cargo_route_sheet",
+          "kind": "yesNo",
+          "label": "Hoja de ruta / Plan de viaje",
+          "required": false
+        },
+        {
+          "id": "cargo_contingency_plan",
+          "kind": "yesNo",
+          "label": "Plan de contingencia",
+          "required": false
+        },
+        {
+          "id": "cargo_specific_docs",
+          "kind": "yesNo",
+          "label": "Documentación específica para el tipo de carga",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "title": "Comunicación",
+      "description": "Sistema de Comunicación Bidireccional – de datos continuo en tiempo real",
+      "fields": [
+        {
+          "id": "comm_satellite",
+          "kind": "yesNo",
+          "label": "Comunicación Satelital",
+          "required": false,
+          "description": "En caso de responder NO, debe viajar en convoy con escolta"
+        },
+        {
+          "id": "comm_trip_phone",
+          "kind": "text",
+          "label": "Teléfono de Contacto en viaje",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        }
+      ]
+    },
+    {
+      "id": "wheels_suspension",
+      "title": "Ruedas y sistema de suspensión",
+      "description": "¡Asegúrese que estén en buenas condiciones!",
+      "fields": [
+        {
+          "id": "wheels_suspension_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424511/1_lpgi4p.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424512/2_rum2iq.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424511/3_gt0wuk.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424511/4_nzg35j.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "wheels_condition",
+          "kind": "triStatus",
+          "label": "Condición de dibujos, ausencia de cortes, abultamientos",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "wheels_tread_depth",
+          "kind": "triStatus",
+          "label": "Huella igual o mayor a 5mm",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "wheels_pressure_nuts_fenders",
+          "kind": "triStatus",
+          "label": "Presión del neumático, tuercas e indicadores en posición, guardabarros",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "wheels_shock_absorbers_suspension",
+          "kind": "triStatus",
+          "label": "Amortiguadores, barras estabilizadoras, bujes, suspensión neumática",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "wheels_spare_blocks",
+          "kind": "triStatus",
+          "label": "Rueda de auxilio, calzas/cuñas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "Conexiones",
+      "fields": [
+        {
+          "id": "connections_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424796/1_mml9xm.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424794/2_wwjgv1.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424794/3_jwzor1.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424795/4_cln2u7.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "conn_electrical_abs",
+          "kind": "triStatus",
+          "label": "Conexiones (eléctricas, ABS de aire) compatibles entre tractor y semi",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "conn_fifth_wheel",
+          "kind": "triStatus",
+          "label": "Plato de enganche correctamente trabado",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "conn_support_legs",
+          "kind": "triStatus",
+          "label": "Patas de apoyo levantadas y trabadas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "conn_battery_alternator_start",
+          "kind": "triStatus",
+          "label": "Batería, alternador y arranque",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fluids",
+      "title": "Fluidos",
+      "description": "¡Verifique que los niveles de los fluidos le permitan realizar su viaje con seguridad!",
+      "fields": [
+        {
+          "id": "fluids_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424991/1_wwzizq.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424989/2_zrvnep.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424989/3_wiqawu.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773424990/4_x03dmw.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "fluids_leaks",
+          "kind": "triStatus",
+          "label": "Observe posibles pérdidas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "fluids_oil_fuel",
+          "kind": "triStatus",
+          "label": "Nivel de aceite y combustible en los tanques",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "fluids_coolant",
+          "kind": "triStatus",
+          "label": "Nivel de líquido refrigerante",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "fluids_windshield_washer",
+          "kind": "triStatus",
+          "label": "Estado de limpia parabrisas y nivel del líquido limpiador",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lights_reflectors",
+      "title": "Luces, reflectores e indicadores reglamentarios",
+      "description": "¡Asegúrese funcionen correctamente y que estén limpios!",
+      "fields": [
+        {
+          "id": "lights_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425163/1_abmszz.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425163/2_l2kymz.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425164/3_ai3uy9.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425167/4_gvxsta.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "lights_front_rear_reverse",
+          "kind": "triStatus",
+          "label": "Luces delanteras, traseras e indicadores - Alarma de retroceso",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "lights_side_warning_mirrors",
+          "kind": "triStatus",
+          "label": "Luces laterales, de advertencia y reflectores - Espejos retrovisores",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "lights_plate_speed_signage",
+          "kind": "triStatus",
+          "label": "Patente, velocidades máx., logo de empresa, tara y peso máximo autorizado (P.M.A.), señalización de carga especial y nro de convoy",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "lights_spares_horn",
+          "kind": "triStatus",
+          "label": "Focos, fusibles de repuesto, linterna, bocina operativa",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "emergency_equipment_epp",
+      "title": "Equipo de emergencias y EPP básico",
+      "description": "Casco, lentes y zapatos de seguridad, guantes de cuero, arnés, tapones auditivos.",
+      "fields": [
+        {
+          "id": "emergency_equipment_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425388/1_kio30i.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425388/2_k0jllk.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425388/3_aibinp.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425389/4_rwrqbn.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "emergency_first_aid_kit",
+          "kind": "triStatus",
+          "label": "Botiquín",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "emergency_basic_epp_vest",
+          "kind": "triStatus",
+          "label": "EPP básico para ingreso al proyecto y chaleco reflectivo",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "emergency_ladder",
+          "kind": "triStatus",
+          "label": "Escalera en parte trasera o delantera",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "emergency_fire_extinguisher_tools_triangle",
+          "kind": "triStatus",
+          "label": "Matafuegos (según corresponda) - Caja de Herramientas - Baliza",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cargo_securement",
+      "title": "Sujeción y seguridad de la carga",
+      "description": "¡Verifique la sujeción de la carga y la seguridad del vehículo!",
+      "fields": [
+        {
+          "id": "cargo_securement_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425559/1_amxg55.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425560/2_nugirh.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425559/3_ek17fq.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425561/4_uea7wm.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "cargo_twistlocks",
+          "kind": "triStatus",
+          "label": "Correcta sujeción de la carga – twistlocks (pinos) en buen estado",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "cargo_tarps",
+          "kind": "triStatus",
+          "label": "Lonas bien amarradas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "cargo_unit_no_damage",
+          "kind": "triStatus",
+          "label": "Unidad de transporte sin daños",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "cargo_unit_locked_sealed",
+          "kind": "triStatus",
+          "label": "Unidad cerrada con llave o precintada",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather_precautions",
+      "title": "Precauciones climáticas",
+      "description": "Preste atención a las condiciones meteorológicas adversas a transitar",
+      "fields": [
+        {
+          "id": "weather_precautions_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425968/1_wmwxgh.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425968/2_qlscdk.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773425968/3_fkifuk.png",
+              "caption": "Referencia 3"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773426002/4_jsub27.png",
+              "caption": "Referencia 4"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "weather_ice_windshield",
+          "kind": "triStatus",
+          "label": "Presencia de hielo en el parabrisas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "weather_remove_ice_snow_vehicle",
+          "kind": "triStatus",
+          "label": "Quitar hielo o nieve en el vehículo",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "weather_remove_snow_radiator",
+          "kind": "triStatus",
+          "label": "Quitar la nieve y otras obstrucciones en el radiador",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "weather_chains",
+          "kind": "triStatus",
+          "label": "Equipo apropiado (ej. cadenas)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "weather_personal_supplies",
+          "kind": "triStatus",
+          "label": "Equipamiento PERSONAL (ej. frazadas, comida, agua para 24hs)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hazardous_cargo",
+      "title": "Requisitos para cargas peligrosas",
+      "description": "NOTA: Si las cargas son incompatibles serán rechazadas por el supervisor",
+      "fields": [
+        {
+          "id": "hazardous_cargo_images",
+          "kind": "imageGrid",
+          "label": "Referencias visuales",
+          "columns": 2,
+          "gap": 8,
+          "aspectRatio": 1.2,
+          "resizeMode": "cover",
+          "borderRadius": 12,
+          "images": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773426120/1_aqgdzq.png",
+              "caption": "Referencia 1"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773426119/2_keevab.png",
+              "caption": "Referencia 2"
+            },
+            {
+              "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773426120/3_vw7hna.png",
+              "caption": "Referencia 3"
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "haz_signage",
+          "kind": "triStatus",
+          "label": "Señalización del vehículo (panel de seguridad rótulos de riesgos)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "haz_extinguishers_spill_kit",
+          "kind": "triStatus",
+          "label": "Cantidad y tipos de extintores según la carga – Kit para derrames",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "haz_incompatible_loads",
+          "kind": "triStatus",
+          "label": "Las cargas son incompatibles",
+          "required": false,
+          "options": [
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "success"
+            },
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "SI"
+          ],
+          "badValues": [
+            "SI"
+          ]
+        },
+        {
+          "id": "haz_load_condition",
+          "kind": "triStatus",
+          "label": "Condición de la carga (ausencia de fugas, derrames, etc.)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest_note",
+      "title": "Nota y recordatorio",
+      "fields": [
+        {
+          "id": "rest_hours_note",
+          "kind": "note",
+          "label": "Cuadro informativo sobre horas de descanso",
+          "placeholder": "2 horas de conducción seguidas de un descanso de 15 minutos\nMáximo de 12 horas de conducción y servicio en un periodo de 24hs para conductores profesionales.\nServicio significa cualquier tarea de trabajo, incluyendo conducir, cargar, descargar, esperar, descansar.\n10 horas de descanso entre turnos (es decir, el tiempo transcurrido desde el cese y reinicio del servicio).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "final_result",
+      "title": "Resultado final",
+      "fields": [
+        {
+          "id": "final_vehicle_result",
+          "kind": "select",
+          "label": "Equipo se encuentra",
+          "required": false,
+          "options": [
+            {
+              "value": "ACEPTADO",
+              "label": "Aceptado"
+            },
+            {
+              "value": "RECHAZADO",
+              "label": "Rechazado"
+            }
+          ]
+        },
+        {
+          "id": "final_driver_trip_result",
+          "kind": "select",
+          "label": "Chofer puede realizar viaje",
+          "required": false,
+          "options": [
+            {
+              "value": "ACEPTADO",
+              "label": "Aceptado"
+            },
+            {
+              "value": "RECHAZADO",
+              "label": "Rechazado"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "driver_inspection_signature",
+      "title": "Inspección chofer",
+      "fields": [
+        {
+          "id": "driver_signature",
+          "kind": "signature",
+          "label": "Firma",
+          "required": false
+        },
+        {
+          "id": "driver_full_name",
+          "kind": "text",
+          "label": "Nombre y Apellido",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "driver_dni",
+          "kind": "text",
+          "label": "DNI",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "driver_signature_time",
+          "kind": "time",
+          "label": "Hora",
+          "required": false,
+          "editable": true,
+          "defaultNow": true
+        }
+      ]
+    },
+    {
+      "id": "supervisor_dispatch_signature",
+      "title": "Supervisor / Despacho",
+      "fields": [
+        {
+          "id": "supervisor_signature",
+          "kind": "signature",
+          "label": "Firma",
+          "required": false
+        },
+        {
+          "id": "supervisor_full_name",
+          "kind": "text",
+          "label": "Nombre y Apellido",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "supervisor_dni",
+          "kind": "text",
+          "label": "DNI",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "supervisor_signature_time",
+          "kind": "time",
+          "label": "Hora",
+          "required": false,
+          "editable": true,
+          "defaultNow": true
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "tri_status_summary",
+      "type": "triStatusSummary",
+      "fields": [
+        "wheels_condition",
+        "wheels_tread_depth",
+        "wheels_pressure_nuts_fenders",
+        "wheels_shock_absorbers_suspension",
+        "wheels_spare_blocks",
+        "conn_electrical_abs",
+        "conn_fifth_wheel",
+        "conn_support_legs",
+        "conn_battery_alternator_start",
+        "fluids_leaks",
+        "fluids_oil_fuel",
+        "fluids_coolant",
+        "fluids_windshield_washer",
+        "lights_front_rear_reverse",
+        "lights_side_warning_mirrors",
+        "lights_plate_speed_signage",
+        "lights_spares_horn",
+        "emergency_first_aid_kit",
+        "emergency_basic_epp_vest",
+        "emergency_ladder",
+        "emergency_fire_extinguisher_tools_triangle",
+        "cargo_twistlocks",
+        "cargo_tarps",
+        "cargo_unit_no_damage",
+        "cargo_unit_locked_sealed",
+        "weather_ice_windshield",
+        "weather_remove_ice_snow_vehicle",
+        "weather_remove_snow_radiator",
+        "weather_chains",
+        "weather_personal_supplies",
+        "haz_signage",
+        "haz_extinguishers_spill_kit",
+        "haz_incompatible_loads",
+        "haz_load_condition"
+      ],
+      "highValues": [
+        "MALO",
+        "SI"
+      ],
+      "moderateValues": [],
+      "lowValues": [
+        "BUENO",
+        "NO"
+      ]
+    }
+  ]
+}

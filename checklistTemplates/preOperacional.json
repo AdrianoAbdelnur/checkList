@@ -1,0 +1,1259 @@
+{
+  "id": "light_vehicle_offsite_preoperational_checklist",
+  "templateId": "light_vehicle_offsite_preoperational_checklist",
+  "version": 1,
+  "title": "Checklist de inspección pre-operacional de vehículo liviano para conducción fuera de sitio",
+  "shortTitle": "inspec. pre-operacional de vehículo liviano",
+  "sections": [
+    {
+      "id": "main",
+      "title": "Datos iniciales",
+      "isMain": true,
+      "fields": [
+        {
+          "id": "vehicle_domain",
+          "kind": "text",
+          "label": "Patente",
+          "required": true,
+          "uppercase": true,
+          "placeholder": "AA123BB",
+          "showCamera": true
+        },
+        {
+          "id": "trip_date",
+          "kind": "date",
+          "label": "Fecha de viaje",
+          "required": true,
+          "defaultToday": true,
+          "editable": true,
+          "futureOnly": true
+        },
+        {
+          "id": "driver_name",
+          "kind": "text",
+          "label": "Nombre del conductor",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "driver_dni",
+          "kind": "number",
+          "label": "DNI",
+          "required": false
+        },
+        {
+          "id": "driver_signature",
+          "kind": "signature",
+          "label": "Firma",
+          "required": false
+        },
+        {
+          "id": "check_date",
+          "kind": "date",
+          "label": "Fecha",
+          "required": true,
+          "editable": false,
+          "defaultToday": true
+        },
+        {
+          "id": "company",
+          "kind": "text",
+          "label": "Empresa",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "vehicle_km",
+          "kind": "number",
+          "label": "Kilómetros",
+          "required": false
+        },
+        {
+          "id": "project_area",
+          "kind": "text",
+          "label": "Proyecto/Área",
+          "required": false,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "fuel_level",
+          "kind": "radioGroup",
+          "label": "Nivel de combustible",
+          "required": false,
+          "options": [
+            {
+              "value": "E",
+              "label": "E"
+            },
+            {
+              "value": "Q1",
+              "label": "1/4"
+            },
+            {
+              "value": "Q2",
+              "label": "1/2"
+            },
+            {
+              "value": "Q3",
+              "label": "3/4"
+            },
+            {
+              "value": "F",
+              "label": "F"
+            }
+          ]
+        },
+        {
+          "id": "operability_result",
+          "kind": "radioGroup",
+          "label": "Condición operativa del vehículo",
+          "required": false,
+          "options": [
+            {
+              "value": "NO_OPERAR",
+              "label": "El vehículo no debe ser operado"
+            },
+            {
+              "value": "SUPERVISOR",
+              "label": "No será operado hasta autorización del supervisor"
+            },
+            {
+              "value": "OPERAR",
+              "label": "El vehículo puede ser operado"
+            }
+          ]
+        },
+        {
+          "id": "selection_legend",
+          "kind": "note",
+          "label": "Referencia de selección",
+          "placeholder": "Seleccione la opción adecuada: Bien: √ ; Mal: X ; No aplica: N/A",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "exterior_inspection",
+      "title": "1. Inspección exterior",
+      "description": "Marque con 'x' donde observe marcas, ralladuras, hendiduras.",
+      "fields": [
+        {
+          "id": "vehicle_damage_map",
+          "kind": "damageMap",
+          "label": "Daños del vehículo",
+          "required": false,
+          "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773430630/ute2_rot9md.png",
+          "aspectRatio": 0.8606,
+          "zones": [
+            {
+              "id": "top_full",
+              "label": "Frente",
+              "x": 0.1094,
+              "y": 0.0358,
+              "width": 0.8271,
+              "height": 0.0847
+            },
+            {
+              "id": "upper_left",
+              "label": "Frente izquierda",
+              "x": 0.1094,
+              "y": 0.1281,
+              "width": 0.1991,
+              "height": 0.1751
+            },
+            {
+              "id": "upper_center",
+              "label": "Capot",
+              "x": 0.3173,
+              "y": 0.1281,
+              "width": 0.407,
+              "height": 0.1751
+            },
+            {
+              "id": "upper_right",
+              "label": "Frente derecha",
+              "x": 0.733,
+              "y": 0.1281,
+              "width": 0.1991,
+              "height": 0.1751
+            },
+            {
+              "id": "middle_left",
+              "label": "Medio izquierda",
+              "x": 0.1094,
+              "y": 0.3145,
+              "width": 0.407,
+              "height": 0.3597
+            },
+            {
+              "id": "middle_right",
+              "label": "Medio derecha",
+              "x": 0.5295,
+              "y": 0.3145,
+              "width": 0.407,
+              "height": 0.3597
+            },
+            {
+              "id": "lower_left",
+              "label": "Atras izquierda",
+              "x": 0.1094,
+              "y": 0.6893,
+              "width": 0.1991,
+              "height": 0.1751
+            },
+            {
+              "id": "lower_center",
+              "label": "Atras centro",
+              "x": 0.3173,
+              "y": 0.6893,
+              "width": 0.407,
+              "height": 0.1751
+            },
+            {
+              "id": "lower_right",
+              "label": "Atras derecha",
+              "x": 0.733,
+              "y": 0.6893,
+              "width": 0.1991,
+              "height": 0.1751
+            },
+            {
+              "id": "bottom_full",
+              "label": "Trasera",
+              "x": 0.1094,
+              "y": 0.8795,
+              "width": 0.8271,
+              "height": 0.0998
+            }
+          ],
+          "damageTypes": [
+            {
+              "value": "SCRATCH",
+              "label": "Rayón"
+            },
+            {
+              "value": "DENT",
+              "label": "Abolladura"
+            },
+            {
+              "value": "CRACK",
+              "label": "Rajadura"
+            },
+            {
+              "value": "BROKEN",
+              "label": "Roto"
+            },
+            {
+              "value": "OTHER",
+              "label": "Otro"
+            }
+          ],
+          "severityOptions": [
+            {
+              "value": "LOW",
+              "label": "Leve"
+            },
+            {
+              "value": "MEDIUM",
+              "label": "Medio"
+            },
+            {
+              "value": "HIGH",
+              "label": "Grave"
+            }
+          ],
+          "allowPhotos": true,
+          "maxPhotosPerDamage": 3
+        }
+      ]
+    },
+    {
+      "id": "lights",
+      "title": "2. Luces",
+      "fields": [
+        {
+          "id": "light_right_indicator",
+          "kind": "triStatus",
+          "label": "L. Direc. Derecho",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_left_indicator",
+          "kind": "triStatus",
+          "label": "L. Direc. Izquierdo",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_fog_lamps",
+          "kind": "triStatus",
+          "label": "Faros rompe nieblas (si lo tiene)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_position",
+          "kind": "triStatus",
+          "label": "L. de posición",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_hazard",
+          "kind": "triStatus",
+          "label": "Luz de baliza",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_dashboard",
+          "kind": "triStatus",
+          "label": "Luces de tablero (testigos), dar aviso",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_high_beam",
+          "kind": "triStatus",
+          "label": "L. Principal alta",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_low_beam",
+          "kind": "triStatus",
+          "label": "L. Principal baja",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_brake",
+          "kind": "triStatus",
+          "label": "L. de freno",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "light_reverse",
+          "kind": "triStatus",
+          "label": "L. de retroceso",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "key_documents",
+      "title": "3. Documentación clave",
+      "fields": [
+        {
+          "id": "doc_insurance_payment",
+          "kind": "yesNo",
+          "label": "Pago de seguro",
+          "required": false
+        },
+        {
+          "id": "doc_green_card",
+          "kind": "yesNo",
+          "label": "Cédula verde",
+          "required": false
+        },
+        {
+          "id": "doc_technical_review_certificate",
+          "kind": "yesNo",
+          "label": "Cert. de revisión técnica",
+          "required": false
+        },
+        {
+          "id": "doc_internal_inspection_expiration",
+          "kind": "date",
+          "label": "Fecha de vencimiento de insp. interna (CRIM)",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        },
+        {
+          "id": "doc_tire_change_instruction",
+          "kind": "yesNo",
+          "label": "WIT - Instructivo de cambio de neumático",
+          "required": false
+        },
+        {
+          "id": "doc_driver_dni",
+          "kind": "yesNo",
+          "label": "DNI del conductor",
+          "required": false
+        },
+        {
+          "id": "doc_driver_license",
+          "kind": "yesNo",
+          "label": "Licencia conducir",
+          "required": false
+        },
+        {
+          "id": "doc_internal_license_rt",
+          "kind": "yesNo",
+          "label": "Licencia interna RT",
+          "required": false
+        },
+        {
+          "id": "doc_insurance_policy",
+          "kind": "yesNo",
+          "label": "Póliza de seguro",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "external",
+      "title": "4. Externo",
+      "fields": [
+        {
+          "id": "ext_scratches_dents",
+          "kind": "triStatus",
+          "label": "Marcas y rayaduras, abolladuras",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "ext_fluid_leaks_below",
+          "kind": "triStatus",
+          "label": "Fuga de fluidos debajo del vehículo",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "ext_side_mirrors",
+          "kind": "triStatus",
+          "label": "Espejos laterales",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "ext_wiper_washer",
+          "kind": "triStatus",
+          "label": "Limpia lavaparabrisas (operativo y con agua en depósito)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "ext_engine_guard",
+          "kind": "triStatus",
+          "label": "Protector de carter",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "ext_windshield_integrity",
+          "kind": "triStatus",
+          "label": "Integridad de parabrisas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tires",
+      "title": "5. Neumáticos",
+      "fields": [
+        {
+          "id": "tire_front_left_nut_indicators",
+          "kind": "triStatus",
+          "label": "D izquierdo - Indicadores de tuercas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_front_left_pressure",
+          "kind": "triStatus",
+          "label": "D izquierdo - Presión (28-32 lbs/PSI)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_front_left_tread",
+          "kind": "triStatus",
+          "label": "D izquierdo - Dibujo de cubierta (> a 5 mm)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_front_right_nut_indicators",
+          "kind": "triStatus",
+          "label": "D derecho - Indicadores de tuercas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_front_right_pressure",
+          "kind": "triStatus",
+          "label": "D derecho - Presión (28-32 lbs/PSI)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_front_right_tread",
+          "kind": "triStatus",
+          "label": "D derecho - Dibujo de cubierta (> a 5 mm)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_left_nut_indicators",
+          "kind": "triStatus",
+          "label": "P izquierdo - Indicadores de tuercas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_left_pressure",
+          "kind": "triStatus",
+          "label": "P izquierdo - Presión (28-32 lbs/PSI)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_left_tread",
+          "kind": "triStatus",
+          "label": "P izquierdo - Dibujo de cubierta (> a 5 mm)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_right_nut_indicators",
+          "kind": "triStatus",
+          "label": "P derecho - Indicadores de tuercas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_right_pressure",
+          "kind": "triStatus",
+          "label": "P derecho - Presión (28-32 lbs/PSI)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_rear_right_tread",
+          "kind": "triStatus",
+          "label": "P derecho - Dibujo de cubierta (> a 5 mm)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "note_tires_content",
+          "kind": "note",
+          "label": "5. Neumáticos",
+          "placeholder": "• Presión de neumáticos - Ver Manual.\n• Rueda de Auxilio 02\n• Dibujo de Neumáticos mayor a 5 mm",
+          "required": false
+        },
+        {
+          "id": "tire_spare",
+          "kind": "triStatus",
+          "label": "Neumático de repuesto (según manual)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "tire_integrity",
+          "kind": "triStatus",
+          "label": "Integridad de neumáticos (tajos, deformaciones, etc.)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "engine",
+      "title": "6. Motor",
+      "fields": [
+        {
+          "id": "note_engine_compartment_content",
+          "kind": "note",
+          "label": "6. Compartimiento de Motor",
+          "placeholder": "• Correas del motor en buen estado\n• Mangueras del radiador en buen estado\n• Sin fugas en el filtro de aceite\n• Cables y conexiones eléctricas en buen estado\n• Motor limpio sin presencia de hidrocarburos y ácido de batería\n• Seguro, cables y capuchón de bornes en B/E",
+          "required": false
+        },
+        {
+          "id": "engine_hood",
+          "kind": "triStatus",
+          "label": "Capot",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_oil_level",
+          "kind": "triStatus",
+          "label": "Nivel de aceite de motor",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_steering_fluid_level",
+          "kind": "triStatus",
+          "label": "Nivel de líquido de la dirección hidráulica",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_clutch_fluid_level",
+          "kind": "triStatus",
+          "label": "Nivel de líquido de embrague, si corresponde",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_brake_fluid_level",
+          "kind": "triStatus",
+          "label": "Nivel de líquido de los frenos",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_coolant_level",
+          "kind": "triStatus",
+          "label": "Nivel de líquido refrigerante",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "engine_washer_fluid_level",
+          "kind": "triStatus",
+          "label": "Nivel de líquido lavaparabrisas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brakes",
+      "title": "7. Frenos",
+      "fields": [
+        {
+          "id": "brake_pedal_pressure",
+          "kind": "triStatus",
+          "label": "Pedal de freno (no debe perder presión al tenerlo pisado)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "hand_brake",
+          "kind": "triStatus",
+          "label": "Freno de mano",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interior",
+      "title": "8. Interior del vehículo",
+      "fields": [
+        {
+          "id": "interior_seatbelts",
+          "kind": "triStatus",
+          "label": "Cinturones de seguridad - 3 puntos",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_ac_heating",
+          "kind": "triStatus",
+          "label": "Aire acondicionado / calefacción",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_pedal_rubbers",
+          "kind": "triStatus",
+          "label": "Gomas de pedales",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_fuel_level_check",
+          "kind": "triStatus",
+          "label": "Nivel de combustible",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_inner_mirror",
+          "kind": "triStatus",
+          "label": "Espejo retrovisor interior (si no tiene cúpula)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_handbrake_action",
+          "kind": "triStatus",
+          "label": "Accionamiento de freno de mano",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_horn_reverse_alarm",
+          "kind": "triStatus",
+          "label": "Bocina del vehículo y alarma de retroceso",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "interior_upholstery",
+          "kind": "triStatus",
+          "label": "Estado general de tapizado",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cleaning",
+      "title": "9. Limpieza",
+      "fields": [
+        {
+          "id": "cleaning_interior",
+          "kind": "triStatus",
+          "label": "Limpieza de interior del vehículo",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "cleaning_glasses_mirrors_lights_plate",
+          "kind": "triStatus",
+          "label": "Limpieza de vidrios, espejos y luces, chapa patente",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auxiliary_equipment",
+      "title": "10. Comprobaciones de equipos auxiliares",
+      "fields": [
+        {
+          "id": "note_general_considerations_content",
+          "kind": "note",
+          "label": "Consideraciones Generales",
+          "placeholder": "• ¿Las herramientas se encuentran con cinta de color, según el cronograma de inspección?\n• ¿Existen bolsas para la segregación de residuos?\n• ¿Vehículo se encuentra limpio de grasas, aceites y otros agentes contaminantes?",
+          "required": false
+        },
+        {
+          "id": "aux_wheel_chocks",
+          "kind": "triStatus",
+          "label": "Taco / Cuña (2)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_reflective_triangles",
+          "kind": "triStatus",
+          "label": "Triángulos reflectivos (2)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "note_spill_kit_content",
+          "kind": "note",
+          "label": "10. Kit para derrames",
+          "placeholder": "• 10 paños absorbentes medianos para hidrocarburos.\n• 01 par de guantes de Neoprene.\n• 05 bolsas\n• Pala y Pico (mango de fibra de vidrio o plástico)",
+          "required": false
+        },
+        {
+          "id": "aux_spill_kit",
+          "kind": "triStatus",
+          "label": "Kit para derrames",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_cones",
+          "kind": "triStatus",
+          "label": "Conos (2)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "note_aux_equipment_content",
+          "kind": "note",
+          "label": "10. Kit de Equipos Auxiliares. Equipo de Seguridad",
+          "placeholder": "Chalecos reflectivos (2)\n\nAccesorios\nManual del Vehículo\n\nPara transporte en sitio\n• Medidor de aire.\n• Medidor de profundidad de dibujo.\n• Pala y Pico (con mango de plástico o de fibra de vidrio)\n• Gato hidráulico de 4 t y Gato OEM.\n• Llave de ruedas OEM.\n• Palanca para bajar neumático de repuesto.\n• Guantes.\n• Extintor.\n• Linterna Led a prueba de agua con baterías alcalinas.\n• Torquímetro (llave dinamométrica), recomendable.\n• Cepillo de acero (para limpiar bulones de rueda)\n• Líquido anticongelante.\n\nPara transporte en ruta nacional y zona remota\nAdemás de lo indicado en el punto anterior, debe contener:\n• Manta de nylon de 3/8” x 8 m. ***\n• Agua, cantidad suficiente para el viaje y sus ocupantes.\n• Dos eslingas de 30000 lb certificadas y grilletes de alta resistencia con pasador roscado (certificado) de ¾” de espesor, recomendable.\n• Compresor de aire, recomendable.\n• Equipo Jumper (arrancador de baterías o cables para puente), recomendable.\n• Recomendable, caja de herramientas de 26” siempre y cuando sea competente para su uso o con conocimientos básicos de mecánica:\n- Alicate universal.\n- Destornillador plano de 5” y 3''.\n- Destornillador estrella de 5” y 3''.\n- Juego de llaves mixta (7,8,9,10,11,12,13,14 mm).\n- Llave francesa de 10”.",
+          "required": false
+        },
+        {
+          "id": "aux_toolbox",
+          "kind": "triStatus",
+          "label": "Caja de herramientas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_strobe_light",
+          "kind": "triStatus",
+          "label": "Luz estroboscópica (baliza) – en área operativa",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "note_first_aid_kit_content",
+          "kind": "note",
+          "label": "10. Botiquín de Primeros Auxilios",
+          "placeholder": "• Botiquín según Ley 24449.\n• Bloqueador solar 50 FPS (1)\n• Manta térmica ***(1)\n• Agua embotellada.",
+          "required": false
+        },
+        {
+          "id": "aux_first_aid_kit",
+          "kind": "triStatus",
+          "label": "Botiquín de primeros auxilios",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_fire_extinguisher_inspection",
+          "kind": "triStatus",
+          "label": "Extintor - Inspección",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_fire_extinguisher_expiration",
+          "kind": "date",
+          "label": "Extintor - Fecha de vencimiento",
+          "required": false,
+          "editable": true,
+          "defaultToday": false
+        },
+        {
+          "id": "aux_satellite_phone_starlink",
+          "kind": "triStatus",
+          "label": "Teléfono satelital o Starlink (fuera de sitio)",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_coolant",
+          "kind": "triStatus",
+          "label": "Líquido refrigerante",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_tire_tread_gauge",
+          "kind": "triStatus",
+          "label": "Medidor de dibujo de cubiertas",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        },
+        {
+          "id": "aux_air_gauge",
+          "kind": "triStatus",
+          "label": "Medidor de aire",
+          "required": false,
+          "requireObsWhenValues": [
+            "MALO"
+          ],
+          "badValues": [
+            "MALO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "observations",
+      "title": "Observaciones y cierre",
+      "fields": [
+        {
+          "id": "general_observations",
+          "kind": "text",
+          "label": "Detalle las observaciones",
+          "required": false,
+          "multiline": true,
+          "placeholder": "Escribi aqui..."
+        },
+        {
+          "id": "rt_supervision_signature",
+          "kind": "signature",
+          "label": "Firma de la supervisión RT o EPCM",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "vehicle_tri_status_summary",
+      "type": "triStatusSummary",
+      "fields": [
+        "light_right_indicator",
+        "light_left_indicator",
+        "light_fog_lamps",
+        "light_position",
+        "light_hazard",
+        "light_dashboard",
+        "light_high_beam",
+        "light_low_beam",
+        "light_brake",
+        "light_reverse",
+        "ext_scratches_dents",
+        "ext_fluid_leaks_below",
+        "ext_side_mirrors",
+        "ext_wiper_washer",
+        "ext_engine_guard",
+        "ext_windshield_integrity",
+        "tire_front_left_nut_indicators",
+        "tire_front_left_pressure",
+        "tire_front_left_tread",
+        "tire_front_right_nut_indicators",
+        "tire_front_right_pressure",
+        "tire_front_right_tread",
+        "tire_rear_left_nut_indicators",
+        "tire_rear_left_pressure",
+        "tire_rear_left_tread",
+        "tire_rear_right_nut_indicators",
+        "tire_rear_right_pressure",
+        "tire_rear_right_tread",
+        "tire_spare",
+        "tire_integrity",
+        "engine_hood",
+        "engine_oil_level",
+        "engine_steering_fluid_level",
+        "engine_clutch_fluid_level",
+        "engine_brake_fluid_level",
+        "engine_coolant_level",
+        "engine_washer_fluid_level",
+        "brake_pedal_pressure",
+        "hand_brake",
+        "interior_seatbelts",
+        "interior_ac_heating",
+        "interior_pedal_rubbers",
+        "interior_fuel_level_check",
+        "interior_inner_mirror",
+        "interior_handbrake_action",
+        "interior_horn_reverse_alarm",
+        "interior_upholstery",
+        "cleaning_interior",
+        "cleaning_glasses_mirrors_lights_plate",
+        "aux_wheel_chocks",
+        "aux_reflective_triangles",
+        "aux_spill_kit",
+        "aux_cones",
+        "aux_toolbox",
+        "aux_strobe_light",
+        "aux_first_aid_kit",
+        "aux_fire_extinguisher_inspection",
+        "aux_satellite_phone_starlink",
+        "aux_coolant",
+        "aux_tire_tread_gauge",
+        "aux_air_gauge"
+      ],
+      "highValues": [
+        "MALO"
+      ],
+      "moderateValues": [],
+      "lowValues": [
+        "BUENO"
+      ]
+    }
+  ]
+}

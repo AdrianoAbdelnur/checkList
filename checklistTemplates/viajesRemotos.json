@@ -1,0 +1,568 @@
+{
+  "id": "remote_locations_operator_checklist",
+  "templateId": "remote_locations_operator_checklist",
+  "version": 1,
+  "title": "Transporte de Locaciones Distantes - Operator Checklist",
+  "shortTitle": "Transp. Locaciones Distantes",
+  "sections": [
+    {
+      "id": "main",
+      "title": "Datos iniciales",
+      "isMain": true,
+      "fields": [
+        {
+          "id": "vehicle_domain",
+          "kind": "text",
+          "label": "Patente",
+          "required": true,
+          "uppercase": true,
+          "placeholder": "AA123BB",
+          "showCamera": true
+        },
+        {
+          "id": "trip_date",
+          "kind": "date",
+          "label": "Fecha de viaje",
+          "required": true,
+          "defaultToday": true,
+          "editable": true,
+          "futureOnly": true
+        },
+        {
+          "id": "task",
+          "kind": "text",
+          "label": "Tarea",
+          "required": false
+        },
+        {
+          "id": "verification_place",
+          "kind": "text",
+          "label": "Lugar de la verificación",
+          "required": false
+        },
+        {
+          "id": "area",
+          "kind": "text",
+          "label": "Área",
+          "required": false
+        },
+        {
+          "id": "operator_name",
+          "kind": "text",
+          "label": "Nombre",
+          "required": false
+        },
+        {
+          "id": "check_date",
+          "kind": "date",
+          "label": "Fecha",
+          "required": true,
+          "defaultToday": true,
+          "editable": true
+        },
+        {
+          "id": "check_time",
+          "kind": "time",
+          "label": "Hora",
+          "required": false,
+          "defaultNow": true,
+          "editable": true
+        },
+        {
+          "id": "unplanned_work",
+          "kind": "yesNo",
+          "label": "Marque esta casilla si este trabajo no está planificado, por ejemplo, desglose / no programado",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fitness_fatigue",
+      "title": "Aptitud para el trabajo y Manejo de Fatiga",
+      "fields": [
+        {
+          "id": "q1_fit_for_work",
+          "kind": "triStatus",
+          "label": "1. ¿Está descansado y libre de los efectos de fatiga, drogas, alcohol y medicamentos?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "smev",
+      "title": "SMEV (Sistema de Monitoreo en el Vehículo)",
+      "fields": [
+        {
+          "id": "q2_smev_installed",
+          "kind": "triStatus",
+          "label": "2. ¿El sistema SMEV está instalado y encendido?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "trip_management_remote",
+      "title": "Plan de gestión de viajes (ubicaciones remotas)",
+      "fields": [
+        {
+          "id": "q3_trip_requirements_completed",
+          "kind": "triStatus",
+          "label": "3. ¿Ha completado los requisitos de viaje del proyecto/sitio antes del viajar?",
+          "description": "Llamada de chequeo organizada, tabla de movimientos, ruta acordada, etc.",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        },
+        {
+          "id": "q4_items_secured",
+          "kind": "triStatus",
+          "label": "4. ¿Están asegurados los artículos en la cabina, la carga y el remolque?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        },
+        {
+          "id": "q5_roads_safe",
+          "kind": "triStatus",
+          "label": "5. ¿Ha comprobado si las carreteras para el viaje previsto están en condiciones seguras para viajar?",
+          "description": "Clima, caída de rocas, áreas inundadas, derrumbes, cierres de carreteras, etc.",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "operator_competence",
+      "title": "Competencia del operador",
+      "fields": [
+        {
+          "id": "q6_valid_license",
+          "kind": "triStatus",
+          "label": "6. ¿Tiene una licencia vigente para el tipo de vehículo que va a operar?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "positive_communication",
+      "title": "Sistema de comunicación positiva",
+      "fields": [
+        {
+          "id": "q7_comms_working",
+          "kind": "triStatus",
+          "label": "7. ¿Funcionan todos los equipos de comunicación del vehículo?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        },
+        {
+          "id": "q8_knows_comms_rules",
+          "kind": "triStatus",
+          "label": "8. ¿Conoce las reglas de comunicación del vehículo del proyecto/sitio?",
+          "description": "Reglas/protocolos/reglas de radio, puntos de llamada, proceso de detección, señales de mano, etc.",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "preoperational_inspection",
+      "title": "Inspección Pre Operacional de Vehículo",
+      "fields": [
+        {
+          "id": "q9_preop_completed",
+          "kind": "triStatus",
+          "label": "9. ¿Ha completado la inspección preoperacional?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        },
+        {
+          "id": "q10_critical_items_ok",
+          "kind": "triStatus",
+          "label": "10. ¿La inspección preoperatoria mostró que todos los elementos críticos para la seguridad estaban libres de defectos?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "recovery_rescue",
+      "title": "Sistemas de Recuperación / Rescate de vehículos",
+      "fields": [
+        {
+          "id": "q11_recovery_equipment",
+          "kind": "triStatus",
+          "label": "11. ¿El equipo de recuperación de vehículos requerido está en el vehículo?",
+          "required": false,
+          "options": [
+            {
+              "value": "SI",
+              "label": "Sí",
+              "tone": "success"
+            },
+            {
+              "value": "NO",
+              "label": "No",
+              "tone": "danger"
+            },
+            {
+              "value": "NO_APLICA",
+              "label": "No aplica",
+              "tone": "muted"
+            }
+          ],
+          "requireObsWhenValues": [
+            "NO"
+          ],
+          "badValues": [
+            "NO"
+          ],
+          "showCamera": true
+        }
+      ]
+    },
+    {
+      "id": "critical_failure_comment",
+      "title": "Comentario",
+      "displayMode": "rule",
+      "fields": [
+        {
+          "id": "critical_failure_comment_text",
+          "kind": "text",
+          "label": "Comentario",
+          "description": "Si un control crítico no puede ser verificado, por favor indique la naturaleza de la falla incluyendo la(s) pregunta(s) que usted contestó no.",
+          "required": false,
+          "multiline": true,
+          "placeholder": "Describa la falla detectada..."
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "critical_controls_summary",
+      "type": "triStatusSummary",
+      "fields": [
+        "q1_fit_for_work",
+        "q2_smev_installed",
+        "q3_trip_requirements_completed",
+        "q4_items_secured",
+        "q5_roads_safe",
+        "q6_valid_license",
+        "q7_comms_working",
+        "q8_knows_comms_rules",
+        "q9_preop_completed",
+        "q10_critical_items_ok",
+        "q11_recovery_equipment"
+      ],
+      "highValues": [
+        "NO"
+      ],
+      "moderateValues": [],
+      "lowValues": [
+        "SI"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "show_comment_if_any_no",
+      "trigger": "onSectionComplete",
+      "when": {
+        "metric": "critical_controls_summary",
+        "highCountMin": 1
+      },
+      "actions": [
+        {
+          "type": "showSection",
+          "sectionId": "critical_failure_comment"
+        },
+        {
+          "type": "showMessage",
+          "level": "danger",
+          "title": "Control crítico no verificado",
+          "message": "Hay al menos una respuesta NO. Debe indicar la naturaleza de la falla."
+        },
+        {
+          "type": "requireSection",
+          "sectionId": "critical_failure_comment"
+        },
+        {
+          "type": "navigate",
+          "targetSectionId": "critical_failure_comment"
+        },
+        {
+          "type": "setFlag",
+          "key": "remote_trip_state",
+          "value": "HAS_NO"
+        }
+      ]
+    },
+    {
+      "id": "all_controls_ok",
+      "trigger": "onSectionComplete",
+      "when": {
+        "metric": "critical_controls_summary",
+        "answeredCountMin": 11,
+        "highCount": 0
+      },
+      "actions": [
+        {
+          "type": "showMessage",
+          "level": "success",
+          "title": "Checklist correcto",
+          "message": "No hay respuestas NO en controles críticos."
+        },
+        {
+          "type": "setFlag",
+          "key": "remote_trip_state",
+          "value": "ALL_OK"
+        }
+      ]
+    },
+    {
+      "id": "block_submit_if_any_no",
+      "trigger": "onBeforeSubmit",
+      "when": {
+        "metric": "critical_controls_summary",
+        "highCountMin": 1
+      },
+      "actions": [
+        {
+          "type": "blockSubmit",
+          "reason": "Existe al menos una respuesta NO. El trabajo debe detenerse hasta resolver el control crítico."
+        }
+      ]
+    }
+  ]
+}
