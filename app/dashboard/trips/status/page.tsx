@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeShell from "@/components/checklists/ThemeShell";
 import { hasAnyRole, hasPermission } from "@/lib/roles";
@@ -94,6 +93,7 @@ export default function TripsStatusPage() {
     green: 0,
     none: 0,
   });
+  const [openingChecklistId, setOpeningChecklistId] = React.useState<string | null>(null);
 
   const totals = React.useMemo(() => {
     const expected = items.reduce((acc, item) => acc + (item.expectedCount || 0), 0);
@@ -253,15 +253,25 @@ export default function TripsStatusPage() {
                         item.checks
                           .filter((c) => c.checklistId)
                           .map((c) => (
-                            <Link
+                            <button
                               key={`${item.tripId}-${c.templateId}-${c.checklistId}`}
-                              href={`/checklists/${c.checklistId}`}
+                              type="button"
                               className={`${styles.checkLink} ${styles[`checkLink${c.state}`]}`}
                               title={`Ver checklist ${templateLabel(c.templateId)}`}
+                              onClick={() => {
+                                if (!c.checklistId || openingChecklistId) return;
+                                setOpeningChecklistId(c.checklistId);
+                                router.push(`/checklists/${c.checklistId}`);
+                              }}
+                              disabled={openingChecklistId === c.checklistId}
                             >
                               <span className={`${styles.checkDot} ${approvalDotClass(c.approvalStatus)}`} aria-hidden />
-                              <span>{String(c.templateTitle || templateLabel(c.templateId))}</span>
-                            </Link>
+                              <span>
+                                {openingChecklistId === c.checklistId
+                                  ? "Abriendo..."
+                                  : String(c.templateTitle || templateLabel(c.templateId))}
+                              </span>
+                            </button>
                           ))
                       )}
                     </div>
