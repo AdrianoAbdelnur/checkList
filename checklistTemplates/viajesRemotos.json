@@ -53,22 +53,6 @@
           "required": false
         },
         {
-          "id": "check_date",
-          "kind": "date",
-          "label": "Fecha",
-          "required": true,
-          "defaultToday": true,
-          "editable": true
-        },
-        {
-          "id": "check_time",
-          "kind": "time",
-          "label": "Hora",
-          "required": false,
-          "defaultNow": true,
-          "editable": true
-        },
-        {
           "id": "unplanned_work",
           "kind": "yesNo",
           "label": "Marque esta casilla si este trabajo no está planificado, por ejemplo, desglose / no programado",

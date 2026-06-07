@@ -56,14 +56,6 @@
           "kind": "text",
           "label": "Tarea",
           "required": false
-        },
-        {
-          "id": "check_date",
-          "kind": "date",
-          "label": "Fecha",
-          "required": true,
-          "defaultToday": true,
-          "editable": false
         }
       ]
     },

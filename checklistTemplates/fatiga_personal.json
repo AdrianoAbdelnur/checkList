@@ -84,19 +84,6 @@
           "required": false
         },
         {
-          "id": "check_date",
-          "kind": "date",
-          "label": "Fecha:",
-          "required": true
-        },
-        {
-          "id": "check_time",
-          "kind": "time",
-          "label": "Hora:",
-          "required": false,
-          "placeholder": "HH:MM"
-        },
-        {
           "id": "shift_type",
           "kind": "radioGroup",
           "label": "Turno:",

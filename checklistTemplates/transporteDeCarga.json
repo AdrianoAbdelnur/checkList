@@ -30,14 +30,6 @@
           "futureOnly": true
         },
         {
-          "id": "check_date",
-          "kind": "date",
-          "label": "Fecha",
-          "required": true,
-          "editable": false,
-          "defaultToday": true
-        },
-        {
           "id": "check_place",
           "kind": "text",
           "label": "Lugar",

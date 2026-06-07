@@ -48,14 +48,6 @@
           "required": false
         },
         {
-          "id": "check_date",
-          "kind": "date",
-          "label": "Fecha",
-          "required": true,
-          "editable": false,
-          "defaultToday": true
-        },
-        {
           "id": "company",
           "kind": "text",
           "label": "Empresa",
