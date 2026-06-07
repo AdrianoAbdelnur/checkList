@@ -108,7 +108,7 @@ export async function GET(req: Request) {
       ok: true,
       exists: false,
       plateFound: false,
-      message: "La patente no existe en la lista de hoy ni en los proximos 2 dias.",
+      message: "No hay viaje cargado para ese vehiculo en esa fecha.",
       item: null,
       assignment: null,
     });
