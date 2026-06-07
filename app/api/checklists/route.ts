@@ -31,12 +31,6 @@ function todayKey() {
   return `${y}-${m}-${day}`;
 }
 
-function dateRangeForKey(key: string) {
-  const start = new Date(`${key}T00:00:00.000Z`);
-  const end = new Date(`${key}T23:59:59.999Z`);
-  return { start, end };
-}
-
 function parseDateKeyToDate(value: string): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!m) return null;
@@ -58,13 +52,11 @@ function tenantScopeConditions(tenantId: string) {
 }
 
 function buildTripDateFilter(dateKey: string) {
-  const { start, end } = dateRangeForKey(dateKey);
   return {
     $or: [
       { "data.assignment.tripDateKey": dateKey },
       { "data.values.trip_date.value": dateKey },
       { "data.meta.tripDateKey": dateKey },
-      { submittedAt: { $gte: start, $lte: end } },
     ],
   };
 }
