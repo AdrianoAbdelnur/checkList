@@ -31,6 +31,19 @@ function todayKey() {
   return `${y}-${m}-${day}`;
 }
 
+function parseDateBound(value: string | null, endOfDay = false): Date | null {
+  const normalized = normalizeDateKey(value ?? "");
+  if (!normalized) return null;
+  const date = parseDateKeyToDate(normalized);
+  if (!date) return null;
+  if (endOfDay) {
+    date.setHours(23, 59, 59, 999);
+  } else {
+    date.setHours(0, 0, 0, 0);
+  }
+  return date;
+}
+
 function parseDateKeyToDate(value: string): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!m) return null;
@@ -176,6 +189,10 @@ export async function GET(req: Request) {
   const templateId = url.searchParams.get("templateId");
   const status = url.searchParams.get("status");
   const plate = url.searchParams.get("plate");
+  const dateFrom = parseDateBound(url.searchParams.get("dateFrom"));
+  const dateTo = parseDateBound(url.searchParams.get("dateTo"), true);
+  const tripDateFrom = normalizeDateKey(url.searchParams.get("tripDateFrom") ?? "");
+  const tripDateTo = normalizeDateKey(url.searchParams.get("tripDateTo") ?? "");
 
   const items = await listChecklistsForInspector({
     user: auth.user as any,
@@ -184,6 +201,10 @@ export async function GET(req: Request) {
     templateId,
     status,
     plate,
+    dateFrom,
+    dateTo,
+    tripDateFrom: tripDateFrom || null,
+    tripDateTo: tripDateTo || null,
   });
   return Response.json({ ok: true, items });
 }

@@ -7,6 +7,15 @@ import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+function normalizeApprovalStatus(value: unknown): "PENDING" | "APPROVED" | "REJECTED" {
+  const text = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  if (text === "APPROVED") return "APPROVED";
+  if (text === "REJECTED") return "REJECTED";
+  return "PENDING";
+}
+
 export async function GET(req: Request, ctx: Ctx) {
   await connectToDatabase();
   const auth = await requireUser(req);
@@ -41,7 +50,17 @@ export async function PATCH(req: Request, ctx: Ctx) {
   if (!canAccessChecklist(auth.user as any, doc.toObject(), canViewAll)) {
     return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
-  if (doc.status !== "DRAFT") return Response.json({ ok: false, message: "Checklist bloqueado" }, { status: 409 });
+  const approvalStatus = normalizeApprovalStatus(
+    doc.get("approvalStatus") ?? doc.get("data.approvalStatus"),
+  );
+  const canEdit =
+    doc.status === "DRAFT" ||
+    (doc.status === "SUBMITTED" &&
+      approvalStatus !== "APPROVED" &&
+      approvalStatus !== "REJECTED");
+  if (!canEdit) {
+    return Response.json({ ok: false, message: "Checklist bloqueado" }, { status: 409 });
+  }
 
   const patch = await req.json();
   const before = cloneForAudit({

@@ -18,6 +18,10 @@ type ListChecklistsInput = {
   templateId?: string | null;
   status?: string | null;
   plate?: string | null;
+  dateFrom?: Date | null;
+  dateTo?: Date | null;
+  tripDateFrom?: string | null;
+  tripDateTo?: string | null;
 };
 
 function tenantScopeQuery(tenantId: string) {
@@ -48,6 +52,10 @@ export async function listChecklistsForInspector({
   templateId,
   status,
   plate,
+  dateFrom,
+  dateTo,
+  tripDateFrom,
+  tripDateTo,
 }: ListChecklistsInput) {
   await connectToDatabase();
 
@@ -59,6 +67,24 @@ export async function listChecklistsForInspector({
   if (templateId) q.templateId = templateId;
   if (status) q.status = status;
   if (plate) q["data.subject.plate"] = plate;
+  if (dateFrom || dateTo) {
+    q.submittedAt = {};
+    if (dateFrom) q.submittedAt.$gte = dateFrom;
+    if (dateTo) q.submittedAt.$lte = dateTo;
+  }
+  if (tripDateFrom || tripDateTo) {
+    const tripDateClauses: any[] = [];
+    const withRange = (field: string) => {
+      const range: any = {};
+      if (tripDateFrom) range.$gte = tripDateFrom;
+      if (tripDateTo) range.$lte = tripDateTo;
+      tripDateClauses.push({ [field]: range });
+    };
+    withRange("data.values.trip_date.value");
+    withRange("data.assignment.tripDateKey");
+    withRange("data.meta.tripDateKey");
+    q.$and = [...(q.$and ?? []), { $or: tripDateClauses }];
+  }
 
   return Checklist.find(q)
     .sort({ createdAt: -1 })
