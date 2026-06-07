@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasPermission } from "@/lib/roles";
+import { canAccessChecklist } from "@/lib/checklists";
 import Checklist from "@/models/Checklist";
 import AuditEvent from "@/models/AuditEvent";
 
@@ -14,13 +15,13 @@ export async function GET(req: Request, ctx: Ctx) {
   }
 
   const { id } = await ctx.params;
-  const item = await Checklist.findById(id).select("inspectorId").lean();
+  const item = await Checklist.findById(id).select("inspectorId tenantId").lean();
   if (!item) {
     return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   }
 
   const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
-  if (!canViewAll && String(item.inspectorId) !== String(auth.user._id)) {
+  if (!canAccessChecklist(auth.user as any, item, canViewAll)) {
     return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
 

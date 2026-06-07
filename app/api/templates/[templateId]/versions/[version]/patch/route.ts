@@ -13,7 +13,16 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   const v = Number(version);
   if (!Number.isFinite(v)) return Response.json({ ok: false, message: "version invÃ¡lida" }, { status: 400 });
 
-  const patch = await req.json();
+  const rawPatch = (await req.json()) ?? {};
+  const patch = { ...rawPatch };
+  if ("accessMode" in patch) {
+    patch.accessMode = String((patch as any).accessMode ?? "all").trim() === "selected" ? "selected" : "all";
+  }
+  if ("allowedTenantIds" in patch) {
+    patch.allowedTenantIds = Array.isArray((patch as any).allowedTenantIds)
+      ? (patch as any).allowedTenantIds.map((item: unknown) => String(item ?? "").trim()).filter(Boolean)
+      : [];
+  }
 
   const item = await patchTemplateVersion(templateId, v, patch ?? {});
 

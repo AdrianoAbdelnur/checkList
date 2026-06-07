@@ -3,9 +3,21 @@ import crypto from "crypto";
 import { connectToDatabase } from "../../../../../lib/mongoose";
 import User from "../../../../../models/User";
 import { requireAdminSession } from "@/lib/server/auth-next";
-import { getPrimaryRole, isAppRole, normalizeRoles } from "@/lib/roles";
+import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
+import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
 
 type Ctx = { params: Promise<{ id: string }> };
+
+function tenantScopeQuery(tenantId: string) {
+  return {
+    $or: [
+      { tenantId },
+      { tenantId: { $exists: false } },
+      { tenantId: null },
+      { tenantId: "" },
+    ],
+  };
+}
 
 export async function GET(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
@@ -16,7 +28,12 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 
   await connectToDatabase();
   try {
-    const user = await User.findOne({ _id: id, isDelete: { $ne: true } })
+    await ensureGeneralTenant();
+    const query: any = { _id: id, isDelete: { $ne: true } };
+    if (!isSuperAdmin(auth.session)) {
+      Object.assign(query, tenantScopeQuery(String(auth.session.tenantId || "general").trim() || "general"));
+    }
+    const user = await User.findOne(query)
       .select("-password -salt")
       .lean();
 
@@ -37,7 +54,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, telephone, userId, role, roles, email, password, userNumber, inspectorNumber } = body;
+  const { firstName, lastName, telephone, userId, role, roles, email, password, userNumber, inspectorNumber, tenantId } = body;
   const { id: routeId } = await ctx.params;
   const targetId = userId || routeId;
 
@@ -76,6 +93,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   await connectToDatabase();
 
   try {
+    await ensureGeneralTenant();
     if (update.email) {
       const existing = await User.findOne({
         email: update.email,
@@ -91,6 +109,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     const current = await User.findById(targetId).lean();
     if (!current) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+    if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, (current as any).tenantId)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const nextRoles =
@@ -109,6 +130,18 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     if (roles !== undefined || role !== undefined) {
       update.roles = persistedRoles;
       update.role = primaryRole;
+    }
+
+    if (tenantId !== undefined) {
+      const nextTenantId = String(tenantId).trim() || "general";
+      if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, nextTenantId)) {
+        return NextResponse.json({ error: "No autorizado para ese tenant" }, { status: 403 });
+      }
+      const activeTenant = await getActiveTenantByCode(nextTenantId);
+      if (!activeTenant) {
+        return NextResponse.json({ error: "Debe seleccionar un tenant activo" }, { status: 400 });
+      }
+      update.tenantId = nextTenantId;
     }
 
     if (hasPasswordUpdate) {
@@ -150,6 +183,13 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
 
   await connectToDatabase();
   try {
+    await ensureGeneralTenant();
+    const current = await User.findById(targetId).lean();
+    if (!current) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, (current as any).tenantId)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
     const deleted = await User.findByIdAndUpdate(targetId, { isDelete: true }, { new: true }).select(
       "-password -salt",
     );

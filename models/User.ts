@@ -12,6 +12,7 @@ export interface IUser extends Document {
   role: string
   roles?: string[]
   userNumber?: string
+  tenantId?: string
   mustChangePassword?: boolean
   passwordChangedAt?: Date | null
   deletionRequestedAt?: Date | null
@@ -53,12 +54,12 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin'],
+      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin', 'superAdmin'],
       default: 'inspector',
     },
     roles: {
       type: [String],
-      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin'],
+      enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin', 'superAdmin'],
       default: ['inspector'],
     },
     userNumber: {
@@ -66,6 +67,12 @@ const UserSchema = new Schema<IUser>(
       trim: true,
       unique: true,
       sparse: true,
+      index: true,
+    },
+    tenantId: {
+      type: String,
+      trim: true,
+      default: 'general',
       index: true,
     },
     mustChangePassword: {

@@ -11,19 +11,16 @@ export async function GET(req: Request, ctx: Ctx) {
   }
 
   const { id } = await ctx.params;
-  const result = await getChecklistWithTemplateById(id);
-  if (!result?.checklist) {
+  const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
+  const result = await getChecklistWithTemplateById(id, auth.user as any, canViewAll);
+  if (result === false) {
+    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+  }
+  if (!result) {
     return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   }
   if (!result.template) {
     return Response.json({ ok: false, message: "Template/version no encontrada" }, { status: 404 });
-  }
-  const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
-  const isOwner =
-    String((result.checklist as any)?.inspectorId?._id ?? (result.checklist as any)?.inspectorId ?? "") ===
-    String(auth.user._id);
-  if (!canViewAll && !isOwner) {
-    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
 
   return Response.json({ ok: true, checklist: result.checklist, template: result.template });

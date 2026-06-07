@@ -1,5 +1,7 @@
 import Session from "@/models/Session";
 import User from "@/models/User";
+import { connectToDatabase } from "@/lib/mongoose";
+import { ensureGeneralTenant, getTenantAccessState } from "@/lib/tenants";
 
 function readCookie(cookiesHeader: string, name: string) {
   const parts = cookiesHeader.split(";").map((p) => p.trim());
@@ -16,6 +18,9 @@ export async function requireUser(
   req: Request,
   options?: { allowMustChangePassword?: boolean },
 ) {
+  await connectToDatabase();
+  await ensureGeneralTenant();
+
   const headerToken = (req.headers.get("x-session-token") ?? "").trim();
 
   const cookieHeader = req.headers.get("cookie") ?? "";
@@ -46,6 +51,11 @@ export async function requireUser(
 
   if (Boolean((user as any).mustChangePassword) && !options?.allowMustChangePassword) {
     return { ok: false as const, status: 403 as const, message: "Debe actualizar su contrasena" };
+  }
+
+  const tenantState = await getTenantAccessState(String((user as any).tenantId || "general"));
+  if (!tenantState.exists || !tenantState.isActive) {
+    return { ok: false as const, status: 403 as const, message: "Tenant inactivo" };
   }
 
   return { ok: true as const, user };

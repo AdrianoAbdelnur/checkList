@@ -1,7 +1,7 @@
-﻿import { connectToDatabase } from "@/lib/db";
+import { connectToDatabase } from "@/lib/db";
 import { requireUser } from "@/lib/auth/requireUser";
+import { listLatestActiveTemplatesForUser } from "@/lib/templates";
 import Trip from "@/models/Trip";
-import ChecklistTemplate from "@/models/ChecklistTemplate";
 
 function formatTodayKey() {
   const d = new Date();
@@ -32,24 +32,12 @@ export async function GET(req: Request) {
     .select("_id dominio tipo tripDateKey")
     .lean();
 
-  const templateDocs = await ChecklistTemplate.find({ isActive: true })
-    .sort({ templateId: 1, version: -1 })
-    .select("templateId title shortTitle version")
-    .lean();
-
-  const latestTemplates = new Map<string, { templateId: string; title: string; shortTitle: string; version: number }>();
-  for (const doc of templateDocs as any[]) {
-    const templateId = String(doc.templateId || "").trim();
-    if (!templateId || latestTemplates.has(templateId)) continue;
-    latestTemplates.set(templateId, {
-      templateId,
-      title: String(doc.title || templateId),
-      shortTitle: String(doc.shortTitle || ""),
-      version: Number(doc.version || 1),
-    });
-  }
-
-  const templates = Array.from(latestTemplates.values());
+  const templates = (await listLatestActiveTemplatesForUser(auth.user as any)).map((doc: any) => ({
+    templateId: String(doc.templateId || "").trim(),
+    title: String(doc.title || doc.templateId || ""),
+    shortTitle: String(doc.shortTitle || ""),
+    version: Number(doc.version || 1),
+  }));
 
   const items = (trips as any[]).length
     ? (trips as any[]).flatMap((trip) =>

@@ -24,6 +24,13 @@ type RoleCard = {
 
 const roleCards: RoleCard[] = [
   {
+    role: 'superAdmin',
+    title: 'Panel Super Admin',
+    description: 'Acceso total del sistema, incluyendo usuarios y configuraciones.',
+    href: '/admin',
+    tone: 'blue',
+  },
+  {
     role: 'admin',
     title: 'Panel Administrador',
     description: 'Acceso total del sistema, incluyendo usuarios y configuraciones.',

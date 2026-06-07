@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
+import { canAccessChecklist } from "@/lib/checklists";
 import Checklist from "@/models/Checklist";
 import { requireUser } from "@/lib/auth/requireUser";
 import { hasPermission } from "@/lib/roles";
@@ -18,7 +19,7 @@ export async function GET(req: Request, ctx: Ctx) {
   const item = await Checklist.findById(id).lean();
   if (!item) return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
-  if (!canViewAll && String(item.inspectorId) !== String(auth.user._id)) {
+  if (!canAccessChecklist(auth.user as any, item, canViewAll)) {
     return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
 
@@ -37,7 +38,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const doc = await Checklist.findById(id);
   if (!doc) return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
   const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
-  if (!canViewAll && String(doc.inspectorId) !== String(auth.user._id)) {
+  if (!canAccessChecklist(auth.user as any, doc.toObject(), canViewAll)) {
     return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
   }
   if (doc.status !== "DRAFT") return Response.json({ ok: false, message: "Checklist bloqueado" }, { status: 409 });
@@ -80,6 +81,12 @@ export async function DELETE(req: Request, ctx: Ctx) {
   }
 
   const { id } = await ctx.params;
+
+  const current = await Checklist.findById(id).lean();
+  if (!current) return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });
+  if (!canAccessChecklist(auth.user as any, current, true)) {
+    return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+  }
 
   const deleted = await Checklist.findByIdAndDelete(id).lean();
   if (!deleted) return Response.json({ ok: false, message: "Checklist no encontrado" }, { status: 404 });

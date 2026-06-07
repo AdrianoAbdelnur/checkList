@@ -4,6 +4,7 @@ const ChecklistSchema = new Schema(
   {
     templateId: { type: String, required: true, index: true },
     templateVersion: { type: Number, required: true, index: true },
+    tenantId: { type: String, required: true, index: true, default: "general" },
 
     inspectorId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     inspectorSnapshot: { type: Schema.Types.Mixed, default: null },

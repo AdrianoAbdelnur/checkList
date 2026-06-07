@@ -124,6 +124,7 @@ export default async function ChecklistsPage({
   if (!session) throw new Error("No autorizado");
 
   const items = (await listChecklistsForInspector({
+    user: session as any,
     inspectorId: session.userId,
     includeAll: hasPermission(session as Record<string, unknown>, "checklist.view_all"),
   })) as ChecklistItem[];

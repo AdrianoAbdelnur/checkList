@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { listChecklistsForInspector } from "@/lib/checklists";
 import { hasPermission } from "@/lib/roles";
 import { actorFromUser, cloneForAudit, logAuditEvent } from "@/lib/audit";
+import { canUserAccessTemplate } from "@/lib/templates";
 
 function normalizePlate(value: unknown) {
   return String(value ?? "")
@@ -25,6 +26,15 @@ function dateRangeForKey(key: string) {
   const start = new Date(`${key}T00:00:00.000Z`);
   const end = new Date(`${key}T23:59:59.999Z`);
   return { start, end };
+}
+
+function tenantScopeConditions(tenantId: string) {
+  return [
+    { tenantId },
+    { tenantId: { $exists: false } },
+    { tenantId: null },
+    { tenantId: "" },
+  ];
 }
 
 function extractPlate(body: any): string {
@@ -64,6 +74,7 @@ export async function GET(req: Request) {
   const plate = url.searchParams.get("plate");
 
   const items = await listChecklistsForInspector({
+    user: auth.user as any,
     inspectorId: auth.user._id,
     includeAll: hasPermission(auth.user as any, "checklist.view_all"),
     templateId,
@@ -83,9 +94,6 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  const canViewAll = hasPermission(auth.user as any, "checklist.view_all");
-  const isInspector = hasPermission(auth.user as any, "checklist.create") && !canViewAll;
-
   const templateId = String(body?.templateId ?? "");
   if (!templateId) {
     return Response.json({ ok: false, message: "templateId requerido" }, { status: 400 });
@@ -102,11 +110,18 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, message: "Template no encontrado" }, { status: 404 });
     }
 
+    if (!canUserAccessTemplate(auth.user as any, last)) {
+      return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
+    }
+
     templateVersion = last.version;
   } else {
     const exists = await ChecklistTemplate.findOne({ templateId, version: templateVersion }).lean();
     if (!exists) {
       return Response.json({ ok: false, message: "Template/version no existe" }, { status: 404 });
+    }
+    if (!canUserAccessTemplate(auth.user as any, exists)) {
+      return Response.json({ ok: false, message: "No autorizado" }, { status: 403 });
     }
   }
 
@@ -122,26 +137,34 @@ export async function POST(req: Request) {
   if (plate) {
     const dateKey = todayKey();
     const { start, end } = dateRangeForKey(dateKey);
+    const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
     const existing = await Checklist.findOne({
       templateId,
       submittedAt: { $gte: start, $lte: end },
-      $or: [
-        { "data.subject.plate": plate },
-        { "data.subject.patente": plate },
-        { "data.subject.dominio": plate },
-        { "data.subject.vehicle_domain": plate },
-        { "data.subject.vehicleDomain": plate },
-        { "data.values.pre_plate": plate },
-        { "data.values.plate": plate },
-        { "data.values.patente": plate },
-        { "data.values.dominio": plate },
-        { "data.values.vehicle_domain": plate },
-        { "data.values.vehicleDomain": plate },
-        { "data.meta.plate": plate },
-        { "data.meta.patente": plate },
-        { "data.meta.dominio": plate },
-        { "data.meta.vehicle_domain": plate },
-        { "data.meta.vehicleDomain": plate },
+      $and: [
+        {
+          $or: [
+            { "data.subject.plate": plate },
+            { "data.subject.patente": plate },
+            { "data.subject.dominio": plate },
+            { "data.subject.vehicle_domain": plate },
+            { "data.subject.vehicleDomain": plate },
+            { "data.values.pre_plate": plate },
+            { "data.values.plate": plate },
+            { "data.values.patente": plate },
+            { "data.values.dominio": plate },
+            { "data.values.vehicle_domain": plate },
+            { "data.values.vehicleDomain": plate },
+            { "data.meta.plate": plate },
+            { "data.meta.patente": plate },
+            { "data.meta.dominio": plate },
+            { "data.meta.vehicle_domain": plate },
+            { "data.meta.vehicleDomain": plate },
+          ],
+        },
+        {
+          $or: tenantScopeConditions(tenantId),
+        },
       ],
     })
       .select("_id")
@@ -158,6 +181,7 @@ export async function POST(req: Request) {
   const created = await Checklist.create({
     templateId,
     templateVersion,
+    tenantId: String((auth.user as any).tenantId || "general").trim() || "general",
     inspectorId: auth.user._id,
     inspectorSnapshot,
     data: body?.data ?? {},
@@ -175,6 +199,7 @@ export async function POST(req: Request) {
     after: cloneForAudit({
       templateId: created.templateId,
       templateVersion: created.templateVersion,
+      tenantId: created.tenantId,
       inspectorId: created.inspectorId,
       status: created.status,
       submittedAt: created.submittedAt,

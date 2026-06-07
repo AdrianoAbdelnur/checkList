@@ -5,6 +5,7 @@ import User from "../../../../models/User";
 import { createSession } from "../../../../lib/auth";
 import { setSessionCookie } from "@/lib/server/session-cookie";
 import crypto from "crypto";
+import { ensureGeneralTenant, getTenantAccessState } from "@/lib/tenants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
+    await ensureGeneralTenant();
 
     const user = await User.findOne({
       email: body.email,
@@ -42,6 +44,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const tenantState = await getTenantAccessState(String((user as any).tenantId || "general"));
+    if (!tenantState.exists || !tenantState.isActive) {
+      return NextResponse.json(
+        { ok: false, message: "El tenant del usuario esta inactivo" },
+        { status: 403 }
+      );
+    }
+
     const token = await createSession(user._id.toString());
 
     const res = NextResponse.json({
@@ -54,6 +64,7 @@ export async function POST(req: NextRequest) {
         lastName: user.lastName,
         role: user.role,
         roles: Array.isArray((user as any).roles) ? (user as any).roles : [],
+        tenantId: String((user as any).tenantId || "general").trim() || "general",
         mustChangePassword: Boolean((user as any).mustChangePassword),
       },
     });

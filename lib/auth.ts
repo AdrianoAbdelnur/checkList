@@ -3,6 +3,7 @@ import User, { IUser } from '../models/User'
 import Session from '../models/Session'
 import crypto from 'crypto'
 import { getPrimaryRole, normalizeRoles } from './roles'
+import { ensureGeneralTenant, getTenantAccessState } from './tenants'
 
 export type SessionData = {
   userId: string
@@ -11,6 +12,7 @@ export type SessionData = {
   lastName: string
   role: string
   roles: string[]
+  tenantId: string
   mustChangePassword: boolean
 }
 
@@ -43,6 +45,7 @@ export async function getSessionData(token?: string): Promise<SessionData | null
 
   try {
     await connectToDatabase()
+    await ensureGeneralTenant()
     const session = await Session.findOne({ token }).lean()
     
     if (!session || session.expiresAt < new Date()) {
@@ -52,6 +55,9 @@ export async function getSessionData(token?: string): Promise<SessionData | null
 
     const user = await getUserById(session.userId)
     if (!user) return null
+
+    const tenantState = await getTenantAccessState(String((user as any).tenantId || 'general'))
+    if (!tenantState.exists || !tenantState.isActive) return null
 
     const roles = normalizeRoles({
       role: user.role || 'inspector',
@@ -65,6 +71,7 @@ export async function getSessionData(token?: string): Promise<SessionData | null
       lastName: user.lastName || '',
       role: getPrimaryRole({ role: user.role || 'inspector', roles }),
       roles,
+      tenantId: String((user as any).tenantId || 'general').trim() || 'general',
       mustChangePassword: Boolean((user as any).mustChangePassword),
     }
   } catch (e) {

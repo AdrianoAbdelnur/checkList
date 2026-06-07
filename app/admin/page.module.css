@@ -55,6 +55,31 @@
   flex-wrap: wrap;
 }
 
+.tabs {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 4px;
+  border: 1px solid var(--ck-line);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--ck-surface-2) 70%, transparent);
+}
+
+.tabBtn {
+  border: 0;
+  background: transparent;
+  color: var(--ck-text-soft);
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.tabBtnActive {
+  background: color-mix(in oklab, var(--ck-accent) 14%, var(--ck-surface));
+  color: var(--ck-text);
+}
+
 .primaryBtn,
 .secondaryBtn {
   border-radius: 12px;
@@ -241,7 +266,7 @@
 
 .filters {
   display: grid;
-  grid-template-columns: 1.5fr 0.8fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -336,6 +361,20 @@
   color: var(--ck-text-soft);
 }
 
+.tenantCell {
+  display: grid;
+  gap: 4px;
+}
+
+.tenantCell strong {
+  display: block;
+}
+
+.tenantCell small {
+  display: block;
+  color: var(--ck-text-soft);
+}
+
 .roleBadge {
   display: inline-flex;
   align-items: center;
@@ -352,8 +391,32 @@
 .role_inspector { background: color-mix(in oklab, #16a34a 14%, transparent); color: #86efac; }
 .role_reviewer { background: color-mix(in oklab, #7c3aed 14%, transparent); color: #c4b5fd; }
 .role_supervisor { background: color-mix(in oklab, #f59e0b 16%, transparent); color: #fcd34d; }
+.role_superAdmin { background: color-mix(in oklab, #94a3b8 18%, transparent); color: #e2e8f0; }
+.role_manager { background: color-mix(in oklab, #0891b2 14%, transparent); color: #93c5fd; }
 .role_client { background: color-mix(in oklab, #0891b2 14%, transparent); color: #67e8f9; }
 .role_auditor { background: color-mix(in oklab, #64748b 18%, transparent); color: #cbd5e1; }
+
+.stateBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--ck-line);
+}
+
+.stateActive {
+  background: color-mix(in oklab, #16a34a 14%, transparent);
+  color: #86efac;
+}
+
+.stateInactive {
+  background: color-mix(in oklab, #ef4444 12%, transparent);
+  color: #fca5a5;
+}
 
 .rowActions {
   display: flex;
@@ -412,6 +475,18 @@
 .field select:focus {
   border-color: color-mix(in oklab, var(--ck-accent) 45%, var(--ck-line));
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--ck-accent) 16%, transparent);
+}
+
+.fieldErrorControl {
+  border-color: color-mix(in oklab, #ef4444 38%, var(--ck-line)) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, #ef4444 14%, transparent);
+}
+
+.fieldErrorText {
+  display: block;
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .formActions {
