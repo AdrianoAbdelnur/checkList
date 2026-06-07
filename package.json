@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "backfill:tenant-general": "node scripts/backfill-tenant-general.js"
+    "backfill:tenant-general": "node scripts/backfill-tenant-general.js",
+    "sync:checklist-templates": "node scripts/sync-checklist-templates.js"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.3",

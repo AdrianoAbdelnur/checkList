@@ -1,0 +1,582 @@
+{
+  "id": "fatigue_personal_checklist",
+  "templateId": "fatigue_personal_checklist",
+  "version": 1,
+  "title": "Lista de verificación personal de fatiga",
+  "shortTitle": "Verif. personal de fatiga",
+  "sections": [
+    {
+      "id": "main",
+      "isMain": true,
+      "title": "Datos Personales",
+      "fields": [
+        {
+          "id": "fatigue_intro_note",
+          "kind": "note",
+          "label": "Lista de verificación personal de fatiga",
+          "placeholder": "El propósito de esta lista de verificación es revisar los factores que podrían afectar sus niveles de fatiga. Se puede usar antes de comenzar un turno o en cualquier momento durante un turno en el que usted mismo se identifique como fatigado. Esta lista de verificación puede ser útil si tiene dudas sobre su aptitud para el trabajo para desempeñar su función debido a la fatiga. Recuerde, es su responsabilidad controlar su fatiga y dormir lo suficiente.",
+          "required": false
+        },
+        {
+          "id": "vehicle_domain",
+          "kind": "text",
+          "label": "Patente",
+          "required": true,
+          "uppercase": true,
+          "placeholder": "AA123BB",
+          "showCamera": true
+        },
+        {
+          "id": "trip_date",
+          "kind": "date",
+          "label": "Fecha de viaje",
+          "required": true,
+          "defaultToday": true,
+          "editable": true,
+          "futureOnly": true
+        },
+        {
+          "id": "worker_name",
+          "kind": "text",
+          "label": "Nombre:",
+          "required": false
+        },
+        {
+          "id": "leader_name",
+          "kind": "text",
+          "label": "Nombre del líder:",
+          "required": false
+        },
+        {
+          "id": "company_name",
+          "kind": "text",
+          "label": "Empresa:",
+          "required": false
+        },
+        {
+          "id": "site_name",
+          "kind": "text",
+          "label": "Sitio:",
+          "required": false
+        },
+        {
+          "id": "job_position",
+          "kind": "text",
+          "label": "Cargo:",
+          "required": false
+        },
+        {
+          "id": "shift_regime",
+          "kind": "text",
+          "label": "Régimen de turno:",
+          "required": false
+        },
+        {
+          "id": "days_on_shift",
+          "kind": "number",
+          "label": "Días en turno:",
+          "required": false
+        },
+        {
+          "id": "worker_age",
+          "kind": "number",
+          "label": "Edad:",
+          "required": false
+        },
+        {
+          "id": "shift_type",
+          "kind": "radioGroup",
+          "label": "Turno:",
+          "required": false,
+          "options": [
+            {
+              "value": "TURNO_DIA",
+              "label": "Turno día"
+            },
+            {
+              "value": "TURNO_NOCHE",
+              "label": "Turno noche"
+            }
+          ]
+        },
+        {
+          "id": "sex",
+          "kind": "radioGroup",
+          "label": "Sexo:",
+          "required": false,
+          "options": [
+            {
+              "value": "HOMBRE",
+              "label": "Hombre"
+            },
+            {
+              "value": "MUJER",
+              "label": "Mujer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "action_section",
+      "title": "leer",
+      "fields": [
+        {
+          "id": "action_reference_note",
+          "kind": "note",
+          "label": "Acción",
+          "placeholder": "Todos bajos\n\nContinúe controlando sus niveles de fatiga.\nRevise esta lista de verificación si algo cambia.\n\n--------------------\n\nBajos y moderados\n\nEstá mostrando algunos signos tempranos de fatiga; debe considerar el uso de algunas estrategias de alerta, como cafeína, luz brillante, tomar un refrigerio saludable, un breve descanso, actividad física, cambiar de tarea o lavarse la cara.\n\nContinúe controlando su fatiga: si la sensación de fatiga continúa, comienza a bostezar mucho o le resulta difícil concentrarse, debe detener el trabajo y hablar con su líder.\n\n--------------------\n\n1 o más altos\n\nTiene el potencial de estar fatigado: deje de trabajar ahora y comunique a su líder de inmediato sus respuestas.\n\nEs posible que le pidan que complete una Lista de verificación de fatiga del líder para determinar la mejor manera de implementar las medidas de control de la fatiga.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fatigue_evaluation",
+      "title": "Evaluación de fatiga",
+      "fields": [
+        {
+          "id": "sleep_last_24h",
+          "kind": "triStatus",
+          "label": "¿Cuántas horas durmió en las últimas 24 horas?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "7 o más"
+              ]
+            },
+            {
+              "value": "MODERADO",
+              "label": "Moderado",
+              "tone": "warning",
+              "comments": [
+                "6 a 7"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Menos de 6"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "sleep_last_48h",
+          "kind": "triStatus",
+          "label": "¿Cuántas horas durmió en las últimas 48 horas?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "14 o más"
+              ]
+            },
+            {
+              "value": "MODERADO",
+              "label": "Moderado",
+              "tone": "warning",
+              "comments": [
+                "12 a 14"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Menos de 12"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "awake_hours_end_shift",
+          "kind": "triStatus",
+          "label": "¿Cuántas horas estará despierto al final del turno?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "14 o menos"
+              ]
+            },
+            {
+              "value": "MODERADO",
+              "label": "Moderado",
+              "tone": "warning",
+              "comments": [
+                "Entre 14 a 16"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Más de 16"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "first_night_shift_afternoon_sleep",
+          "kind": "triStatus",
+          "label": "Si está en su primer turno de noche, ¿durmió por la tarde?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "-Sí",
+                "-No es el primer turno de noche",
+                "-Solo turno de día"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "No"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "taking_medication_ffw",
+          "kind": "triStatus",
+          "label": "¿Está tomando medicamentos u otras sustancias que puedan afectar su aptitud para el trabajo (FFW)?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "No"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Sí"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "alcohol_last_12h",
+          "kind": "triStatus",
+          "label": "¿Cuántas bebidas alcohólicas ha tomado en las últimas 12 horas?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "0"
+              ]
+            },
+            {
+              "value": "MODERADO",
+              "label": "Moderado",
+              "tone": "warning",
+              "comments": [
+                "1 – 4 vasos"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "> 4 vasos"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "other_health_personal_factors",
+          "kind": "triStatus",
+          "label": "¿Existen otros factores de salud o personales que estén afectando su aptitud para el trabajo?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "No"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Sí"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        },
+        {
+          "id": "how_do_you_feel",
+          "kind": "triStatus",
+          "label": "¿Cómo se siente?",
+          "required": false,
+          "options": [
+            {
+              "value": "BAJO",
+              "label": "Bajo",
+              "tone": "success",
+              "comments": [
+                "Activo, alerta"
+              ]
+            },
+            {
+              "value": "MODERADO",
+              "label": "Moderado",
+              "tone": "warning",
+              "comments": [
+                "Bien, pero no completamente alerta"
+              ]
+            },
+            {
+              "value": "ALTO",
+              "label": "Alto",
+              "tone": "danger",
+              "comments": [
+                "Somnoliento, bostezando, dificultad para concentrarse"
+              ]
+            }
+          ],
+          "badValues": [
+            "ALTO"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "action_plan",
+      "title": "Plan de acción (¿Qué estrategias puede aplicar para reducir la fatiga?)",
+      "displayMode": "rule",
+      "fields": [
+        {
+          "id": "scheduled_breaks",
+          "kind": "yesNo",
+          "label": "Pausas programadas",
+          "required": false
+        },
+        {
+          "id": "scheduled_breaks_desc",
+          "kind": "text",
+          "label": "Describir:",
+          "required": false,
+          "multiline": true,
+          "visibleWhen": [
+            {
+              "fieldId": "scheduled_breaks",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "id": "task_rotation",
+          "kind": "yesNo",
+          "label": "Rotación de tareas",
+          "required": false
+        },
+        {
+          "id": "task_rotation_desc",
+          "kind": "text",
+          "label": "Describir:",
+          "required": false,
+          "multiline": true,
+          "visibleWhen": [
+            {
+              "fieldId": "task_rotation",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "id": "physical_activity",
+          "kind": "yesNo",
+          "label": "Actividad física",
+          "required": false
+        },
+        {
+          "id": "physical_activity_desc",
+          "kind": "text",
+          "label": "Describir:",
+          "required": false,
+          "multiline": true,
+          "visibleWhen": [
+            {
+              "fieldId": "physical_activity",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "id": "wash_face",
+          "kind": "yesNo",
+          "label": "Lavarse la cara",
+          "required": false
+        },
+        {
+          "id": "wash_face_desc",
+          "kind": "text",
+          "label": "Describir:",
+          "required": false,
+          "multiline": true,
+          "visibleWhen": [
+            {
+              "fieldId": "wash_face",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "id": "food_drink_access",
+          "kind": "yesNo",
+          "label": "Acceso a comida y bebida",
+          "required": false
+        },
+        {
+          "id": "food_drink_access_desc",
+          "kind": "text",
+          "label": "Describir:",
+          "required": false,
+          "multiline": true,
+          "visibleWhen": [
+            {
+              "fieldId": "food_drink_access",
+              "equals": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "fatigue_risk",
+      "type": "triStatusSummary",
+      "fields": [
+        "sleep_last_24h",
+        "sleep_last_48h",
+        "awake_hours_end_shift",
+        "first_night_shift_afternoon_sleep",
+        "taking_medication_ffw",
+        "alcohol_last_12h",
+        "other_health_personal_factors",
+        "how_do_you_feel"
+      ],
+      "highValues": [
+        "ALTO"
+      ],
+      "moderateValues": [
+        "MODERADO"
+      ],
+      "lowValues": [
+        "BAJO"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "show_action_plan_when_no_high",
+      "trigger": "onSectionComplete",
+      "scope": {
+        "sectionId": "fatigue_evaluation"
+      },
+      "when": {
+        "metric": "fatigue_risk",
+        "highCount": 0,
+        "answeredCountMin": 8
+      },
+      "actions": [
+        {
+          "type": "showSection",
+          "sectionId": "action_plan"
+        },
+        {
+          "type": "navigate",
+          "targetSectionId": "action_plan",
+          "title": "Plan de acción",
+          "level": "info",
+          "message": "Debido a que no se detectaron riesgos altos, complete el plan de acción antes de continuar."
+        },
+        {
+          "type": "setFlag",
+          "key": "fatigue_state",
+          "value": "LOW_OR_MODERATE"
+        }
+      ]
+    },
+    {
+      "id": "show_high_risk_message",
+      "trigger": "onSectionComplete",
+      "scope": {
+        "sectionId": "fatigue_evaluation"
+      },
+      "when": {
+        "metric": "fatigue_risk",
+        "highCountMin": 1,
+        "answeredCountMin": 8
+      },
+      "actions": [
+        {
+          "type": "showMessage",
+          "level": "danger",
+          "title": "Riesgo alto detectado",
+          "message": "Registró uno o mas altos, complete la Evaluación de riesgo de fatiga con su líder / supervisor (L-RN-0000-H-LST-20003)."
+        },
+        {
+          "type": "setFlag",
+          "key": "fatigue_state",
+          "value": "HAS_HIGH"
+        }
+      ]
+    }
+  ]
+}

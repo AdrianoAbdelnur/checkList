@@ -1,0 +1,340 @@
+{
+  "id": "take_five_es",
+  "templateId": "take_five_es",
+  "version": 1,
+  "title": "Take 5 (Español)",
+  "shortTitle": "Take 5",
+  "sections": [
+    {
+      "id": "main",
+      "isMain": true,
+      "title": "Datos iniciales",
+      "fields": [
+        {
+          "id": "take5_cover",
+          "kind": "cover",
+          "label": "Take 5",
+          "required": false,
+          "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773447138/take5_e0qy3p.png",
+          "title": "TAKE 5",
+          "buttonText": "start",
+          "autoOpen": true,
+          "resizeMode": "contain"
+        },
+        {
+          "id": "vehicle_domain",
+          "kind": "text",
+          "label": "Patente",
+          "required": true,
+          "uppercase": true,
+          "placeholder": "AA123BB",
+          "showCamera": true
+        },
+        {
+          "id": "trip_date",
+          "kind": "date",
+          "label": "Fecha de viaje",
+          "required": true,
+          "defaultToday": true,
+          "editable": true,
+          "futureOnly": true
+        },
+        {
+          "id": "worker_name",
+          "kind": "text",
+          "label": "Nombre y apellido",
+          "required": false
+        },
+        {
+          "id": "worker_signature",
+          "kind": "signature",
+          "label": "Firma",
+          "required": false
+        },
+        {
+          "id": "task_name",
+          "kind": "text",
+          "label": "Tarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "step_1_reflexion",
+      "title": "1. ¡PARE! PIENSE Y REFLEXIONE EN LA TAREA",
+      "fields": [
+        {
+          "id": "step_1_info",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Pensar y reflexionar en:\n• Información\n• Procedimientos\n• Herramientas y equipos\n• Permisos\n• Las personas\n• Sistemas afectados",
+          "required": false
+        },
+        {
+          "id": "knows_task",
+          "kind": "yesNo",
+          "label": "¿Conozco bien la tarea que debo realizar?",
+          "required": false
+        },
+        {
+          "id": "has_skills_training",
+          "kind": "yesNo",
+          "label": "¿Tengo las habilidades requeridas, entrenamiento y licencias para la tarea?",
+          "required": false
+        },
+        {
+          "id": "requires_work_permit",
+          "kind": "yesNo",
+          "label": "¿Se requiere un permiso de trabajo y /o una autorización para trabajar?",
+          "required": false
+        },
+        {
+          "id": "equipment_ok",
+          "kind": "yesNo",
+          "label": "¿Mi equipo es correcto para la tarea y está en buen estado de funcionamiento?",
+          "required": false
+        },
+        {
+          "id": "ppe_ok",
+          "kind": "yesNo",
+          "label": "¿Tengo el equipo de protección personal correcto?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "step_2_hazards",
+      "title": "2. ENCUENTRE LOS PELIGROS",
+      "fields": [
+        {
+          "id": "step_2_info_look",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Mira de cerca\nMira de lejos\nMira hacia arriba\nMira hacia abajo\nMira los costados",
+          "required": false
+        },
+        {
+          "id": "step_2_info_environment",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Accesos / salidas de emergencia\nEquipos cercanos\nTipos de tareas\nImpacto ambiental",
+          "required": false
+        },
+        {
+          "id": "step_2_info_questions",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "¿Qué pasa si?\n¿Qué pasa si es/esta?\n¿Qué pasa si yo?\n\nNo encaja\nExplota\nCae\nEnciende\nTiene atascos\nHay fugas\nHay resbalones\nGenera derrames\nSe llevó a cabo una tarea con prisa\nHay una mala comunicación\nHubo un traspase incorrecto del turno\nHubo instrucciones que no fueron claras\nDemasiado pesado\nEnergizado\nCaliente\nEtiquetado incorrectamente\nPresurizado\nDemasiado grande / pequeño\nCorrosivo\nEncendido\nDesbloqueado\nSin protecciones mecánicas\nCon poca iluminación\nCon altos niveles de ruido\nAspiré\nHabilité\nCometí un error\nNecesito ayuda\nAbandono mi lugar de trabajo\nIgnoré un procedimiento\nMe encuentro fatigado\nIdentifiqué o manejé indebidamente un indicador, control o herramienta",
+          "required": false
+        },
+        {
+          "id": "haz_atmosphere",
+          "kind": "yesNo",
+          "label": "Atmósfera: condiciones climáticas extremas, polvo, gases peligrosos, falta de oxígeno.",
+          "required": false
+        },
+        {
+          "id": "haz_chemicals",
+          "kind": "yesNo",
+          "label": "Químicos: ácidos, bases, solventes, partículas, humos, vapores.",
+          "required": false
+        },
+        {
+          "id": "haz_electrical",
+          "kind": "yesNo",
+          "label": "Eléctrico: no bloquear un equipo, cambiar por un equipo no bloqueado.",
+          "required": false
+        },
+        {
+          "id": "haz_work_environment",
+          "kind": "yesNo",
+          "label": "Ambiente de trabajo: espacios confinados, poca iluminación, altos niveles de ruido, altas temperaturas, ventilación deficiente, tráfico de vehículos en el sector de trabajo.",
+          "required": false
+        },
+        {
+          "id": "haz_fire_explosion",
+          "kind": "yesNo",
+          "label": "Incendios / explosiones: llamas abiertas, materiales combustibles, reacciones químicas.",
+          "required": false
+        },
+        {
+          "id": "haz_tools_equipment",
+          "kind": "yesNo",
+          "label": "Herramienta y equipamiento: falta de protecciones mecánicas, piezas defectuosas, falta de mantenimiento.",
+          "required": false
+        },
+        {
+          "id": "haz_gravity",
+          "kind": "yesNo",
+          "label": "Gravedad: caídas, resbalones, tropiezos, caída de objetos.",
+          "required": false
+        },
+        {
+          "id": "haz_manual_handling",
+          "kind": "yesNo",
+          "label": "Manipulación manual: levantar, empujar, tirar, torcer, posiciones incómodas.",
+          "required": false
+        },
+        {
+          "id": "haz_mechanical",
+          "kind": "yesNo",
+          "label": "Mecánica: impactos, atrapamientos, punzamientos, trituración, succión.",
+          "required": false
+        },
+        {
+          "id": "haz_pressure",
+          "kind": "yesNo",
+          "label": "Presión: aire, agua, combustibles, gas, productos químicos, presiones altas/bajas.",
+          "required": false
+        },
+        {
+          "id": "haz_radiation",
+          "kind": "yesNo",
+          "label": "Radiación: UV, infrarrojo, láser, rayos X, no ionizante.",
+          "required": false
+        },
+        {
+          "id": "haz_thermal",
+          "kind": "yesNo",
+          "label": "Térmico: superficies calientes o frías, líquidos calientes o fríos, vapor, fricción.",
+          "required": false
+        },
+        {
+          "id": "haz_natural_environment",
+          "kind": "yesNo",
+          "label": "Ambiente natural: derrame de hidrocarburos y sustancias químicas, dispersión de residuos peligrosos.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "step_3_risk",
+      "title": "3. VALORE LOS RIESGOS",
+      "fields": [
+        {
+          "id": "fatigue_reference_image",
+          "kind": "image",
+          "label": "Matriz de riesgo HSESC 5 x 5: referencia rápida",
+          "imageUrl": "https://res.cloudinary.com/dpc4vxp2y/image/upload/v1773361302/matrizRiesgoHSESC5x5_ahxvfy.png",
+          "caption": "Guía rápida",
+          "resizeMode": "contain",
+          "required": false
+        },
+        {
+          "id": "step_3_info_matrix",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Umbral de riesgo:\nMatriz de riesgo HSESC 5 x 5: referencia rápida\n\nClase I:\nRiesgos que están por debajo del umbral de riesgo y no requieren una gestión activa.\n\nClase II:\nRiesgos que se encuentran en el umbral de riesgo y requieren monitoreo activo.\n\nClase III:\nRiesgos que superan el umbral de riesgo y requieren una gestión activa.\n\nClase IV:\nRiesgos que superan significativamente el umbral de riesgo y necesitan atención urgente e inmediata.",
+          "required": false
+        },
+        {
+          "id": "step_3_info_instruction",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Debe tildar el nivel de riesgo detectado para su actividad",
+          "required": false
+        },
+        {
+          "id": "risk_level",
+          "kind": "radioGroup",
+          "label": "¿Cuál es el nivel del riesgo?",
+          "required": false,
+          "options": [
+            {
+              "value": "CLASE_I",
+              "label": "Clase I"
+            },
+            {
+              "value": "CLASE_II",
+              "label": "Clase II"
+            },
+            {
+              "value": "CLASE_III",
+              "label": "Clase III"
+            },
+            {
+              "value": "CLASE_IV",
+              "label": "Clase IV"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "step_4_controls",
+      "title": "4. ESTABLEZCA CONTROLES",
+      "fields": [
+        {
+          "id": "step_4_info_hierarchy",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "Eliminar: se modifica el diseño para eliminar el peligro; por ejemplo: la introducción de dispositivos de elevación mecánica para eliminar el peligro de la manipulación manual.\n\nSustituir / reemplazar: lo peligroso por lo no peligroso, o por lo menos peligroso; combatir los riesgos en su origen; por ejemplo: reemplazar pintura en base disolvente por pintura en base agua.\n\nControles de Ingeniería: involucran el rediseño de equipamiento, del proceso o de la organización del trabajo; por ejemplo: protección contra caídas de altura mediante el montaje de barandas en una plataforma.\n\nControles administrativos: proporcionar las instrucciones apropiadas a los trabajadores; por ejemplo: inspecciones periódicas del equipo y herramientas, uso de procedimientos e instructivos de trabajo, etc.\n\nEquipo de protección personal: proporcionar el EPP adecuado, e instrucciones para la utilización y el mantenimiento del EPP; por ejemplo: zapatos de seguridad, gafas de seguridad, protección auditiva.",
+          "required": false
+        },
+        {
+          "id": "selected_controls",
+          "kind": "multiSelect",
+          "label": "Controles a establecer",
+          "required": false,
+          "options": [
+            {
+              "value": "SIGNALIZE_AREA",
+              "label": "Señalizar el área"
+            },
+            {
+              "value": "COORDINATE_TASK",
+              "label": "Coordinar la tarea"
+            },
+            {
+              "value": "COMMUNICATION",
+              "label": "Comunicación"
+            },
+            {
+              "value": "PROCEDURES",
+              "label": "Procedimientos e instructivos"
+            },
+            {
+              "value": "EQUIPMENT_CHECKS",
+              "label": "Chequeos de equipos"
+            },
+            {
+              "value": "LOCKOUT",
+              "label": "Bloqueo de equipos"
+            },
+            {
+              "value": "ENVIRONMENT_MEASUREMENTS",
+              "label": "Mediciones del ambiente"
+            },
+            {
+              "value": "PPE_USE",
+              "label": "Uso de EPP"
+            },
+            {
+              "value": "ORDER_CLEANLINESS",
+              "label": "Orden y limpieza"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "step_5_safe_completion",
+      "title": "5. COMPLETE LA TAREA Y ACTUE DE FORMA SEGURA",
+      "fields": [
+        {
+          "id": "step_5_info",
+          "kind": "note",
+          "label": "Información",
+          "placeholder": "¡NO COMIENCE LA TAREA! Hasta no completar los pasos anteriores.",
+          "required": false
+        },
+        {
+          "id": "safe_completion_ack",
+          "kind": "yesNo",
+          "label": "¿Completó los pasos anteriores antes de comenzar la tarea?",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

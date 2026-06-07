@@ -19,10 +19,31 @@ function todayKey() {
   return `${y}-${m}-${day}`;
 }
 
+function addDaysToKey(key: string, days: number) {
+  const base = new Date(`${key}T00:00:00.000Z`);
+  base.setUTCDate(base.getUTCDate() + days);
+  const y = base.getUTCFullYear();
+  const m = String(base.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(base.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function dateRangeForKey(key: string) {
   const start = new Date(`${key}T00:00:00.000Z`);
   const end = new Date(`${key}T23:59:59.999Z`);
   return { start, end };
+}
+
+function buildTripDateFilter(dateKey: string) {
+  const { start, end } = dateRangeForKey(dateKey);
+  return {
+    $or: [
+      { "data.assignment.tripDateKey": dateKey },
+      { "data.values.trip_date.value": dateKey },
+      { "data.meta.tripDateKey": dateKey },
+      { submittedAt: { $gte: start, $lte: end } },
+    ],
+  };
 }
 
 function tenantScopeConditions(tenantId: string) {
@@ -69,26 +90,32 @@ export async function GET(req: Request) {
     return Response.json({ ok: false, message: "Template no encontrado" }, { status: 404 });
   }
 
-  const { start, end } = dateRangeForKey(date);
   const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
-  const trips = await Trip.find({ tripDateKey: date })
-    .select("dominio")
+  const candidateDateKeys = [date, addDaysToKey(date, 1), addDaysToKey(date, 2)];
+  const trips = await Trip.find({ tripDateKey: { $in: candidateDateKeys } })
+    .sort({ tripDateKey: 1, solicitudAt: 1, createdAt: 1 })
+    .select("_id dominio tipo tripDateKey solicitudAt createdAt")
     .lean();
-  const plateFound = (trips as any[]).some((t) => normalizePlate(t?.dominio) === plate);
+  const matchingTrips = (trips as any[]).filter(
+    (t) => normalizePlate(t?.dominio) === plate,
+  );
+  const selectedTrip = matchingTrips[0] ?? null;
+  const plateFound = !!selectedTrip;
+  const checklistTripDateKey = String(selectedTrip?.tripDateKey || date);
 
   if (!plateFound) {
     return Response.json({
       ok: true,
       exists: false,
       plateFound: false,
-      message: "La patente no existe en la lista de hoy.",
+      message: "La patente no existe en la lista de hoy ni en los proximos 2 dias.",
       item: null,
+      assignment: null,
     });
   }
 
   const existing = await Checklist.findOne({
     templateId,
-    submittedAt: { $gte: start, $lte: end },
     $and: [
       {
         $or: [
@@ -110,6 +137,7 @@ export async function GET(req: Request) {
           { "data.meta.vehicleDomain": plate },
         ],
       },
+      buildTripDateFilter(checklistTripDateKey),
       {
         $or: tenantScopeConditions(tenantId),
       },
@@ -123,7 +151,16 @@ export async function GET(req: Request) {
     ok: true,
     exists: !!existing,
     plateFound: true,
-    message: existing ? "Este check ya está realizado para este vehículo el día de hoy." : null,
+    message: existing
+      ? "Este check ya esta realizado para este vehiculo en la fecha de viaje seleccionada."
+      : null,
+    assignment: selectedTrip
+      ? {
+          tripId: String(selectedTrip._id),
+          tripDateKey: String(selectedTrip.tripDateKey || ""),
+          tripType: String(selectedTrip.tipo || ""),
+        }
+      : null,
     item: existing
       ? {
           id: String(existing._id),

@@ -1,6 +1,8 @@
-﻿import { connectToDatabase } from "@/lib/db";
+import crypto from "crypto";
+import { connectToDatabase } from "@/lib/db";
 import Checklist from "@/models/Checklist";
 import ChecklistTemplate from "@/models/ChecklistTemplate";
+import Trip from "@/models/Trip";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listChecklistsForInspector } from "@/lib/checklists";
 import { hasPermission } from "@/lib/roles";
@@ -12,6 +14,13 @@ function normalizePlate(value: unknown) {
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "");
+}
+
+function normalizeDateKey(value: unknown): string {
+  const raw = String(value ?? "").trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if (!m) return "";
+  return `${m[1]}-${m[2]}-${m[3]}`;
 }
 
 function todayKey() {
@@ -28,6 +37,17 @@ function dateRangeForKey(key: string) {
   return { start, end };
 }
 
+function parseDateKeyToDate(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mm = Number(m[2]);
+  const d = Number(m[3]);
+  const date = new Date(y, mm - 1, d);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
 function tenantScopeConditions(tenantId: string) {
   return [
     { tenantId },
@@ -35,6 +55,18 @@ function tenantScopeConditions(tenantId: string) {
     { tenantId: null },
     { tenantId: "" },
   ];
+}
+
+function buildTripDateFilter(dateKey: string) {
+  const { start, end } = dateRangeForKey(dateKey);
+  return {
+    $or: [
+      { "data.assignment.tripDateKey": dateKey },
+      { "data.values.trip_date.value": dateKey },
+      { "data.meta.tripDateKey": dateKey },
+      { submittedAt: { $gte: start, $lte: end } },
+    ],
+  };
 }
 
 function extractPlate(body: any): string {
@@ -45,6 +77,12 @@ function extractPlate(body: any): string {
     body?.data?.subject?.vehicle_domain ??
     body?.data?.subject?.vehicleDomain;
   const values =
+    body?.data?.values?.vehicle_domain?.value ??
+    body?.data?.values?.vehicleDomain?.value ??
+    body?.data?.values?.pre_plate?.value ??
+    body?.data?.values?.plate?.value ??
+    body?.data?.values?.patente?.value ??
+    body?.data?.values?.dominio?.value ??
     body?.data?.values?.vehicle_domain ??
     body?.data?.values?.vehicleDomain ??
     body?.data?.values?.pre_plate ??
@@ -58,6 +96,74 @@ function extractPlate(body: any): string {
     body?.data?.meta?.patente ??
     body?.data?.meta?.dominio;
   return normalizePlate(subject ?? values ?? meta ?? "");
+}
+
+function extractTripDateKey(body: any): string {
+  const assignment = body?.data?.assignment?.tripDateKey;
+  const values = body?.data?.values?.trip_date?.value ?? body?.data?.values?.trip_date;
+  const meta = body?.data?.meta?.tripDateKey;
+  return normalizeDateKey(assignment ?? values ?? meta ?? "") || todayKey();
+}
+
+async function resolveTripForChecklist({
+  plate,
+  tripDateKey,
+  assignment,
+  authUser,
+}: {
+  plate: string;
+  tripDateKey: string;
+  assignment: any;
+  authUser: any;
+}) {
+  if (!plate || !tripDateKey) return null;
+
+  const tripDate = parseDateKeyToDate(tripDateKey);
+  if (!tripDate) return null;
+
+  const existingTrip = await Trip.findOne({
+    tripDateKey,
+    dominio: plate,
+  })
+    .sort({ solicitudAt: 1, createdAt: 1 })
+    .lean();
+
+  if (existingTrip) return existingTrip;
+
+  const tripType = String(assignment?.tripType || "Viaje auto-generado").trim();
+  const uniqueKey = crypto
+    .createHash("sha1")
+    .update(`${tripDateKey}|${plate}|AUTO_CHECKLIST`)
+    .digest("hex");
+
+  return Trip.findOneAndUpdate(
+    { uniqueKey },
+    {
+      $setOnInsert: {
+        uniqueKey,
+        tripDateKey,
+        tripDate,
+        solicitudRaw: "",
+        tipo: tripType,
+        dominio: plate,
+        viajeRaw: tripDateKey,
+        sourceFile: "auto-checklist",
+        importBatchId: "",
+        uploadedBy: {
+          id: String(authUser?._id || ""),
+          email: String(authUser?.email || ""),
+          firstName: String(authUser?.firstName || ""),
+          lastName: String(authUser?.lastName || ""),
+          role: String(authUser?.role || ""),
+        },
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  ).lean();
 }
 
 export async function GET(req: Request) {
@@ -134,13 +240,11 @@ export async function POST(req: Request) {
   };
 
   const plate = extractPlate(body);
+  const tripDateKey = extractTripDateKey(body);
   if (plate) {
-    const dateKey = todayKey();
-    const { start, end } = dateRangeForKey(dateKey);
     const tenantId = String((auth.user as any).tenantId || "general").trim() || "general";
     const existing = await Checklist.findOne({
       templateId,
-      submittedAt: { $gte: start, $lte: end },
       $and: [
         {
           $or: [
@@ -162,6 +266,7 @@ export async function POST(req: Request) {
             { "data.meta.vehicleDomain": plate },
           ],
         },
+        buildTripDateFilter(tripDateKey),
         {
           $or: tenantScopeConditions(tenantId),
         },
@@ -178,13 +283,60 @@ export async function POST(req: Request) {
     }
   }
 
+  const resolvedAssignment = { ...(body?.data?.assignment ?? {}) };
+  const resolvedMeta = {
+    ...(body?.data?.meta ?? {}),
+    ...(tripDateKey ? { tripDateKey } : {}),
+  };
+
+  if (plate && tripDateKey) {
+    const selectedTripMatchesAssignment =
+      !!String(resolvedAssignment.tripId || "").trim() &&
+      String(resolvedAssignment.tripDateKey || "").trim() === tripDateKey;
+
+    const selectedTrip = selectedTripMatchesAssignment
+      ? await Trip.findById(String(resolvedAssignment.tripId)).lean()
+      : null;
+
+    const validSelectedTrip =
+      selectedTrip &&
+      String((selectedTrip as any).tripDateKey || "").trim() === tripDateKey &&
+      normalizePlate((selectedTrip as any).dominio) === plate
+        ? selectedTrip
+        : null;
+
+    const trip =
+      validSelectedTrip ??
+      (await resolveTripForChecklist({
+        plate,
+        tripDateKey,
+        assignment: resolvedAssignment,
+        authUser: auth.user,
+      }));
+
+    if (trip) {
+      resolvedAssignment.tripId = String((trip as any)._id || "");
+      resolvedAssignment.tripDateKey = tripDateKey;
+      resolvedAssignment.tripType = String(
+        resolvedAssignment.tripType || (trip as any).tipo || "",
+      ).trim();
+    } else {
+      resolvedAssignment.tripId = "";
+      resolvedAssignment.tripDateKey = tripDateKey;
+    }
+  }
+
   const created = await Checklist.create({
     templateId,
     templateVersion,
     tenantId: String((auth.user as any).tenantId || "general").trim() || "general",
     inspectorId: auth.user._id,
     inspectorSnapshot,
-    data: body?.data ?? {},
+    data: {
+      ...(body?.data ?? {}),
+      meta: resolvedMeta,
+      assignment: resolvedAssignment,
+    },
     status: "SUBMITTED",
     submittedAt: new Date(),
   });
@@ -209,6 +361,3 @@ export async function POST(req: Request) {
 
   return Response.json({ ok: true, item: created }, { status: 201 });
 }
-
-
-

@@ -6,6 +6,11 @@ import { requireAdminSession } from "@/lib/server/auth-next";
 import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
 
+function containsSuperAdminRole(inputRole: unknown, inputRoles: unknown) {
+  if (String(inputRole ?? "").trim() === "superAdmin") return true;
+  return Array.isArray(inputRoles) && inputRoles.some((item) => String(item ?? "").trim() === "superAdmin");
+}
+
 type Ctx = { params: Promise<{ id: string }> };
 
 function tenantScopeQuery(tenantId: string) {
@@ -76,6 +81,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   if (Array.isArray(roles) && roles.some((r) => !isAppRole(String(r)))) {
     return NextResponse.json({ error: "roles contiene valores invalidos" }, { status: 400 });
+  }
+  if (containsSuperAdminRole(role, roles)) {
+    return NextResponse.json({ error: "superAdmin solo se puede asignar desde la base de datos" }, { status: 400 });
   }
 
   const update: any = {};
