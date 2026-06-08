@@ -6,6 +6,7 @@ import { createSession } from "../../../../lib/auth";
 import { setSessionCookie } from "@/lib/server/session-cookie";
 import crypto from "crypto";
 import { ensureGeneralTenant, getTenantAccessState } from "@/lib/tenants";
+import { normalizeUserAccountStatus } from "@/lib/user-account";
 
 export async function POST(req: NextRequest) {
   try {
@@ -62,8 +63,10 @@ export async function POST(req: NextRequest) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        dni: String((user as any).dni || "").trim(),
         role: user.role,
         roles: Array.isArray((user as any).roles) ? (user as any).roles : [],
+        status: normalizeUserAccountStatus((user as any).status) ?? "activo",
         tenantId: String((user as any).tenantId || "general").trim() || "general",
         mustChangePassword: Boolean((user as any).mustChangePassword),
       },

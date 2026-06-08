@@ -10,8 +10,10 @@ export type SessionData = {
   email: string
   firstName: string
   lastName: string
+  dni: string
   role: string
   roles: string[]
+  status: "activo" | "provisorio"
   tenantId: string
   mustChangePassword: boolean
 }
@@ -69,8 +71,12 @@ export async function getSessionData(token?: string): Promise<SessionData | null
       email: user.email,
       firstName: user.firstName || '',
       lastName: user.lastName || '',
+      dni: String((user as any).dni || '').trim(),
       role: getPrimaryRole({ role: user.role || 'inspector', roles }),
       roles,
+      status: (String((user as any).status || 'activo').trim().toLowerCase() === 'provisorio'
+        ? 'provisorio'
+        : 'activo'),
       tenantId: String((user as any).tenantId || 'general').trim() || 'general',
       mustChangePassword: Boolean((user as any).mustChangePassword),
     }

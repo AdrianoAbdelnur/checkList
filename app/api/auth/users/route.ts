@@ -1,11 +1,11 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "../../../../lib/mongoose";
 import User from "../../../../models/User";
-import Counter from "../../../../models/Counter";
 import crypto from "crypto";
 import { requireAdminSession } from "@/lib/server/auth-next";
 import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
+import { getNextUserNumber } from "@/lib/user-account";
 
 function containsSuperAdminRole(inputRole: unknown, inputRoles: unknown) {
   if (String(inputRole ?? "").trim() === "superAdmin") return true;
@@ -21,15 +21,6 @@ function tenantScopeQuery(tenantId: string) {
       { tenantId: "" },
     ],
   };
-}
-
-async function getNextUserNumber(): Promise<string> {
-  const counter = await Counter.findOneAndUpdate(
-    { key: "userNumber" },
-    { $inc: { seq: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
-  ).lean();
-  return String(counter?.seq || "");
 }
 
 export async function GET(req: NextRequest) {
@@ -55,7 +46,7 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, email, password, role, roles, telephone, userNumber, inspectorNumber, tenantId } = body;
+  const { firstName, lastName, email, password, role, roles, telephone, dni, userNumber, inspectorNumber, tenantId } = body;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email y password son requeridos" }, { status: 400 });
@@ -115,8 +106,10 @@ export async function POST(req: NextRequest) {
       email,
       password: derived,
       salt,
+      dni: String(dni ?? "").trim(),
       role: primaryRole,
       roles: persistedRoles,
+      status: "activo",
       tenantId: nextTenantId,
       telephone: telephone || "",
       userNumber: nextUserNumber,
