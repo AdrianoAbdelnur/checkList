@@ -5,6 +5,7 @@ import User from "../../../../../models/User";
 import { requireAdminSession } from "@/lib/server/auth-next";
 import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
+import { normalizeUserAccountStatus } from "@/lib/user-account";
 
 function containsSuperAdminRole(inputRole: unknown, inputRoles: unknown) {
   if (String(inputRole ?? "").trim() === "superAdmin") return true;
@@ -59,7 +60,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, telephone, userId, role, roles, email, password, userNumber, inspectorNumber, tenantId } = body;
+  const { firstName, lastName, telephone, dni, status, userId, role, roles, email, password, userNumber, inspectorNumber, tenantId } = body;
   const { id: routeId } = await ctx.params;
   const targetId = userId || routeId;
 
@@ -90,10 +91,18 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   if (firstName !== undefined) update.firstName = firstName;
   if (lastName !== undefined) update.lastName = lastName;
   if (telephone !== undefined) update.telephone = telephone;
+  if (dni !== undefined) update.dni = String(dni).trim();
   if (email !== undefined) update.email = String(email).trim().toLowerCase();
 
   if (email !== undefined && !update.email) {
     return NextResponse.json({ error: "Email invalido" }, { status: 400 });
+  }
+  if (status !== undefined) {
+    const normalizedStatus = normalizeUserAccountStatus(status);
+    if (!normalizedStatus) {
+      return NextResponse.json({ error: "Status invalido" }, { status: 400 });
+    }
+    update.status = normalizedStatus;
   }
 
   const hasPasswordUpdate = password !== undefined && String(password).trim().length > 0;

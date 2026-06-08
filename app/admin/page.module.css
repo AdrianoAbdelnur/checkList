@@ -418,6 +418,11 @@
   color: #fca5a5;
 }
 
+.stateProvisional {
+  background: color-mix(in oklab, #f59e0b 16%, transparent);
+  color: #fcd34d;
+}
+
 .rowActions {
   display: flex;
   gap: 8px;

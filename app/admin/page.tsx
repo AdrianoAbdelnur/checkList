@@ -12,10 +12,12 @@ type User = {
   firstName?: string;
   lastName?: string;
   telephone?: string;
+  dni?: string;
   userNumber?: string;
   tenantId?: string;
   role: string;
   roles?: string[];
+  status?: "activo" | "provisorio";
   isDelete?: boolean;
   createdAt?: string;
 };
@@ -47,6 +49,7 @@ type UserFormState = {
   roles: string[];
   password: string;
   tenantId: string;
+  status: "activo" | "provisorio";
 };
 
 type TenantFormState = {
@@ -66,6 +69,7 @@ const defaultUserForm: UserFormState = {
   roles: ["inspector"],
   password: "",
   tenantId: "",
+  status: "activo",
 };
 
 const defaultTenantForm: TenantFormState = {
@@ -104,6 +108,10 @@ function toTenantCode(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
+}
+
+function userStatusLabel(status?: string) {
+  return String(status || "").trim().toLowerCase() === "provisorio" ? "Provisorio" : "Activo";
 }
 
 export default function AdminPage() {
@@ -327,6 +335,7 @@ export default function AdminPage() {
       roles: normalizeRoles({ role: user.role, roles: user.roles }),
       password: "",
       tenantId: String(user.tenantId || "general").trim() || "general",
+      status: user.status === "provisorio" ? "provisorio" : "activo",
     });
     setIsModalOpen(true);
   }
@@ -370,6 +379,7 @@ export default function AdminPage() {
       telephone: form.telephone,
       roles: form.roles,
       role: getPrimaryRole({ roles: form.roles }),
+      status: form.status,
     };
 
     const effectiveTenantId = currentUserIsSuperAdmin
@@ -528,7 +538,17 @@ export default function AdminPage() {
         if (!q) return true;
         const rolesText = normalizeRoles({ role: u.role, roles: u.roles }).join(" ");
         const tenantText = resolveTenantName(u.tenantId);
-        const haystack = [fullName(u), u.email, u.telephone || "", u.userNumber || "", u.role || "", rolesText, tenantText]
+        const haystack = [
+          fullName(u),
+          u.email,
+          u.telephone || "",
+          u.dni || "",
+          u.userNumber || "",
+          u.role || "",
+          userStatusLabel(u.status),
+          rolesText,
+          tenantText,
+        ]
           .join(" ")
           .toLowerCase();
         return haystack.includes(q);
@@ -689,6 +709,7 @@ export default function AdminPage() {
                       <th>Usuario</th>
                       <th>Email</th>
                       <th>Rol</th>
+                      <th>Estado</th>
                       {currentUserIsSuperAdmin ? <th>Tenant</th> : null}
                       <th>Alta</th>
                       <th>Acciones</th>
@@ -697,7 +718,7 @@ export default function AdminPage() {
                   <tbody>
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={currentUserIsSuperAdmin ? 6 : 5} className={styles.emptyCell}>
+                        <td colSpan={currentUserIsSuperAdmin ? 7 : 6} className={styles.emptyCell}>
                           No hay usuarios para ese filtro.
                         </td>
                       </tr>
@@ -713,6 +734,7 @@ export default function AdminPage() {
                                 <div>
                                   <strong>{fullName(u)}</strong>
                                   <small>{u.telephone || "Sin telefono"}</small>
+                                  {u.dni ? <small>DNI: {u.dni}</small> : null}
                                   {u.userNumber ? <small>User Number: {u.userNumber}</small> : null}
                                 </div>
                               </div>
@@ -726,6 +748,15 @@ export default function AdminPage() {
                                   </span>
                                 ))}
                               </div>
+                            </td>
+                            <td>
+                              <span
+                                className={`${styles.stateBadge} ${
+                                  u.status === "provisorio" ? styles.stateProvisional : styles.stateActive
+                                }`}
+                              >
+                                {userStatusLabel(u.status)}
+                              </span>
                             </td>
                             {currentUserIsSuperAdmin ? (
                               <td>
@@ -917,6 +948,21 @@ export default function AdminPage() {
                     <input value={form.telephone} onChange={(e) => patchForm("telephone", e.target.value)} />
                   </label>
                 </div>
+
+                {mode === "edit" ? (
+                  <div className={styles.fieldGrid}>
+                    <label className={styles.field}>
+                      <span>Estado de cuenta</span>
+                      <select
+                        value={form.status}
+                        onChange={(e) => patchForm("status", e.target.value as "activo" | "provisorio")}
+                      >
+                        <option value="activo">Activo</option>
+                        <option value="provisorio">Provisorio</option>
+                      </select>
+                    </label>
+                  </div>
+                ) : null}
 
                 {currentUserIsSuperAdmin ? (
                   <div className={styles.fieldGrid}>

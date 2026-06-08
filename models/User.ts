@@ -7,10 +7,12 @@ export interface IUser extends Document {
   password: string
   salt?: string
   telephone?: string
+  dni?: string
   createdAt: Date
   isDelete: boolean
   role: string
   roles?: string[]
+  status?: "activo" | "provisorio"
   userNumber?: string
   tenantId?: string
   mustChangePassword?: boolean
@@ -44,6 +46,11 @@ const UserSchema = new Schema<IUser>(
     telephone: {
       type: String,
     },
+    dni: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -61,6 +68,12 @@ const UserSchema = new Schema<IUser>(
       type: [String],
       enum: ['inspector', 'reviewer', 'supervisor', 'manager', 'admin', 'superAdmin'],
       default: ['inspector'],
+    },
+    status: {
+      type: String,
+      enum: ['activo', 'provisorio'],
+      default: 'activo',
+      index: true,
     },
     userNumber: {
       type: String,
