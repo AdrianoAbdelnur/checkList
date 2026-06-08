@@ -116,6 +116,10 @@ const UserSchema = new Schema<IUser>(
   }
 )
 
-const User: Model<IUser> = (mongoose.models.User as Model<IUser>) || mongoose.model<IUser>('User', UserSchema)
+if (mongoose.models.User) {
+  delete mongoose.models.User
+}
+
+const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema)
 export default User
 
