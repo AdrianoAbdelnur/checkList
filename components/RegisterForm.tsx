@@ -5,28 +5,39 @@ import Button from './Button'
 import { useRouter } from 'next/navigation'
 import { validateEmail, validatePassword } from '../lib/validators'
 
+type FieldErrors = {
+  firstName?: string
+  lastName?: string
+  company?: string
+  email?: string
+  password?: string
+  confirmPassword?: string
+}
+
 export default function RegisterForm() {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [company, setCompany] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{ firstName?: string; lastName?: string; email?: string; password?: string; confirmPassword?: string }>({})
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    const fe: { firstName?: string; lastName?: string; email?: string; password?: string; confirmPassword?: string } = {}
+    const fe: FieldErrors = {}
 
     if (!firstName.trim()) fe.firstName = 'Nombre requerido'
     if (!lastName.trim()) fe.lastName = 'Apellido requerido'
-    if (!validateEmail(email)) fe.email = 'Email inválido'
-    if (!validatePassword(password)) fe.password = 'Contraseña requerida'
-    if (password !== confirmPassword) fe.confirmPassword = 'Las contraseñas no coinciden'
-    if (password.length < 6) fe.password = 'Mínimo 6 caracteres'
+    if (!company.trim()) fe.company = 'Empresa requerida'
+    if (!validateEmail(email)) fe.email = 'Email invalido'
+    if (!validatePassword(password)) fe.password = 'Contrasena requerida'
+    if (password !== confirmPassword) fe.confirmPassword = 'Las contrasenas no coinciden'
+    if (password.length < 6) fe.password = 'Minimo 6 caracteres'
 
     setFieldErrors(fe)
     if (Object.keys(fe).length) return
@@ -37,18 +48,21 @@ export default function RegisterForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        body: JSON.stringify({ firstName, lastName, company, email, password }),
       })
       const data = await res.json()
       if (!res.ok) {
+        const details = data?.details as FieldErrors | undefined
+        if (details && typeof details === 'object') {
+          setFieldErrors(details)
+        }
         setError(data?.error || 'Error desconocido')
         setLoading(false)
         return
       }
 
-      
       router.push('/dashboard')
-    } catch (err) {
+    } catch {
       setError('Error de red')
       setLoading(false)
     }
@@ -89,6 +103,23 @@ export default function RegisterForm() {
       />
 
       <Input
+        id="company"
+        name="company"
+        type="text"
+        value={company}
+        onChange={(e) => setCompany(e.target.value)}
+        placeholder="Empresa"
+        error={fieldErrors.company}
+        icon={
+          <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-gray-400">
+            <path d="M4 20V7a1 1 0 011-1h10a1 1 0 011 1v13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            <path d="M16 10h3a1 1 0 011 1v9h-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            <path d="M8 10h4M8 14h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
+        }
+      />
+
+      <Input
         id="email"
         name="email"
         type="email"
@@ -110,7 +141,7 @@ export default function RegisterForm() {
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Contraseña"
+        placeholder="Contrasena"
         error={fieldErrors.password}
         icon={
           <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-gray-400">
@@ -126,7 +157,7 @@ export default function RegisterForm() {
         type="password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        placeholder="Confirmar contraseña"
+        placeholder="Confirmar contrasena"
         error={fieldErrors.confirmPassword}
         icon={
           <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-gray-400">
@@ -144,9 +175,9 @@ export default function RegisterForm() {
 
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          ¿Ya tienes cuenta?{' '}
+          Ya tienes cuenta?{' '}
           <a href="/login" className="text-blue-600 hover:underline">
-            Inicia sesión
+            Inicia sesion
           </a>
         </p>
       </div>

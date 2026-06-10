@@ -11,9 +11,9 @@ type User = {
   email: string;
   firstName?: string;
   lastName?: string;
+  company?: string;
   telephone?: string;
   dni?: string;
-  userNumber?: string;
   tenantId?: string;
   role: string;
   roles?: string[];
@@ -36,6 +36,7 @@ type SessionUser = {
   email: string;
   firstName?: string;
   lastName?: string;
+  company?: string;
   role: string;
   roles?: string[];
   tenantId?: string;
@@ -44,6 +45,7 @@ type SessionUser = {
 type UserFormState = {
   firstName: string;
   lastName: string;
+  company: string;
   email: string;
   telephone: string;
   roles: string[];
@@ -64,6 +66,7 @@ type TenantFieldErrors = Partial<Record<keyof TenantFormState, string>>;
 const defaultUserForm: UserFormState = {
   firstName: "",
   lastName: "",
+  company: "",
   email: "",
   telephone: "",
   roles: ["inspector"],
@@ -112,6 +115,10 @@ function toTenantCode(value: string) {
 
 function userStatusLabel(status?: string) {
   return String(status || "").trim().toLowerCase() === "provisorio" ? "Provisorio" : "Activo";
+}
+
+function isCompanyRequiredForTenant(tenantId: string) {
+  return tenantId.trim().toLowerCase() !== "cys";
 }
 
 export default function AdminPage() {
@@ -330,6 +337,7 @@ export default function AdminPage() {
     setForm({
       firstName: user.firstName || "",
       lastName: user.lastName || "",
+      company: user.company || "",
       email: user.email || "",
       telephone: user.telephone || "",
       roles: normalizeRoles({ role: user.role, roles: user.roles }),
@@ -375,6 +383,7 @@ export default function AdminPage() {
     const payload: Record<string, unknown> = {
       firstName: form.firstName,
       lastName: form.lastName,
+      company: form.company,
       email: form.email,
       telephone: form.telephone,
       roles: form.roles,
@@ -393,6 +402,9 @@ export default function AdminPage() {
     }
     if (currentUserIsSuperAdmin && !effectiveTenantId) {
       nextFieldErrors.tenantId = "Debes seleccionar un tenant";
+    }
+    if (effectiveTenantId && isCompanyRequiredForTenant(effectiveTenantId) && !String(form.company || "").trim()) {
+      nextFieldErrors.company = "Debes ingresar una empresa";
     }
 
     if (Object.keys(nextFieldErrors).length > 0) {
@@ -540,10 +552,10 @@ export default function AdminPage() {
         const tenantText = resolveTenantName(u.tenantId);
         const haystack = [
           fullName(u),
+          u.company || "",
           u.email,
           u.telephone || "",
           u.dni || "",
-          u.userNumber || "",
           u.role || "",
           userStatusLabel(u.status),
           rolesText,
@@ -735,7 +747,6 @@ export default function AdminPage() {
                                   <strong>{fullName(u)}</strong>
                                   <small>{u.telephone || "Sin telefono"}</small>
                                   {u.dni ? <small>DNI: {u.dni}</small> : null}
-                                  {u.userNumber ? <small>User Number: {u.userNumber}</small> : null}
                                 </div>
                               </div>
                             </td>
@@ -926,6 +937,29 @@ export default function AdminPage() {
                       value={form.lastName}
                       onChange={(e) => patchForm("lastName", e.target.value)}
                     />
+                  </label>
+                </div>
+
+                <div className={styles.fieldGrid}>
+                  <label className={styles.field}>
+                    <span>
+                      Empresa
+                      {isCompanyRequiredForTenant(
+                        currentUserIsSuperAdmin
+                          ? String(form.tenantId || "").trim() || "general"
+                          : String(me?.tenantId || "general").trim() || "general",
+                      )
+                        ? ""
+                        : " (opcional para CYS)"}
+                    </span>
+                    <input
+                      className={userFieldErrors.company ? styles.fieldErrorControl : undefined}
+                      value={form.company}
+                      onChange={(e) => patchForm("company", e.target.value)}
+                    />
+                    {userFieldErrors.company ? (
+                      <small className={styles.fieldErrorText}>{userFieldErrors.company}</small>
+                    ) : null}
                   </label>
                 </div>
 

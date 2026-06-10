@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { requireAdminSession } from "@/lib/server/auth-next";
 import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
-import { getNextUserNumber } from "@/lib/user-account";
+import { getCompanyValidationError, normalizeCompany } from "@/lib/user-company";
 
 function containsSuperAdminRole(inputRole: unknown, inputRoles: unknown) {
   if (String(inputRole ?? "").trim() === "superAdmin") return true;
@@ -46,14 +46,10 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, email, password, role, roles, telephone, dni, userNumber, inspectorNumber, tenantId } = body;
+  const { firstName, lastName, email, password, role, roles, telephone, dni, tenantId, company } = body;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email y password son requeridos" }, { status: 400 });
-  }
-
-  if (userNumber !== undefined || inspectorNumber !== undefined) {
-    return NextResponse.json({ error: "userNumber se asigna automaticamente" }, { status: 400 });
   }
 
   if (role !== undefined && !isAppRole(String(role))) {
@@ -82,8 +78,6 @@ export async function POST(req: NextRequest) {
 
     const salt = crypto.randomBytes(16).toString("hex");
     const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-    const nextUserNumber = await getNextUserNumber();
-
     const normalizedRoles = normalizeRoles({
       role: role ?? undefined,
       roles: Array.isArray(roles) ? roles : undefined,
@@ -91,6 +85,7 @@ export async function POST(req: NextRequest) {
     const primaryRole = getPrimaryRole({ role: role ?? undefined, roles: normalizedRoles });
     const persistedRoles = normalizedRoles.length > 0 ? normalizedRoles : [primaryRole];
     const nextTenantId = String(tenantId ?? auth.session.tenantId ?? "general").trim() || "general";
+    const normalizedCompany = normalizeCompany(company);
 
     if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, nextTenantId)) {
       return NextResponse.json({ error: "No autorizado para ese tenant" }, { status: 403 });
@@ -99,10 +94,15 @@ export async function POST(req: NextRequest) {
     if (!activeTenant) {
       return NextResponse.json({ error: "Debe seleccionar un tenant activo" }, { status: 400 });
     }
+    const companyError = getCompanyValidationError(normalizedCompany, nextTenantId);
+    if (companyError) {
+      return NextResponse.json({ error: companyError }, { status: 400 });
+    }
 
     const user = new User({
       firstName: firstName || "",
       lastName: lastName || "",
+      company: normalizedCompany,
       email,
       password: derived,
       salt,
@@ -112,7 +112,6 @@ export async function POST(req: NextRequest) {
       status: "activo",
       tenantId: nextTenantId,
       telephone: telephone || "",
-      userNumber: nextUserNumber,
       mustChangePassword: true,
       passwordChangedAt: null,
     });
