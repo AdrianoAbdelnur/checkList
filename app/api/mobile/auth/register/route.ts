@@ -4,8 +4,8 @@ import { createSession } from "@/lib/auth";
 import { setSessionCookie } from "@/lib/server/session-cookie";
 import { connectToDatabase } from "@/lib/mongoose";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
+import { getCompanyValidationError, normalizeCompany } from "@/lib/user-company";
 import { validateEmail } from "@/lib/validators";
-import { getNextUserNumber } from "@/lib/user-account";
 import User from "@/models/User";
 
 function normalizeText(value: unknown) {
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   const email = normalizeText(body?.email).toLowerCase();
   const telephone = normalizeText(body?.telephone);
   const dni = normalizeText(body?.dni);
+  const company = normalizeCompany(body?.company);
   const password = String(body?.password ?? "");
 
   if (!firstName || !lastName || !telephone || !dni) {
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
       { ok: false, message: "La contraseña debe tener al menos 4 caracteres" },
       { status: 400 },
     );
+  }
+
+  const companyError = getCompanyValidationError(company, "general");
+  if (companyError) {
+    return NextResponse.json({ ok: false, message: companyError }, { status: 400 });
   }
 
   await connectToDatabase();
@@ -63,8 +69,6 @@ export async function POST(req: NextRequest) {
 
     const salt = crypto.randomBytes(16).toString("hex");
     const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-    const nextUserNumber = await getNextUserNumber();
-
     const user = await User.create({
       firstName,
       lastName,
@@ -73,11 +77,11 @@ export async function POST(req: NextRequest) {
       salt,
       telephone,
       dni,
+      company,
       role: "inspector",
       roles: ["inspector"],
       status: "provisorio",
       tenantId: "general",
-      userNumber: nextUserNumber,
       mustChangePassword: false,
       passwordChangedAt: new Date(),
     });
@@ -94,6 +98,7 @@ export async function POST(req: NextRequest) {
         lastName: user.lastName,
         telephone: user.telephone,
         dni: user.dni,
+        company: user.company,
         role: user.role,
         roles: user.roles,
         status: "provisorio",

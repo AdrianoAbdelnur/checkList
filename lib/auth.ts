@@ -10,6 +10,7 @@ export type SessionData = {
   email: string
   firstName: string
   lastName: string
+  company: string
   dni: string
   role: string
   roles: string[]
@@ -71,6 +72,7 @@ export async function getSessionData(token?: string): Promise<SessionData | null
       email: user.email,
       firstName: user.firstName || '',
       lastName: user.lastName || '',
+      company: String((user as any).company || '').trim(),
       dni: String((user as any).dni || '').trim(),
       role: getPrimaryRole({ role: user.role || 'inspector', roles }),
       roles,

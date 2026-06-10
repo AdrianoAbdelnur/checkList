@@ -6,6 +6,7 @@ import { requireAdminSession } from "@/lib/server/auth-next";
 import { canAccessTenant, getPrimaryRole, isAppRole, isSuperAdmin, normalizeRoles } from "@/lib/roles";
 import { ensureGeneralTenant, getActiveTenantByCode } from "@/lib/tenants";
 import { normalizeUserAccountStatus } from "@/lib/user-account";
+import { getCompanyValidationError, normalizeCompany } from "@/lib/user-company";
 
 function containsSuperAdminRole(inputRole: unknown, inputRoles: unknown) {
   if (String(inputRole ?? "").trim() === "superAdmin") return true;
@@ -60,16 +61,13 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { firstName, lastName, telephone, dni, status, userId, role, roles, email, password, userNumber, inspectorNumber, tenantId } = body;
+  const { firstName, lastName, telephone, dni, status, userId, role, roles, email, password, tenantId, company } =
+    body;
   const { id: routeId } = await ctx.params;
   const targetId = userId || routeId;
 
   if (!targetId) {
     return NextResponse.json({ error: "userId es requerido" }, { status: 400 });
-  }
-
-  if (userNumber !== undefined || inspectorNumber !== undefined) {
-    return NextResponse.json({ error: "userNumber no se puede editar" }, { status: 400 });
   }
 
   if (role !== undefined && !isAppRole(String(role))) {
@@ -92,6 +90,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   if (lastName !== undefined) update.lastName = lastName;
   if (telephone !== undefined) update.telephone = telephone;
   if (dni !== undefined) update.dni = String(dni).trim();
+  if (company !== undefined) update.company = normalizeCompany(company);
   if (email !== undefined) update.email = String(email).trim().toLowerCase();
 
   if (email !== undefined && !update.email) {
@@ -149,16 +148,27 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       update.role = primaryRole;
     }
 
+    const resolvedTenantId =
+      tenantId !== undefined
+        ? String(tenantId).trim() || "general"
+        : String((current as any).tenantId || "general").trim() || "general";
+
     if (tenantId !== undefined) {
-      const nextTenantId = String(tenantId).trim() || "general";
-      if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, nextTenantId)) {
+      if (!isSuperAdmin(auth.session) && !canAccessTenant(auth.session, resolvedTenantId)) {
         return NextResponse.json({ error: "No autorizado para ese tenant" }, { status: 403 });
       }
-      const activeTenant = await getActiveTenantByCode(nextTenantId);
+      const activeTenant = await getActiveTenantByCode(resolvedTenantId);
       if (!activeTenant) {
         return NextResponse.json({ error: "Debe seleccionar un tenant activo" }, { status: 400 });
       }
-      update.tenantId = nextTenantId;
+      update.tenantId = resolvedTenantId;
+    }
+
+    const companyValue =
+      update.company !== undefined ? update.company : normalizeCompany((current as any).company);
+    const companyError = getCompanyValidationError(companyValue, resolvedTenantId);
+    if (companyError) {
+      return NextResponse.json({ error: companyError }, { status: 400 });
     }
 
     if (hasPasswordUpdate) {

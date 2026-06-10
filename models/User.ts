@@ -3,6 +3,7 @@
 export interface IUser extends Document {
   firstName?: string
   lastName?: string
+  company?: string
   email: string
   password: string
   salt?: string
@@ -13,7 +14,6 @@ export interface IUser extends Document {
   role: string
   roles?: string[]
   status?: "activo" | "provisorio"
-  userNumber?: string
   tenantId?: string
   mustChangePassword?: boolean
   passwordChangedAt?: Date | null
@@ -29,6 +29,11 @@ const UserSchema = new Schema<IUser>(
     },
     lastName: {
       type: String,
+    },
+    company: {
+      type: String,
+      trim: true,
+      default: "",
     },
     email: {
       type: String,
@@ -73,13 +78,6 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ['activo', 'provisorio'],
       default: 'activo',
-      index: true,
-    },
-    userNumber: {
-      type: String,
-      trim: true,
-      unique: true,
-      sparse: true,
       index: true,
     },
     tenantId: {

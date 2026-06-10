@@ -44,7 +44,6 @@ const UserSchema = new mongoose.Schema(
       enum: ["inspector", "reviewer", "supervisor", "manager", "admin"],
       default: ["inspector"],
     },
-    userNumber: { type: String, trim: true, unique: true, sparse: true, index: true },
   },
   { versionKey: false, strict: false }
 );
@@ -71,7 +70,6 @@ async function run() {
     const email = `${baseEmail}${idx}@demo.local`;
     const firstName = `Inspector ${idx}`;
     const lastName = "Prueba";
-    const userNumber = `9${String(i).padStart(3, "0")}`;
     const salt = crypto.randomBytes(16).toString("hex");
     const derived = crypto.scryptSync(password, salt, 64).toString("hex");
 
@@ -87,7 +85,6 @@ async function run() {
           isDelete: false,
           password: derived,
           salt,
-          userNumber,
         },
         $setOnInsert: { createdAt: new Date() },
       },
